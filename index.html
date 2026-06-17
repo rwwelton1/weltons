@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Grayson &amp; Ryan · April 3, 2027</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Fixed botanical background -->
+  <div class="botanical-bg" aria-hidden="true"></div>
+
+
+  <!-- ═══ NAVIGATION ═══ -->
+  <nav id="nav">
+    <div class="nav-inner">
+      <a href="#hero" class="nav-monogram">G &amp; R</a>
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#schedule">Schedule</a></li>
+        <li><a href="#wedding-party">Wedding Party</a></li>
+        <li><a href="#venue">Venue</a></li>
+        <li><a href="#travel">Travel</a></li>
+        <li><a href="#registry">Registry</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#rsvp" class="nav-rsvp">RSVP</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ═══ HERO ═══ -->
+  <section id="hero">
+    <!-- Lithograph estate illustration -->
+    <svg class="hero-illustration" viewBox="0 0 1440 580" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="5" stroke="currentColor" stroke-width="0.4"/>
+        </pattern>
+      </defs>
+      <g stroke="#7A4F3A" fill="none" stroke-linecap="round" stroke-linejoin="round">
+
+        <!-- Ground & lawn -->
+        <line x1="0" y1="525" x2="1440" y2="525" stroke-width="1.2"/>
+        <path d="M0,525 Q240,515 480,525 Q720,535 960,522 Q1200,512 1440,525" stroke-width="0.6" opacity="0.5"/>
+        <path d="M0,532 Q360,522 720,530 Q1080,540 1440,530" stroke-width="0.4" opacity="0.3"/>
+
+        <!-- ── LEFT WING ── -->
+        <rect x="205" y="295" width="170" height="230"/>
+        <!-- Shadow hatch -->
+        <rect x="205" y="295" width="170" height="230" fill="url(#hatch)" opacity="0.35"/>
+        <!-- Wing cornice -->
+        <line x1="195" y1="295" x2="385" y2="295" stroke-width="1.5"/>
+        <line x1="200" y1="302" x2="380" y2="302" stroke-width="0.7"/>
+        <!-- Wing windows -->
+        <rect x="235" y="328" width="58" height="78"/>
+        <line x1="264" y1="328" x2="264" y2="406"/>
+        <line x1="235" y1="367" x2="293" y2="367"/>
+        <!-- Window arch -->
+        <path d="M235,328 Q264,310 293,328" stroke-width="0.7"/>
+        <rect x="235" y="425" width="58" height="70"/>
+        <line x1="264" y1="425" x2="264" y2="495"/>
+        <line x1="235" y1="460" x2="293" y2="460"/>
+        <!-- Wing door -->
+        <rect x="285" y="445" width="38" height="80"/>
+        <path d="M285,445 Q304,428 323,445" stroke-width="0.7"/>
+
+        <!-- ── RIGHT WING ── -->
+        <rect x="1065" y="295" width="170" height="230"/>
+        <rect x="1065" y="295" width="170" height="230" fill="url(#hatch)" opacity="0.25"/>
+        <line x1="1055" y1="295" x2="1245" y2="295" stroke-width="1.5"/>
+        <line x1="1060" y1="302" x2="1240" y2="302" stroke-width="0.7"/>
+        <rect x="1147" y="328" width="58" height="78"/>
+        <line x1="1176" y1="328" x2="1176" y2="406"/>
+        <line x1="1147" y1="367" x2="1205" y2="367"/>
+        <path d="M1147,328 Q1176,310 1205,328" stroke-width="0.7"/>
+        <rect x="1147" y="425" width="58" height="70"/>
+        <line x1="1176" y1="425" x2="1176" y2="495"/>
+        <line x1="1147" y1="460" x2="1205" y2="460"/>
+        <rect x="1117" y="445" width="38" height="80"/>
+        <path d="M1117,445 Q1136,428 1155,445" stroke-width="0.7"/>
+
+        <!-- ── MAIN BLOCK ── -->
+        <rect x="375" y="185" width="690" height="340"/>
+        <!-- Shadow on right wall -->
+        <rect x="990" y="185" width="75" height="340" fill="url(#hatch)" opacity="0.3"/>
+
+        <!-- Upper windows - main block sides -->
+        <rect x="398" y="222" width="62" height="86"/>
+        <line x1="429" y1="222" x2="429" y2="308"/>
+        <line x1="398" y1="265" x2="460" y2="265"/>
+        <path d="M398,222 Q429,200 460,222" stroke-width="0.7"/>
+        <rect x="980" y="222" width="62" height="86"/>
+        <line x1="1011" y1="222" x2="1011" y2="308"/>
+        <line x1="980" y1="265" x2="1042" y2="265"/>
+        <path d="M980,222 Q1011,200 1042,222" stroke-width="0.7"/>
+
+        <!-- ── PEDIMENT ── -->
+        <polygon points="342,185 1098,185 720,92"/>
+        <!-- Pediment detail -->
+        <line x1="370" y1="185" x2="720" y2="108" stroke-width="0.5" opacity="0.6"/>
+        <line x1="1070" y1="185" x2="720" y2="108" stroke-width="0.5" opacity="0.6"/>
+        <!-- Oval wreath in pediment -->
+        <ellipse cx="720" cy="150" rx="55" ry="30" stroke-width="0.7"/>
+        <ellipse cx="720" cy="150" rx="42" ry="22" stroke-width="0.5"/>
+
+        <!-- ── ENTABLATURE ── -->
+        <line x1="468" y1="193" x2="972" y2="193" stroke-width="2.2"/>
+        <line x1="462" y1="200" x2="978" y2="200" stroke-width="0.9"/>
+        <!-- Triglyph suggestions -->
+        <line x1="500" y1="193" x2="500" y2="202" stroke-width="1.5"/>
+        <line x1="508" y1="193" x2="508" y2="202" stroke-width="1.5"/>
+        <line x1="576" y1="193" x2="576" y2="202" stroke-width="1.5"/>
+        <line x1="584" y1="193" x2="584" y2="202" stroke-width="1.5"/>
+        <line x1="648" y1="193" x2="648" y2="202" stroke-width="1.5"/>
+        <line x1="656" y1="193" x2="656" y2="202" stroke-width="1.5"/>
+        <line x1="784" y1="193" x2="784" y2="202" stroke-width="1.5"/>
+        <line x1="792" y1="193" x2="792" y2="202" stroke-width="1.5"/>
+        <line x1="856" y1="193" x2="856" y2="202" stroke-width="1.5"/>
+        <line x1="864" y1="193" x2="864" y2="202" stroke-width="1.5"/>
+        <line x1="928" y1="193" x2="928" y2="202" stroke-width="1.5"/>
+        <line x1="936" y1="193" x2="936" y2="202" stroke-width="1.5"/>
+
+        <!-- ── COLUMNS (6) ── -->
+        <!-- Positions: 488, 568, 648, 728, 808, 888 — step 80 -->
+        <line x1="488" y1="205" x2="488" y2="522" stroke-width="6"/>
+        <line x1="568" y1="205" x2="568" y2="522" stroke-width="6"/>
+        <line x1="648" y1="205" x2="648" y2="522" stroke-width="6"/>
+        <line x1="728" y1="205" x2="728" y2="522" stroke-width="6"/>
+        <line x1="808" y1="205" x2="808" y2="522" stroke-width="6"/>
+        <line x1="888" y1="205" x2="888" y2="522" stroke-width="6"/>
+        <!-- Column shadow lines -->
+        <line x1="496" y1="208" x2="496" y2="520" stroke-width="1.5" opacity="0.4"/>
+        <line x1="576" y1="208" x2="576" y2="520" stroke-width="1.5" opacity="0.4"/>
+        <line x1="656" y1="208" x2="656" y2="520" stroke-width="1.5" opacity="0.4"/>
+        <line x1="736" y1="208" x2="736" y2="520" stroke-width="1.5" opacity="0.4"/>
+        <line x1="816" y1="208" x2="816" y2="520" stroke-width="1.5" opacity="0.4"/>
+        <line x1="896" y1="208" x2="896" y2="520" stroke-width="1.5" opacity="0.4"/>
+        <!-- Capital line & base line -->
+        <line x1="470" y1="205" x2="906" y2="205" stroke-width="3"/>
+        <line x1="462" y1="517" x2="914" y2="517" stroke-width="3"/>
+        <!-- Steps -->
+        <line x1="450" y1="524" x2="926" y2="524" stroke-width="2"/>
+        <line x1="435" y1="530" x2="941" y2="530" stroke-width="1.5"/>
+
+        <!-- ── FRONT DOOR ── -->
+        <rect x="690" y="370" width="60" height="155"/>
+        <!-- Door fanlight / arch -->
+        <path d="M690,370 A30,30 0 0,1 750,370" stroke-width="1.2"/>
+        <!-- Fanlight spokes -->
+        <line x1="720" y1="340" x2="720" y2="370" stroke-width="0.8"/>
+        <line x1="690" y1="370" x2="720" y2="345" stroke-width="0.8"/>
+        <line x1="750" y1="370" x2="720" y2="345" stroke-width="0.8"/>
+        <line x1="700" y1="352" x2="720" y2="370" stroke-width="0.6"/>
+        <line x1="740" y1="352" x2="720" y2="370" stroke-width="0.6"/>
+        <!-- Door center line -->
+        <line x1="720" y1="370" x2="720" y2="525" stroke-width="0.9"/>
+        <!-- Door knobs -->
+        <circle cx="710" cy="460" r="3.5" fill="#7A4F3A"/>
+        <circle cx="730" cy="460" r="3.5" fill="#7A4F3A"/>
+        <!-- Sidelights -->
+        <rect x="668" y="370" width="22" height="155"/>
+        <rect x="750" y="370" width="22" height="155"/>
+
+        <!-- ── CHIMNEY STACKS ── -->
+        <rect x="570" y="92" width="32" height="94"/>
+        <rect x="838" y="92" width="32" height="94"/>
+        <line x1="562" y1="92" x2="610" y2="92" stroke-width="2.5"/>
+        <line x1="830" y1="92" x2="878" y2="92" stroke-width="2.5"/>
+        <!-- Chimney pot -->
+        <ellipse cx="586" cy="90" rx="8" ry="4"/>
+        <ellipse cx="854" cy="90" rx="8" ry="4"/>
+
+        <!-- ══ MAGNOLIA BRANCHES — LEFT ══ -->
+        <!-- Main trunk rising from lower left -->
+        <path d="M-10,560 C50,480 130,420 195,370" stroke-width="3.5" fill="none"/>
+        <!-- Branch up into sky -->
+        <path d="M195,370 C215,300 185,230 155,175" stroke-width="2.5" fill="none"/>
+        <!-- Branch sweeping right toward house -->
+        <path d="M195,370 C250,345 310,315 355,295" stroke-width="2.2" fill="none"/>
+        <!-- Upper branch -->
+        <path d="M155,175 C130,120 90,88 55,68" stroke-width="1.8" fill="none"/>
+        <path d="M155,175 C178,138 205,108 215,88" stroke-width="1.5" fill="none"/>
+        <!-- Lower branches -->
+        <path d="M195,370 C160,390 110,405 70,420" stroke-width="1.8" fill="none"/>
+        <path d="M70,420 C40,415 15,400 -5,390" stroke-width="1.2" fill="none"/>
+        <path d="M120,445 C90,455 55,450 20,455" stroke-width="1.2" fill="none"/>
+        <!-- Tiny twigs -->
+        <path d="M355,295 C370,278 380,260 378,245" stroke-width="1" fill="none"/>
+        <path d="M310,315 C318,295 322,275 318,258" stroke-width="0.9" fill="none"/>
+
+        <!-- LEFT Magnolia blooms -->
+        <!-- Bloom 1: large open flower at main upper branch -->
+        <g transform="translate(155,175)">
+          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(0)"   fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
+          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(60)"  fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
+          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(120)" fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
+          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(180)" fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
+          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(240)" fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
+          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(300)" fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
+          <circle cx="0" cy="0" r="6" fill="#7A4F3A" opacity="0.4"/>
+          <line x1="-4" y1="-6" x2="4" y2="-6" stroke-width="0.5" opacity="0.6"/>
+        </g>
+        <!-- Bloom 2: at top left -->
+        <g transform="translate(55,68) rotate(12)">
+          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(0)"   fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
+          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(72)"  fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
+          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(144)" fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
+          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(216)" fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
+          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(288)" fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
+          <circle cx="0" cy="0" r="5" fill="#7A4F3A" opacity="0.35"/>
+        </g>
+        <!-- Bloom 3: mid branch bud -->
+        <g transform="translate(355,295) rotate(-18)">
+          <ellipse cx="0" cy="-14" rx="6" ry="12" transform="rotate(0)"   fill="#7A4F3A" opacity="0.1" stroke-width="0.8"/>
+          <ellipse cx="0" cy="-14" rx="6" ry="12" transform="rotate(90)"  fill="#7A4F3A" opacity="0.1" stroke-width="0.8"/>
+          <ellipse cx="0" cy="-14" rx="6" ry="12" transform="rotate(180)" fill="#7A4F3A" opacity="0.1" stroke-width="0.8"/>
+          <ellipse cx="0" cy="-14" rx="6" ry="12" transform="rotate(270)" fill="#7A4F3A" opacity="0.1" stroke-width="0.8"/>
+          <circle cx="0" cy="0" r="4" fill="#7A4F3A" opacity="0.3"/>
+        </g>
+        <!-- Bloom 4: small bud on twig -->
+        <g transform="translate(215,88) rotate(5)">
+          <ellipse cx="0" cy="-10" rx="5" ry="9" transform="rotate(0)"   fill="#7A4F3A" opacity="0.12" stroke-width="0.7"/>
+          <ellipse cx="0" cy="-10" rx="5" ry="9" transform="rotate(120)" fill="#7A4F3A" opacity="0.12" stroke-width="0.7"/>
+          <ellipse cx="0" cy="-10" rx="5" ry="9" transform="rotate(240)" fill="#7A4F3A" opacity="0.12" stroke-width="0.7"/>
+          <circle cx="0" cy="0" r="3.5" fill="#7A4F3A" opacity="0.3"/>
+        </g>
+
+        <!-- LEFT magnolia leaves -->
+        <ellipse cx="115" cy="415" rx="30" ry="13" transform="rotate(-28 115 415)"/>
+        <ellipse cx="75" cy="388" rx="26" ry="11" transform="rotate(18 75 388)"/>
+        <ellipse cx="178" cy="310" rx="32" ry="12" transform="rotate(-42 178 310)"/>
+        <ellipse cx="248" cy="338" rx="27" ry="11" transform="rotate(22 248 338)"/>
+        <ellipse cx="118" cy="265" rx="25" ry="10" transform="rotate(-15 118 265)"/>
+        <ellipse cx="88" cy="175" rx="22" ry="9" transform="rotate(35 88 175)"/>
+        <ellipse cx="195" cy="210" rx="20" ry="8" transform="rotate(-30 195 210)"/>
+        <!-- Small buds -->
+        <circle cx="285" cy="330" r="4" fill="#7A4F3A" opacity="0.4"/>
+        <circle cx="168" cy="248" r="3.5" fill="#7A4F3A" opacity="0.4"/>
+        <circle cx="108" cy="320" r="3" fill="#7A4F3A" opacity="0.4"/>
+        <circle cx="40" cy="395" r="3" fill="#7A4F3A" opacity="0.4"/>
+
+        <!-- ══ MAGNOLIA BRANCHES — RIGHT ══ -->
+        <path d="M1450,560 C1390,480 1310,420 1245,370" stroke-width="3.5" fill="none"/>
+        <path d="M1245,370 C1225,300 1255,230 1285,175" stroke-width="2.5" fill="none"/>
+        <path d="M1245,370 C1190,345 1130,315 1085,295" stroke-width="2.2" fill="none"/>
+        <path d="M1285,175 C1310,120 1350,88 1385,68" stroke-width="1.8" fill="none"/>
+        <path d="M1285,175 C1262,138 1235,108 1225,88" stroke-width="1.5" fill="none"/>
+        <path d="M1245,370 C1280,390 1330,405 1370,420" stroke-width="1.8" fill="none"/>
+        <path d="M1370,420 C1400,415 1425,400 1445,390" stroke-width="1.2" fill="none"/>
+        <path d="M1320,445 C1350,455 1385,450 1420,455" stroke-width="1.2" fill="none"/>
+        <path d="M1085,295 C1070,278 1060,260 1062,245" stroke-width="1" fill="none"/>
+        <path d="M1130,315 C1122,295 1118,275 1122,258" stroke-width="0.9" fill="none"/>
+
+        <!-- RIGHT Magnolia blooms -->
+        <g transform="translate(1285,175)">
+          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(0)"   fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
+          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(60)"  fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
+          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(120)" fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
+          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(180)" fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
+          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(240)" fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
+          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(300)" fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
+          <circle cx="0" cy="0" r="6" fill="#7A4F3A" opacity="0.4"/>
+        </g>
+        <g transform="translate(1385,68) rotate(-12)">
+          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(0)"   fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
+          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(72)"  fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
+          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(144)" fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
+          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(216)" fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
+          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(288)" fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
+          <circle cx="0" cy="0" r="5" fill="#7A4F3A" opacity="0.35"/>
+        </g>
+        <g transform="translate(1085,295) rotate(18)">
+          <ellipse cx="0" cy="-14" rx="6" ry="12" transform="rotate(0)"   fill="#7A4F3A" opacity="0.1" stroke-width="0.8"/>
+          <ellipse cx="0" cy="-14" rx="6" ry="12" transform="rotate(90)"  fill="#7A4F3A" opacity="0.1" stroke-width="0.8"/>
+          <ellipse cx="0" cy="-14" rx="6" ry="12" transform="rotate(180)" fill="#7A4F3A" opacity="0.1" stroke-width="0.8"/>
+          <ellipse cx="0" cy="-14" rx="6" ry="12" transform="rotate(270)" fill="#7A4F3A" opacity="0.1" stroke-width="0.8"/>
+          <circle cx="0" cy="0" r="4" fill="#7A4F3A" opacity="0.3"/>
+        </g>
+        <g transform="translate(1225,88) rotate(-5)">
+          <ellipse cx="0" cy="-10" rx="5" ry="9" transform="rotate(0)"   fill="#7A4F3A" opacity="0.12" stroke-width="0.7"/>
+          <ellipse cx="0" cy="-10" rx="5" ry="9" transform="rotate(120)" fill="#7A4F3A" opacity="0.12" stroke-width="0.7"/>
+          <ellipse cx="0" cy="-10" rx="5" ry="9" transform="rotate(240)" fill="#7A4F3A" opacity="0.12" stroke-width="0.7"/>
+          <circle cx="0" cy="0" r="3.5" fill="#7A4F3A" opacity="0.3"/>
+        </g>
+
+        <!-- RIGHT magnolia leaves -->
+        <ellipse cx="1325" cy="415" rx="30" ry="13" transform="rotate(28 1325 415)"/>
+        <ellipse cx="1365" cy="388" rx="26" ry="11" transform="rotate(-18 1365 388)"/>
+        <ellipse cx="1262" cy="310" rx="32" ry="12" transform="rotate(42 1262 310)"/>
+        <ellipse cx="1192" cy="338" rx="27" ry="11" transform="rotate(-22 1192 338)"/>
+        <ellipse cx="1322" cy="265" rx="25" ry="10" transform="rotate(15 1322 265)"/>
+        <ellipse cx="1352" cy="175" rx="22" ry="9" transform="rotate(-35 1352 175)"/>
+        <ellipse cx="1245" cy="210" rx="20" ry="8" transform="rotate(30 1245 210)"/>
+        <circle cx="1155" cy="330" r="4" fill="#7A4F3A" opacity="0.4"/>
+        <circle cx="1272" cy="248" r="3.5" fill="#7A4F3A" opacity="0.4"/>
+        <circle cx="1332" cy="320" r="3" fill="#7A4F3A" opacity="0.4"/>
+        <circle cx="1400" cy="395" r="3" fill="#7A4F3A" opacity="0.4"/>
+      </g>
+    </svg>
+
+    <div class="hero-content">
+      <p class="hero-eyebrow fade-in">Together with their families</p>
+      <h1 class="hero-names fade-in">
+        <span>Grayson</span>
+        <em>&amp;</em>
+        <span>Ryan</span>
+      </h1>
+      <p class="hero-date fade-in">April 3, 2027</p>
+      <p class="hero-venue fade-in">Tate House · Tate, Georgia</p>
+      <a href="#rsvp" class="btn-primary fade-in">RSVP</a>
+    </div>
+
+    <div class="hero-scroll" aria-hidden="true">
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ═══ SCHEDULE ═══ -->
+  <section id="schedule" class="section section-parchment">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-eyebrow">April 3, 2027</span>
+        <h2>The Day</h2>
+        <div class="title-rule"></div>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item fade-in">
+          <div class="timeline-time">4:00 PM</div>
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <h3>Ceremony</h3>
+            <p>Tate House Gardens</p>
+            <p class="timeline-note">Guests are invited to be seated by 3:45 PM</p>
+          </div>
+        </div>
+        <div class="timeline-item fade-in">
+          <div class="timeline-time">5:00 PM</div>
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <h3>Cocktail Hour</h3>
+            <p>The Estate Lawn</p>
+            <p class="timeline-note">Drinks, hors d'oeuvres, and garden strolls</p>
+          </div>
+        </div>
+        <div class="timeline-item fade-in">
+          <div class="timeline-time">6:00 PM</div>
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <h3>Dinner &amp; Reception</h3>
+            <p>The Grand Ballroom</p>
+            <p class="timeline-note">Dancing to follow dinner service</p>
+          </div>
+        </div>
+        <div class="timeline-item fade-in">
+          <div class="timeline-time">10:00 PM</div>
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <h3>Send-Off</h3>
+            <p>The Front Drive</p>
+            <p class="timeline-note">End of the evening</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ GARDEN BREAK ═══ -->
+  <div class="garden-break" aria-hidden="true">
+    <div class="garden-break-text">
+      <p>Tate House · Tate, Georgia</p>
+    </div>
+  </div>
+
+  <!-- ═══ WEDDING PARTY ═══ -->
+  <section id="wedding-party" class="section section-cream">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-eyebrow">The People We Love</span>
+        <h2>Wedding Party</h2>
+        <div class="title-rule"></div>
+      </div>
+
+      <div class="party-columns">
+        <div class="party-side fade-in">
+          <h3 class="party-title">Bridal Party</h3>
+          <ul class="party-list">
+            <li>
+              <span class="party-name">Grayson Sloop</span>
+              <span class="party-role">Bride</span>
+            </li>
+            <li>
+              <span class="party-name">Taylor Sloop</span>
+              <span class="party-role">Matron of Honor</span>
+            </li>
+            <li>
+              <span class="party-name">Mikenna Wainwright</span>
+              <span class="party-role">Bridesmaid</span>
+            </li>
+            <li>
+              <span class="party-name">Lauren Kay</span>
+              <span class="party-role">Bridesmaid</span>
+            </li>
+            <li>
+              <span class="party-name">Meg Ackeman</span>
+              <span class="party-role">Bridesmaid</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="party-divider" aria-hidden="true">
+          <svg viewBox="0 0 40 200" xmlns="http://www.w3.org/2000/svg">
+            <line x1="20" y1="0" x2="20" y2="85" stroke="#B89650" stroke-width="0.8" opacity="0.5"/>
+            <circle cx="20" cy="100" r="5" fill="none" stroke="#B89650" stroke-width="0.8" opacity="0.6"/>
+            <line x1="20" y1="115" x2="20" y2="200" stroke="#B89650" stroke-width="0.8" opacity="0.5"/>
+          </svg>
+        </div>
+
+        <div class="party-side fade-in">
+          <h3 class="party-title">Groom's Party</h3>
+          <ul class="party-list">
+            <li>
+              <span class="party-name">Ryan Welton</span>
+              <span class="party-role">Groom</span>
+            </li>
+            <li>
+              <span class="party-name">Thomas Welton</span>
+              <span class="party-role">Best Man</span>
+            </li>
+            <li>
+              <span class="party-name">David Hanson</span>
+              <span class="party-role">Groomsman</span>
+            </li>
+            <li>
+              <span class="party-name">Ryan Kaufman</span>
+              <span class="party-role">Groomsman</span>
+            </li>
+            <li>
+              <span class="party-name">Thomas Packert</span>
+              <span class="party-role">Groomsman</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ VENUE ═══ -->
+  <section id="venue" class="section">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-eyebrow">Where We Gather</span>
+        <h2>The Venue</h2>
+        <div class="title-rule"></div>
+      </div>
+      <div class="venue-grid fade-in">
+        <div class="venue-info">
+          <h3>Tate House</h3>
+          <p class="venue-address">2973 GA-53 · Tate, Georgia 30177</p>
+          <p>Colonel Sam Tate was one of the most powerful men in Georgia at the turn of the twentieth century. As head of the Georgia Marble Company, he controlled the largest deposits of pink marble in the world — stone so prized that it was used in the construction of the Lincoln Memorial, the Philadelphia Museum of Art, and the United States Supreme Court Building. The town of Tate, Georgia, exists because of him. He built it for his workers.</p>
+          <p>When he decided to build a home for himself in 1926, he did not look far for materials. The pink marble came from his own quarries, just up the road. Artisans cut and dressed the stone on site. The result was a mansion that did not feel imported or imposed — it felt like it had always been there, like it had simply risen out of the Georgia hills on its own.</p>
+        </div>
+        <div class="venue-details fade-in">
+          <p>The house is Neo-Classical in form — six marble columns, a triangular pediment, symmetrical wings extending on either side — but what sets it apart is the color. Pink Georgia marble does not read as pink so much as warm. In morning light it glows nearly ivory. By afternoon it deepens to a burnished rose. At the golden hour before an April ceremony, it catches the low sun in a way that is difficult to describe and impossible to forget.</p>
+          <p>The grounds spread across 27 acres of North Georgia countryside, framed on all sides by the Appalachian foothills. English-style gardens terrace down from the main house, and a vine-draped conservatory — the glass-and-iron room visible in the photograph above — connects the private quarters to the formal entertaining spaces. It has been used for exactly this kind of celebration for nearly a century.</p>
+          <p>The estate has belonged to the Tate family ever since. It has not been renovated into something new. It has simply been kept. Coming here is not like visiting an event venue. It is like being invited into a very old, very beautiful home.</p>
+        </div>
+      </div>
+      <div class="venue-cta fade-in">
+        <a href="https://tatehouse.com" target="_blank" rel="noopener" class="btn-secondary">Visit Tate House</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ TRAVEL & HOTELS ═══ -->
+  <section id="travel" class="section section-cream">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-eyebrow">Getting Here &amp; Staying</span>
+        <h2>Travel &amp; Hotels</h2>
+        <div class="title-rule"></div>
+      </div>
+      <div class="travel-intro fade-in">
+        <p>Tate House is located in the North Georgia mountains, approximately one hour north of Atlanta. The nearest major airports are Hartsfield-Jackson Atlanta International (ATL) and Chattanooga Metropolitan Airport (CHA).</p>
+      </div>
+      <div class="hotel-grid">
+        <div class="hotel-card fade-in">
+          <div class="hotel-badge">Recommended</div>
+          <h3>Holiday Inn Canton</h3>
+          <p class="hotel-location">Canton, GA</p>
+          <p>A comfortable, convenient base for the weekend — close to Tate House with easy access to dining and the shuttle route.</p>
+          <a href="#" class="btn-secondary" target="_blank">Book a Room</a>
+        </div>
+        <div class="hotel-card fade-in">
+          <div class="hotel-badge">Recommended</div>
+          <h3>Fairfield Inn &amp; Suites Canton</h3>
+          <p class="hotel-location">Canton, GA</p>
+          <p>A great option with modern amenities and a relaxed atmosphere, also conveniently located along the shuttle route.</p>
+          <a href="#" class="btn-secondary" target="_blank">Book a Room</a>
+        </div>
+      </div>
+      <div class="travel-note fade-in">
+        <p><strong>Shuttle service</strong> will be available from both Canton hotels to Tate House on Friday evening and throughout the day Saturday. We strongly encourage guests not to drink and drive — the mountain roads are beautiful but winding.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FAQ ═══ -->
+  <section id="faq" class="section section-parchment">
+    <div class="container narrow">
+      <div class="section-header fade-in">
+        <span class="section-eyebrow">Questions</span>
+        <h2>FAQ</h2>
+        <div class="title-rule"></div>
+      </div>
+      <div class="faq-list">
+
+        <div class="faq-item fade-in">
+          <button class="faq-question" aria-expanded="false">
+            What is the dress code?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>The dress code is <strong>formal</strong>. Think floor-length gowns, elegant cocktail dresses, or suits and tuxedos. Please note that portions of the celebration are outdoors on a lawn, so keep that in mind when choosing footwear.</p>
+          </div>
+        </div>
+
+        <div class="faq-item fade-in">
+          <button class="faq-question" aria-expanded="false">
+            Are children welcome?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Children under 13 are not permitted at the Saturday wedding venue. However, they are warmly welcome at the Friday night welcome party! We hope this gives families a chance to celebrate with us while still creating an elegant evening on the big day.</p>
+          </div>
+        </div>
+
+        <div class="faq-item fade-in">
+          <button class="faq-question" aria-expanded="false">
+            Is the venue wheelchair accessible?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Tate House has paved pathways and accessible entrances throughout the estate. If you have specific accessibility needs, please reach out to us at <a href="mailto:WeltonWedding1@gmail.com">WeltonWedding1@gmail.com</a> and we will do everything we can to accommodate you.</p>
+          </div>
+        </div>
+
+        <div class="faq-item fade-in">
+          <button class="faq-question" aria-expanded="false">
+            Will there be a shuttle from the hotel?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Yes! Shuttles will run from both Canton hotels to Tate House on Friday evening and all day Saturday. We strongly encourage guests to take advantage of this — the roads through the North Georgia mountains are scenic but winding. Specific departure times will be shared closer to the date.</p>
+          </div>
+        </div>
+
+        <div class="faq-item fade-in">
+          <button class="faq-question" aria-expanded="false">
+            Can I take photos during the ceremony?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>We are having an unplugged ceremony and kindly ask that phones and cameras be put away so everyone can be fully present. Our photographer will capture every moment beautifully. Feel free to take photos during the cocktail hour and reception!</p>
+          </div>
+        </div>
+
+        <div class="faq-item fade-in">
+          <button class="faq-question" aria-expanded="false">
+            I have a dietary restriction. What should I do?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Please note any dietary restrictions in the notes field of your RSVP. We want to make sure every guest has a wonderful dinner experience.</p>
+          </div>
+        </div>
+
+        <div class="faq-item fade-in">
+          <button class="faq-question" aria-expanded="false">
+            I have another question not listed here.
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Please reach out to us at <a href="mailto:WeltonWedding1@gmail.com">WeltonWedding1@gmail.com</a> and we will be happy to help.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ REGISTRY ═══ -->
+  <section id="registry" class="section section-cream">
+    <div class="container narrow">
+      <div class="section-header fade-in">
+        <span class="section-eyebrow">For Those Who Ask</span>
+        <h2>Registry</h2>
+        <div class="title-rule"></div>
+      </div>
+      <p class="registry-intro fade-in">Your presence at our wedding is the greatest gift. For those who would like to give, we are registered at the following:</p>
+      <div class="registry-grid fade-in">
+        <a href="#" target="_blank" rel="noopener" class="registry-card registry-coming-soon">
+          <span class="registry-name">Coming Soon</span>
+          <span class="registry-link">Check back closer to the date</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ RSVP ═══ -->
+  <section id="rsvp" class="section section-rsvp">
+    <div class="rsvp-bg-illustration" aria-hidden="true">
+      <svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="#F5F0E8" fill="none" stroke-width="0.8" opacity="0.15">
+          <path d="M0,200 C100,150 200,230 300,180 C400,130 500,210 600,170 C700,130 800,190 900,160"/>
+          <ellipse cx="150" cy="80" rx="40" ry="60" transform="rotate(-20 150 80)"/>
+          <ellipse cx="650" cy="310" rx="35" ry="55" transform="rotate(15 650 310)"/>
+          <path d="M0,350 C150,300 300,370 450,330 C600,290 750,350 900,320"/>
+          <line x1="400" y1="0" x2="400" y2="400"/>
+        </g>
+      </svg>
+    </div>
+    <div class="container narrow">
+      <div class="section-header fade-in">
+        <span class="section-eyebrow rsvp-eyebrow">Kindly Respond By March 1, 2027</span>
+        <h2 class="rsvp-heading">RSVP</h2>
+        <div class="title-rule rsvp-rule"></div>
+      </div>
+
+      <!-- Step 1: Name Lookup -->
+      <div id="rsvp-lookup-section" class="rsvp-card fade-in">
+        <p class="rsvp-intro">Enter your name exactly as it appears on your invitation.</p>
+        <div class="rsvp-field-group">
+          <label for="guest-name" class="rsvp-label">Your Name</label>
+          <input
+            type="text"
+            id="guest-name"
+            class="rsvp-input"
+            placeholder="First Last"
+            autocomplete="name"
+            autocapitalize="words"
+          />
+        </div>
+        <p id="lookup-error" class="rsvp-error" role="alert" aria-live="polite"></p>
+        <button id="lookup-btn" class="btn-primary rsvp-btn">Find My Invitation</button>
+        <div id="loading" class="rsvp-loading" aria-live="polite">
+          <span class="loading-dot"></span>
+          <span class="loading-dot"></span>
+          <span class="loading-dot"></span>
+        </div>
+      </div>
+
+      <!-- Step 2: RSVP Form -->
+      <div id="rsvp-form-section" class="rsvp-card fade-in" style="display:none">
+        <p class="rsvp-party-greeting">We found your invitation</p>
+        <h3 id="party-name" class="rsvp-party-name"></h3>
+        <p id="rsvp-status" class="rsvp-status"></p>
+
+        <div class="rsvp-field-group">
+          <p class="rsvp-label">Will you be attending?</p>
+          <div class="rsvp-radio-group">
+            <label class="rsvp-radio">
+              <input type="radio" name="attending" id="attending-yes" value="yes"/>
+              <span class="radio-custom"></span>
+              Joyfully accepts
+            </label>
+            <label class="rsvp-radio">
+              <input type="radio" name="attending" id="attending-no" value="no"/>
+              <span class="radio-custom"></span>
+              Regretfully declines
+            </label>
+          </div>
+        </div>
+
+        <div id="attendance-details" class="rsvp-field-group" style="display:none">
+          <label for="guest-count" class="rsvp-label">Number of guests attending</label>
+          <select id="guest-count" class="rsvp-input rsvp-select">
+            <option value="">Select</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </div>
+
+        <!-- Meal choice — uncomment and customize when you have menu options -->
+        <!--
+        <div id="meal-section" class="rsvp-field-group" style="display:none">
+          <label for="meal-choice" class="rsvp-label">Meal Preference</label>
+          <select id="meal-choice" class="rsvp-input rsvp-select">
+            <option value="">Select</option>
+            <option value="beef">Filet Mignon</option>
+            <option value="chicken">Herb Roasted Chicken</option>
+            <option value="vegetarian">Vegetarian</option>
+          </select>
+        </div>
+        -->
+
+        <div class="rsvp-field-group">
+          <label for="note" class="rsvp-label">Dietary needs or a note for us <span class="optional">(optional)</span></label>
+          <textarea id="note" class="rsvp-input rsvp-textarea" rows="3" placeholder="Allergies, dietary restrictions, or anything else we should know…"></textarea>
+        </div>
+
+        <p id="form-error" class="rsvp-error" role="alert" aria-live="polite"></p>
+        <div class="rsvp-actions">
+          <button id="rsvp-back-btn" class="btn-ghost">← Back</button>
+          <button id="rsvp-submit-btn" class="btn-primary rsvp-btn">Submit RSVP</button>
+        </div>
+        <div id="loading-form" class="rsvp-loading" aria-live="polite">
+          <span class="loading-dot"></span>
+          <span class="loading-dot"></span>
+          <span class="loading-dot"></span>
+        </div>
+      </div>
+
+      <!-- Step 3: Success -->
+      <div id="rsvp-success" class="rsvp-card rsvp-success fade-in" style="display:none">
+        <div class="success-icon">✦</div>
+        <h3 id="success-headline">Thank you!</h3>
+        <p id="success-message"></p>
+        <p class="rsvp-change-note">Need to make a change? Simply come back and enter your name again before the RSVP deadline.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer id="footer">
+    <!-- Botanical footer illustration -->
+    <svg class="footer-illustration" viewBox="0 0 1440 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g stroke="#B89650" fill="none" stroke-width="0.9" opacity="0.4">
+        <path d="M0,60 Q180,30 360,60 Q540,90 720,55 Q900,22 1080,60 Q1260,95 1440,60"/>
+        <g transform="translate(200,55)">
+          <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(0)"/>
+          <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(120)"/>
+          <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(240)"/>
+          <circle cx="0" cy="0" r="4"/>
+        </g>
+        <g transform="translate(720,50)">
+          <ellipse cx="0" cy="-22" rx="9" ry="17" transform="rotate(0)"/>
+          <ellipse cx="0" cy="-22" rx="9" ry="17" transform="rotate(72)"/>
+          <ellipse cx="0" cy="-22" rx="9" ry="17" transform="rotate(144)"/>
+          <ellipse cx="0" cy="-22" rx="9" ry="17" transform="rotate(216)"/>
+          <ellipse cx="0" cy="-22" rx="9" ry="17" transform="rotate(288)"/>
+          <circle cx="0" cy="0" r="5"/>
+        </g>
+        <g transform="translate(1240,58)">
+          <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(0)"/>
+          <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(120)"/>
+          <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(240)"/>
+          <circle cx="0" cy="0" r="4"/>
+        </g>
+      </g>
+    </svg>
+    <div class="footer-content">
+      <p class="footer-monogram">G &amp; R</p>
+      <p class="footer-date">April 3, 2027 · Tate House · Tate, Georgia</p>
+      <p class="footer-note">Made with love for the people we love</p>
+    </div>
+  </footer>
+
+  <!-- Firebase & App -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

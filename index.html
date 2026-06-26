@@ -61,14 +61,14 @@ img{max-width:100%;display:block}
 body{
   background-image: url('IMG_1984.PNG');
   background-attachment: scroll;
-  background-size: cover;
+  background-size: 100% auto;
   background-position: center top;
-  background-repeat: no-repeat;
+  background-repeat: repeat-y;
   background-color: var(--ivory);
 }
 /* Pseudo-fixed effect for desktop */
 @media (hover: hover){
-  body{ background-attachment: fixed; }
+  body{ background-size: cover; background-repeat: no-repeat; background-attachment: fixed; }
 }
 
 /* paper grain over everything */
@@ -820,25 +820,17 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
   // ---- Mobile menu ----
   const mb = document.getElementById('menuBtn'), nl = document.getElementById('navlinks');
-  let _scrollY = 0;
+  function blockScroll(e){ e.preventDefault(); }
   function openMenu(open){
     mb.classList.toggle('open', open);
     nl.classList.toggle('open', open);
     mb.setAttribute('aria-expanded', open);
     mb.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-    // Lock body scroll while menu is open (save/restore position for iOS)
+    // Prevent background scroll on iOS without moving the page
     if(open){
-      _scrollY = window.scrollY;
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${_scrollY}px`;
-      document.body.style.width = '100%';
+      document.addEventListener('touchmove', blockScroll, {passive:false});
     } else {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      window.scrollTo(0, _scrollY);
+      document.removeEventListener('touchmove', blockScroll);
     }
   }
   mb.addEventListener('click', () => openMenu(!nl.classList.contains('open')));

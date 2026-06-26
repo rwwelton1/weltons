@@ -826,24 +826,27 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   #admin-bar{
     position:fixed;bottom:0;left:0;right:0;z-index:9000;
     background:var(--ink);color:var(--ivory);
-    display:none;align-items:center;justify-content:space-between;
-    padding:12px 20px;gap:12px;font-family:var(--sans);font-size:.78rem;
+    display:none;flex-direction:column;
+    padding:10px 14px 14px;gap:8px;font-family:var(--sans);
     box-shadow:0 -2px 20px rgba(0,0,0,.35);
   }
   #admin-bar.visible{display:flex}
-  #admin-bar .ab-left{display:flex;align-items:center;gap:10px}
-  #admin-bar .ab-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0}
-  #admin-bar .ab-label{letter-spacing:.12em;text-transform:uppercase;font-size:.66rem;opacity:.75}
-  #admin-bar .ab-btns{display:flex;gap:8px}
-  .ab-btn{padding:8px 18px;border-radius:30px;border:none;cursor:pointer;font-family:var(--sans);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;transition:.25s}
+  #admin-bar .ab-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  #admin-bar .ab-left{display:flex;align-items:center;gap:6px}
+  #admin-bar .ab-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0}
+  #admin-bar .ab-label{letter-spacing:.08em;text-transform:uppercase;font-size:.6rem;opacity:.7;white-space:nowrap}
+  #ab-status{font-size:.65rem;opacity:.65;white-space:nowrap}
+  #ab-exit{background:transparent;color:rgba(247,242,234,.45);border:none;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:4px 6px;white-space:nowrap}
+  #ab-exit:hover{color:var(--ivory)}
+  #admin-bar .ab-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;width:100%}
+  .ab-btn{padding:10px 8px;border-radius:30px;border:none;cursor:pointer;font-family:var(--sans);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;transition:.25s;white-space:nowrap;text-align:center}
   #ab-save{background:var(--sage);color:var(--ivory)}
   #ab-save:hover{background:var(--sage-deep)}
   #ab-save:disabled{opacity:.5;cursor:default}
+  #ab-bg{background:rgba(247,242,234,.12);color:var(--ivory);border:1px solid rgba(247,242,234,.25)}
+  #ab-bg:hover{background:rgba(247,242,234,.2)}
   #ab-discard{background:transparent;color:rgba(247,242,234,.6);border:1px solid rgba(247,242,234,.2)}
   #ab-discard:hover{color:var(--ivory);border-color:rgba(247,242,234,.5)}
-  #ab-exit{background:transparent;color:rgba(247,242,234,.5);border:none;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;padding:4px 8px}
-  #ab-exit:hover{color:var(--ivory)}
-  #ab-status{font-size:.7rem;opacity:.6;min-width:80px;text-align:right}
 
   /* Editable elements in admin mode */
   body.admin-mode [data-editable]{
@@ -930,17 +933,19 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
 <!-- Admin bar -->
 <div id="admin-bar" role="toolbar" aria-label="Admin controls">
-  <div class="ab-left">
-    <span class="ab-dot"></span>
-    <span class="ab-label">Admin Mode — click any text to edit</span>
+  <div class="ab-top">
+    <div class="ab-left">
+      <span class="ab-dot"></span>
+      <span class="ab-label">Admin Mode</span>
+    </div>
+    <span id="ab-status"></span>
+    <button id="ab-exit">Exit</button>
   </div>
   <div class="ab-btns">
-    <span id="ab-status"></span>
     <button class="ab-btn" id="ab-bg">📷 Background</button>
     <button class="ab-btn" id="ab-discard">Discard</button>
-    <button class="ab-btn" id="ab-save">Save Changes</button>
+    <button class="ab-btn" id="ab-save">Save Text</button>
   </div>
-  <button id="ab-exit">Exit</button>
 </div>
 
 <script type="module">

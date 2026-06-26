@@ -111,31 +111,40 @@ nav.scrolled{background:rgba(247,242,234,.88);backdrop-filter:blur(14px);box-sha
   .menu-btn.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
 }
 
-/* ---- HERO ---- */
-.hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;padding:140px 32px 90px;overflow:hidden}
-.hero-bg{
-  position:absolute;inset:0;z-index:-1;
-  background-color: var(--ivory);
-  background-image: linear-gradient(180deg, rgba(247,242,234,.3) 0%, rgba(238,228,215,.2) 50%, rgba(247,242,234,.98) 100%);
+/* ---- HERO SLIDESHOW ---- */
+.hero-slides{position:absolute;inset:0;z-index:-1;background-color:var(--ivory)}
+.hero-slide{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  opacity:0;transition:opacity 1.4s ease-in-out;
 }
-/* Dark overlay sits on top of the hero image for readability */
-.hero-bg::before{
+.hero-slide.active{opacity:1}
+/* Gradient tint — always present, dark overlay shown when images loaded */
+.hero-slide::before{
   content:"";position:absolute;inset:0;
-  background: linear-gradient(
-    180deg,
-    rgba(20,17,14,.15) 0%,
-    rgba(20,17,14,.45) 35%,
-    rgba(20,17,14,.55) 60%,
-    rgba(247,242,234,0) 100%
-  );
-  display:none; /* shown only when hero image is loaded via JS */
+  background:linear-gradient(180deg,rgba(247,242,234,.3) 0%,rgba(238,228,215,.2) 50%,rgba(247,242,234,.98) 100%);
 }
-.hero-bg.has-image::before{display:block}
-.hero-bg.has-image{background-color:var(--ink)}
-/* When hero image is set, lighten the text */
-.hero-bg.has-image ~ * .hero-names h1,
-.hero-names.on-image h1{color:var(--ivory)}
-.hero-bg::after{content:"";position:absolute;left:0;right:0;bottom:0;height:220px;background:linear-gradient(to bottom,transparent,var(--ivory))}
+.hero-slides.has-images .hero-slide::before{
+  background:linear-gradient(180deg,rgba(20,17,14,.15) 0%,rgba(20,17,14,.45) 35%,rgba(20,17,14,.55) 60%,rgba(247,242,234,0) 100%);
+}
+.hero-slides::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:220px;
+  background:linear-gradient(to bottom,transparent,var(--ivory));z-index:1;
+}
+/* Dot indicators */
+.hero-dots{
+  position:absolute;bottom:80px;left:50%;transform:translateX(-50%);
+  display:none;gap:8px;z-index:2;
+}
+.hero-dots.visible{display:flex}
+.hero-dot{
+  width:6px;height:6px;border-radius:50%;background:rgba(247,242,234,.45);
+  border:none;cursor:pointer;padding:0;transition:background .3s,transform .3s;
+}
+.hero-dot.active{background:rgba(247,242,234,.9);transform:scale(1.3)}
+
+/* ---- HERO LAYOUT ---- */
+.hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;padding:140px 32px 90px;overflow:hidden}
 .hero .eyebrow{margin-bottom:34px;opacity:0;animation:rise .9s .2s forwards;color:var(--sage-deep);position:relative;z-index:1}
 .hero-names{position:relative;z-index:1;opacity:0;animation:rise 1.1s .4s forwards}
 .hero-names h1{font-size:clamp(3.6rem,15vw,10rem);font-weight:300;letter-spacing:-.015em;line-height:.92;color:var(--ink)}
@@ -369,7 +378,15 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
 <!-- HERO -->
 <header class="hero" id="hero" tabindex="-1">
-  <div class="hero-bg" role="img" aria-label="Tate House exterior"></div>
+  <div class="hero-slides" id="heroSlides" aria-hidden="true">
+    <!-- Slides injected by JS from Firestore -->
+    <div class="hero-slide active" id="heroSlide0"></div>
+    <div class="hero-slide" id="heroSlide1"></div>
+    <div class="hero-slide" id="heroSlide2"></div>
+    <div class="hero-slide" id="heroSlide3"></div>
+    <div class="hero-slide" id="heroSlide4"></div>
+  </div>
+  <div class="hero-dots" id="heroDots" aria-hidden="true"></div>
   <p class="eyebrow" aria-hidden="false">Together with their families</p>
   <div class="hero-names">
     <h1>Grayson<span class="amp" aria-hidden="true">&amp;</span><span class="sr-only"> and </span>Ryan</h1>
@@ -872,7 +889,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   #ab-exit{background:transparent;color:rgba(247,242,234,.45);border:none;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:4px 6px;white-space:nowrap}
   #ab-exit:hover{color:var(--ivory)}
   #admin-bar .ab-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;width:100%}
-  #admin-bar .ab-btns2{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%}
+  #admin-bar .ab-btns2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;width:100%}
   .ab-btn{padding:10px 8px;border-radius:30px;border:none;cursor:pointer;font-family:var(--sans);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;transition:.25s;white-space:nowrap;text-align:center}
   #ab-save{background:var(--sage);color:var(--ivory)}
   #ab-save:hover{background:var(--sage-deep)}
@@ -1063,10 +1080,11 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   </div>
   <div class="ab-btns">
     <button class="ab-btn" id="ab-bg">📷 BG</button>
-    <button class="ab-btn" id="ab-hero">🖼 Hero</button>
-    <button class="ab-btn" id="ab-links">🔗 Links</button>
+    <button class="ab-btn" id="ab-hero">🖼 Add Hero</button>
+    <button class="ab-btn" id="ab-hero-clear">🗑 Clear Hero</button>
   </div>
   <div class="ab-btns2">
+    <button class="ab-btn" id="ab-links">🔗 Links</button>
     <button class="ab-btn" id="ab-dashboard">📋 RSVPs</button>
     <button class="ab-btn" id="ab-save">Save Text</button>
   </div>
@@ -1079,10 +1097,13 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   // ---- Image slot definitions ----
   // key → how to apply the image to the DOM element
   const IMAGE_SLOTS = [
-    { key:'img-background', maxW:2400, maxH:1600, quality:.88,
+    { key:'img-background', maxW:1400, maxH:1000, quality:.75,
       apply: (el, url) => { document.body.style.backgroundImage = `url('${url}')`; } },
-    { key:'img-hero',      maxW:2400, maxH:1600, quality:.88,
-      apply: (el, url) => { el.style.backgroundImage = `url('${url}')`; } },
+    { key:'img-hero-1', maxW:1600, maxH:1200, quality:.82, apply:()=>{} },
+    { key:'img-hero-2', maxW:1600, maxH:1200, quality:.82, apply:()=>{} },
+    { key:'img-hero-3', maxW:1600, maxH:1200, quality:.82, apply:()=>{} },
+    { key:'img-hero-4', maxW:1600, maxH:1200, quality:.82, apply:()=>{} },
+    { key:'img-hero-5', maxW:1600, maxH:1200, quality:.82, apply:()=>{} },
     { key:'img-venue',     maxW:900,  maxH:1125, quality:.88,
       apply: (el, url) => { el.style.backgroundImage = `url('${url}')`; } },
     { key:'img-story-1',   maxW:900,  maxH:1200, quality:.85,
@@ -1163,8 +1184,9 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   document.getElementById('admin-login-btn').addEventListener('click', tryLogin);
   pwInput.addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
 
-  // ---- Compress image via canvas ----
-  function compressImage(file, maxW, maxH, quality){
+  // ---- Compress image — auto-reduces quality until under 900KB ----
+  const FIRESTORE_LIMIT = 900 * 1024; // 900KB safe limit (Firestore max is 1MB)
+  async function compressImage(file, maxW, maxH, quality){
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onerror = reject;
@@ -1172,14 +1194,28 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         const img = new Image();
         img.onerror = reject;
         img.onload = () => {
-          let w = img.naturalWidth, h = img.naturalHeight;
-          const ratio = Math.min(maxW/w, maxH/h, 1);
-          w = Math.round(w * ratio); h = Math.round(h * ratio);
-          const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
-          resolve(canvas.toDataURL('image/jpeg', quality));
+          const tryCompress = (q) => {
+            let w = img.naturalWidth, h = img.naturalHeight;
+            const ratio = Math.min(maxW/w, maxH/h, 1);
+            w = Math.round(w * ratio); h = Math.round(h * ratio);
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            const result = canvas.toDataURL('image/jpeg', q);
+            const bytes = Math.round(result.length * 0.75);
+            if(bytes > FIRESTORE_LIMIT && q > 0.3){
+              // Too large — retry at lower quality
+              return tryCompress(Math.round((q - 0.1) * 10) / 10);
+            }
+            if(bytes > FIRESTORE_LIMIT){
+              // Still too large — halve dimensions and retry
+              maxW = Math.round(maxW * 0.6);
+              maxH = Math.round(maxH * 0.6);
+              return tryCompress(0.7);
+            }
+            resolve(result);
+          };
+          tryCompress(quality);
         };
         img.src = e.target.result;
       };
@@ -1188,6 +1224,79 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   }
 
   // ---- Apply image data to DOM ----
+  // ---- Slideshow state ----
+  let heroImages = {}; // key → dataUrl
+  let slideshowTimer = null;
+  let currentSlide = 0;
+
+  function updateSlideshow(){
+    const urls = [1,2,3,4,5]
+      .map(i => heroImages[`img-hero-${i}`])
+      .filter(Boolean);
+    if(!urls.length) return;
+
+    const slides = document.getElementById('heroSlides');
+    const dotsEl = document.getElementById('heroDots');
+    const allSlides = slides.querySelectorAll('.hero-slide');
+
+    // Set backgrounds
+    urls.forEach((url, i) => {
+      allSlides[i].style.backgroundImage = `url('${url}')`;
+    });
+    // Hide unused slides
+    for(let i = urls.length; i < 5; i++){
+      allSlides[i].style.backgroundImage = '';
+      allSlides[i].classList.remove('active');
+    }
+
+    slides.classList.add('has-images');
+
+    // Switch hero text to ivory
+    const q = s => document.querySelector(s);
+    const qa = s => document.querySelectorAll(s);
+    if(q('.hero-names h1'))   q('.hero-names h1').style.color   = 'var(--ivory)';
+    if(q('.hero-names .amp')) q('.hero-names .amp').style.color = 'var(--rose)';
+    if(q('.hero-date'))       q('.hero-date').style.color       = 'rgba(247,242,234,.92)';
+    if(q('.hero-place'))      q('.hero-place').style.color      = 'rgba(247,242,234,.72)';
+    if(q('.hero .eyebrow'))   q('.hero .eyebrow').style.color   = 'rgba(247,242,234,.8)';
+    if(q('.scroll-cue'))      q('.scroll-cue').style.color      = 'rgba(247,242,234,.55)';
+    qa('.count .num').forEach(el => el.style.color = 'var(--ivory)');
+    qa('.count .lbl').forEach(el => el.style.color = 'rgba(247,242,234,.65)');
+    const btn = q('.hero .btn');
+    if(btn){ btn.style.borderColor='rgba(247,242,234,.7)'; btn.style.color='var(--ivory)'; }
+
+    // Dots
+    if(urls.length > 1){
+      dotsEl.innerHTML = urls.map((_,i) =>
+        `<button class="hero-dot${i===0?' active':''}" data-idx="${i}" aria-label="Slide ${i+1}"></button>`
+      ).join('');
+      dotsEl.classList.add('visible');
+      dotsEl.querySelectorAll('.hero-dot').forEach(dot => {
+        dot.addEventListener('click', () => goToSlide(parseInt(dot.dataset.idx)));
+      });
+    } else {
+      dotsEl.classList.remove('visible');
+    }
+
+    // Start/restart slideshow
+    if(slideshowTimer) clearInterval(slideshowTimer);
+    currentSlide = 0;
+    allSlides[0].classList.add('active');
+    if(urls.length > 1){
+      slideshowTimer = setInterval(() => goToSlide((currentSlide + 1) % urls.length), 5000);
+    }
+  }
+
+  function goToSlide(idx){
+    const slides = document.getElementById('heroSlides').querySelectorAll('.hero-slide');
+    const dots   = document.querySelectorAll('.hero-dot');
+    slides[currentSlide].classList.remove('active');
+    if(dots[currentSlide]) dots[currentSlide].classList.remove('active');
+    currentSlide = idx;
+    slides[currentSlide].classList.add('active');
+    if(dots[currentSlide]) dots[currentSlide].classList.add('active');
+  }
+
   function applyImage(key, dataUrl){
     const slot = IMAGE_SLOTS.find(s => s.key === key);
     if(!slot) return;
@@ -1195,27 +1304,9 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       document.body.style.backgroundImage = `url('${dataUrl}')`;
       return;
     }
-    if(key === 'img-hero'){
-      const hb = document.querySelector('.hero-bg');
-      if(!hb) return;
-      hb.style.backgroundImage = `url('${dataUrl}')`;
-      hb.style.backgroundSize = 'cover';
-      hb.style.backgroundPosition = 'center';
-      hb.classList.add('has-image');
-      // Switch hero text to ivory for readability over the dark overlay
-      const q = s => document.querySelector(s);
-      const qa = s => document.querySelectorAll(s);
-      if(q('.hero-names h1'))   q('.hero-names h1').style.color   = 'var(--ivory)';
-      if(q('.hero-names .amp')) q('.hero-names .amp').style.color = 'var(--rose)';
-      if(q('.hero-date'))       q('.hero-date').style.color       = 'rgba(247,242,234,.92)';
-      if(q('.hero-place'))      q('.hero-place').style.color      = 'rgba(247,242,234,.72)';
-      if(q('.hero .eyebrow'))   q('.hero .eyebrow').style.color   = 'rgba(247,242,234,.8)';
-      if(q('.scroll-cue'))      q('.scroll-cue').style.color      = 'rgba(247,242,234,.55)';
-      qa('.count .num').forEach(el => el.style.color = 'var(--ivory)');
-      qa('.count .lbl').forEach(el => el.style.color = 'rgba(247,242,234,.65)');
-      qa('.count div+div').forEach(el => el.style.setProperty('--divider-color','rgba(247,242,234,.25)'));
-      const btn = q('.hero .btn');
-      if(btn){ btn.style.borderColor='rgba(247,242,234,.7)'; btn.style.color='var(--ivory)'; }
+    if(key.startsWith('img-hero-')){
+      heroImages[key] = dataUrl;
+      updateSlideshow();
       return;
     }
     const el = document.querySelector(`[data-img-key="${key}"]`);
@@ -1391,36 +1482,90 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     bgInput.value = '';
   });
 
-  // ---- Hero image swap button ----
+  // ---- Hero slideshow upload ----
   const heroInput = document.createElement('input');
-  heroInput.type = 'file'; heroInput.accept = 'image/*'; heroInput.style.display = 'none';
+  heroInput.type = 'file'; heroInput.accept = 'image/*'; heroInput.multiple = true;
+  heroInput.style.display = 'none';
   document.body.appendChild(heroInput);
+
   document.getElementById('ab-hero').addEventListener('click', () => heroInput.click());
+
   heroInput.addEventListener('change', async () => {
-    const file = heroInput.files[0]; if(!file) return;
+    const files = Array.from(heroInput.files); if(!files.length) return;
     const heroBtn = document.getElementById('ab-hero');
-    heroBtn.textContent = 'Uploading…'; heroBtn.disabled = true;
-    setStatus('Compressing hero…');
-    try {
-      const dataUrl = await compressImage(file, 2400, 1600, .88);
-      const sizeKB = Math.round(dataUrl.length * .75 / 1024);
-      setStatus(`Saving (${sizeKB}KB)…`);
-      await initFirestore();
-      await fm.setDoc(fm.doc(db,'siteImages','img-hero'), {
-        dataUrl, updatedAt: new Date().toISOString()
-      });
-      applyImage('img-hero', dataUrl);
-      setStatus('Hero saved ✓');
-      setTimeout(()=>setStatus(''),3000);
-    } catch(e){
-      console.error('Hero upload failed:', e);
-      setStatus('Upload failed');
+    heroBtn.disabled = true;
+
+    for(let f = 0; f < files.length; f++){
+      const file = files[f];
+      // Find next available slot (or cycle from 1 if all full)
+      let slotNum = 1;
+      for(let i = 1; i <= 5; i++){
+        if(!heroImages[`img-hero-${i}`]){ slotNum = i; break; }
+        if(i === 5) slotNum = 1; // all full — overwrite from slot 1
+      }
+      const key = `img-hero-${slotNum}`;
+      heroBtn.textContent = `Uploading ${f+1}/${files.length}…`;
+      setStatus(`Compressing photo ${f+1}…`);
+      try {
+        const dataUrl = await compressImage(file, 1600, 1200, .82);
+        const sizeKB = Math.round(dataUrl.length * .75 / 1024);
+        setStatus(`Saving slot ${slotNum} (${sizeKB}KB)…`);
+        await initFirestore();
+        await fm.setDoc(fm.doc(db,'siteImages', key), {
+          dataUrl, updatedAt: new Date().toISOString()
+        });
+        const check = await fm.getDoc(fm.doc(db,'siteImages', key));
+        if(!check.exists() || !check.data().dataUrl) throw new Error('Save verification failed');
+        applyImage(key, dataUrl);
+        setStatus(`Photo ${f+1} saved ✓ (${sizeKB}KB)`);
+      } catch(e){
+        console.error(`Hero slot ${slotNum} failed:`, e);
+        setStatus(`Photo ${f+1} failed: ${e.message.slice(0,30)}`);
+      }
     }
+    setStatus(`${files.length} photo${files.length>1?'s':''} saved ✓`);
+    setTimeout(()=>setStatus(''),4000);
     heroBtn.textContent = '🖼 Hero'; heroBtn.disabled = false;
     heroInput.value = '';
   });
 
-  // ---- Dashboard ----
+  // ---- Clear all hero images ----
+  document.getElementById('ab-hero-clear').addEventListener('click', async () => {
+    if(!confirm('Remove all hero slideshow photos?')) return;
+    setStatus('Clearing…');
+    try {
+      await initFirestore();
+      for(let i = 1; i <= 5; i++){
+        await fm.deleteDoc(fm.doc(db,'siteImages',`img-hero-${i}`)).catch(()=>{});
+      }
+      heroImages = {};
+      if(slideshowTimer){ clearInterval(slideshowTimer); slideshowTimer = null; }
+      // Reset slides
+      document.querySelectorAll('.hero-slide').forEach((s,i) => {
+        s.style.backgroundImage='';
+        s.classList.toggle('active', i===0);
+      });
+      document.getElementById('heroSlides').classList.remove('has-images');
+      document.getElementById('heroDots').classList.remove('visible');
+      // Reset text colors
+      const q = s => document.querySelector(s);
+      const qa = s => document.querySelectorAll(s);
+      if(q('.hero-names h1'))   q('.hero-names h1').style.color   = '';
+      if(q('.hero-names .amp')) q('.hero-names .amp').style.color = '';
+      if(q('.hero-date'))       q('.hero-date').style.color       = '';
+      if(q('.hero-place'))      q('.hero-place').style.color      = '';
+      if(q('.hero .eyebrow'))   q('.hero .eyebrow').style.color   = '';
+      if(q('.scroll-cue'))      q('.scroll-cue').style.color      = '';
+      qa('.count .num').forEach(el => el.style.color = '');
+      qa('.count .lbl').forEach(el => el.style.color = '');
+      const btn = q('.hero .btn');
+      if(btn){ btn.style.borderColor=''; btn.style.color=''; }
+      setStatus('Hero cleared ✓');
+      setTimeout(()=>setStatus(''),3000);
+    } catch(e){
+      setStatus('Clear failed'); console.error(e);
+    }
+  });
   document.getElementById('ab-dashboard').addEventListener('click', async () => {
     document.getElementById('dashboard-modal').classList.add('visible');
     document.getElementById('dash-table-wrap').innerHTML = '<div class="am2-empty">Loading…</div>';

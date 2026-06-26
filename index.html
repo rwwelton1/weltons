@@ -936,6 +936,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   </div>
   <div class="ab-btns">
     <span id="ab-status"></span>
+    <button class="ab-btn" id="ab-bg">📷 Background</button>
     <button class="ab-btn" id="ab-discard">Discard</button>
     <button class="ab-btn" id="ab-save">Save Changes</button>
   </div>
@@ -949,6 +950,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   // ---- Image slot definitions ----
   // key → how to apply the image to the DOM element
   const IMAGE_SLOTS = [
+    { key:'img-background', maxW:2400, maxH:1600, quality:.88,
+      apply: (el, url) => { document.body.style.backgroundImage = `url('${url}')`; } },
     { key:'img-hero',      maxW:2400, maxH:1600, quality:.88,
       apply: (el, url) => { el.style.backgroundImage = `url('${url}')`; } },
     { key:'img-venue',     maxW:900,  maxH:1125, quality:.88,
@@ -1078,7 +1081,12 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   // ---- Apply image data to DOM ----
   function applyImage(key, dataUrl){
     const slot = IMAGE_SLOTS.find(s => s.key === key);
-    const el   = document.querySelector(`[data-img-key="${key}"]`);
+    if(!slot) return;
+    if(key === 'img-background'){
+      document.body.style.backgroundImage = `url('${dataUrl}')`;
+      return;
+    }
+    const el = document.querySelector(`[data-img-key="${key}"]`);
     if(slot && el) slot.apply(el, dataUrl);
   }
 
@@ -1162,13 +1170,11 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       btn.className = 'img-upload-btn';
       btn.innerHTML = `<span class="iub-icon">📷</span><span class="iub-label">Tap to change</span><span class="iub-prog">Uploading…</span>`;
 
-      // Hidden file input
+      // Hidden file input — no capture attribute so iPhone opens photo library
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
       input.className = 'img-file-input';
-      // This triggers iPhone photo picker
-      input.setAttribute('capture', 'environment');
 
       btn.addEventListener('click', e => { e.stopPropagation(); input.click(); });
 
@@ -1224,6 +1230,37 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     saveBtn.textContent = 'Save Changes';
   });
 
+  // ---- Background swap button ----
+  const bgInput = document.createElement('input');
+  bgInput.type = 'file'; bgInput.accept = 'image/*'; bgInput.style.display = 'none';
+  document.body.appendChild(bgInput);
+  document.getElementById('ab-bg').addEventListener('click', () => bgInput.click());
+  bgInput.addEventListener('change', async () => {
+    const file = bgInput.files[0]; if(!file) return;
+    const bgBtn = document.getElementById('ab-bg');
+    bgBtn.textContent = 'Uploading…'; bgBtn.disabled = true;
+    setStatus('Compressing background…');
+    try {
+      const slot = IMAGE_SLOTS.find(s => s.key === 'img-background');
+      const dataUrl = await compressImage(file, slot.maxW, slot.maxH, slot.quality);
+      const sizeKB = Math.round(dataUrl.length * .75 / 1024);
+      setStatus(`Saving (${sizeKB}KB)…`);
+      await initFirestore();
+      await fm.setDoc(fm.doc(db,'siteImages','img-background'), {
+        dataUrl, updatedAt: new Date().toISOString()
+      });
+      document.body.style.backgroundImage = `url('${dataUrl}')`;
+      setStatus('Background saved ✓');
+      setTimeout(()=>setStatus(''),3000);
+    } catch(e){
+      console.error('Background upload failed:', e);
+      setStatus('Upload failed');
+    }
+    bgBtn.textContent = '📷 Background'; bgBtn.disabled = false;
+    bgInput.value = '';
+  });
+
+  // ---- Discard text changes ----
   discardBtn.addEventListener('click', () => {
     if(!Object.keys(dirty).length) return;
     if(!confirm('Discard all unsaved text changes?')) return;

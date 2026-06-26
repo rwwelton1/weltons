@@ -151,38 +151,38 @@ nav.scrolled{background:rgba(247,242,234,.88);backdrop-filter:blur(14px);box-sha
 }
 .hero-dot.active{background:rgba(247,242,234,.9);transform:scale(1.3)}
 
-/* Hero — split layout: top text, open center, bottom text */
+/* Hero — full screen, top and bottom blocks pinned absolutely */
 .hero{
   min-height:100svh;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:space-between;
-  text-align:center;position:relative;
-  padding:0;overflow:hidden;
+  display:block;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
 }
 
 /* Hero content hidden until first image loads */
 .hero-content{
   opacity:0;transition:opacity .8s ease;
   position:relative;z-index:2;
-  width:100%;
-  display:flex;flex-direction:column;align-items:center;
+  width:100%;height:100svh;
 }
 #hero.has-images .hero-content{opacity:1}
 #hero.no-images .hero-content{opacity:1}
 
-/* TOP BLOCK — names, pushed to upper third */
+/* TOP BLOCK — pinned to top */
 .hero-top{
-  padding:clamp(90px,14vh,130px) 32px clamp(20px,4vh,36px);
-  width:100%;display:flex;flex-direction:column;align-items:center;
+  position:absolute;
+  top:0;left:0;right:0;
+  padding:clamp(72px,12vh,110px) 32px 32px;
+  display:flex;flex-direction:column;align-items:center;
 }
 
-/* SPACER — the open center where faces live */
-.hero-spacer{flex:1;min-height:clamp(60px,18vh,140px)}
-
-/* BOTTOM BLOCK — date, countdown, RSVP */
+/* BOTTOM BLOCK — pinned to bottom */
 .hero-bottom{
-  padding:clamp(16px,3vh,28px) 32px clamp(60px,10vh,90px);
-  width:100%;display:flex;flex-direction:column;align-items:center;gap:20px;
+  position:absolute;
+  bottom:0;left:0;right:0;
+  padding:24px 32px clamp(60px,10vh,90px);
+  display:flex;flex-direction:column;align-items:center;gap:16px;
 }
 
 .hero .eyebrow{margin-bottom:18px;color:var(--sage-deep);position:relative;z-index:1}
@@ -202,7 +202,7 @@ nav.scrolled{background:rgba(247,242,234,.88);backdrop-filter:blur(14px);box-sha
 #hero.has-images .btn{border-color:rgba(247,242,234,.75);color:var(--ivory)}
 #hero.has-images .btn:hover{background:var(--ivory);color:var(--ink)}
 .hero-names .amp{display:block;font-style:italic;font-size:clamp(2.2rem,7vw,4.4rem);color:var(--rose-ink);margin:.02em 0;font-weight:400}
-.hero-meta{margin-top:34px;display:flex;flex-direction:column;gap:8px;align-items:center;position:relative;z-index:1}
+.hero-meta{display:flex;flex-direction:column;gap:6px;align-items:center;position:relative;z-index:1}
 .hero-date{font-family:var(--serif);font-size:clamp(1.05rem,2.4vw,1.4rem);font-style:italic;color:var(--ink)}
 .hero-place{font-size:.78rem;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-soft)}
 .count{margin-top:40px;display:flex;gap:0;position:relative;z-index:1}
@@ -210,7 +210,7 @@ nav.scrolled{background:rgba(247,242,234,.88);backdrop-filter:blur(14px);box-sha
 .count div+div::before{content:"";position:absolute;left:0;top:8px;bottom:14px;width:1px;background:var(--line)}
 .count .num{font-family:var(--serif);font-size:1.8rem;font-style:italic;font-variant-numeric:tabular-nums;color:var(--ink)}
 .count .lbl{font-size:.58rem;letter-spacing:.24em;text-transform:uppercase;color:var(--sage-deep);margin-top:4px}
-.hero .btn{margin-top:42px;position:relative;z-index:1}
+.hero .btn{position:relative;z-index:1}
 .scroll-cue{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-soft);animation:float 2.6s 2s ease-in-out infinite;z-index:1}
 @keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
 @keyframes float{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
@@ -497,17 +497,24 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   </div>
   <div class="hero-dots" id="heroDots" aria-hidden="true"></div>
   <div class="hero-content">
-  <p class="eyebrow" aria-hidden="false">Together with their families</p>
-  <div class="hero-names">
-    <h1>Grayson<span class="amp" aria-hidden="true">&amp;</span><span class="sr-only"> and </span>Ryan</h1>
-  </div>
-  <div class="hero-meta">
-    <p class="hero-date">Saturday, the third of April, 2027</p>
-    <p class="hero-place">Tate House · Tate, Georgia</p>
-  </div>
-  <div class="count" id="count" aria-hidden="true"></div>
-  <a href="#rsvp" class="btn">RSVP</a>
-  <span class="scroll-cue" aria-hidden="true">Scroll</span>
+    <!-- TOP: names float in the upper dark band -->
+    <div class="hero-top">
+      <p class="eyebrow">Together with their families</p>
+      <div class="hero-names">
+        <h1>Grayson<span class="amp" aria-hidden="true">&amp;</span><span class="sr-only"> and </span>Ryan</h1>
+      </div>
+    </div>
+
+    <!-- BOTTOM: date, countdown, RSVP pinned to lower dark band -->
+    <div class="hero-bottom">
+      <div class="hero-meta">
+        <p class="hero-date">Saturday, the third of April, 2027</p>
+        <p class="hero-place">Tate House · Tate, Georgia</p>
+      </div>
+      <div class="count" id="count" aria-hidden="true"></div>
+      <a href="#rsvp" class="btn">RSVP</a>
+    </div>
+    <span class="scroll-cue" aria-hidden="true" style="position:absolute;bottom:22px;left:50%;transform:translateX(-50%)">Scroll</span>
   </div>
 </header>
 

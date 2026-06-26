@@ -1258,34 +1258,39 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   // ---- Hero slideshow — loads from static files in /images/hero/ ----
   // To add/change photos: commit files named hero-1.jpg through hero-5.jpg
   // to the /images/hero/ folder in your GitHub repo. Vercel deploys automatically.
-  const HERO_PATHS = [
-    'images/hero/hero-1.jpg',
-    'images/hero/hero-2.jpg',
-    'images/hero/hero-3.jpg',
-    'images/hero/hero-4.jpg',
-    'images/hero/hero-5.jpg',
-  ];
+  const HERO_SLOTS = 5;
+  const HERO_BASE  = 'images/hero/hero-';
 
   function initHeroSlideshow(){
-    let loaded = [];
-    let pending = HERO_PATHS.length;
+    let loaded = 0;
 
-    HERO_PATHS.forEach((path, i) => {
-      const img = new Image();
-      img.onload  = () => { loaded.push({ i, path }); check(); };
-      img.onerror = () => { pending--; check(); }; // file doesn't exist — skip
-      img.src = path;
-    });
+    function tryLoad(i){
+      if(i > HERO_SLOTS){ startSlideshow(); return; }
+      // Try .JPG first, then .jpg
+      const exts = ['.JPG', '.jpg', '.jpeg', '.JPEG'];
+      let extIdx = 0;
 
-    function check(){
-      pending--;
-      if(pending > 0) return;
-      // Sort by original index so order matches filenames
-      loaded.sort((a,b) => a.i - b.i);
-      if(!loaded.length) return; // no hero images committed yet
-      loaded.forEach(({i, path}) => { heroImages[`img-hero-${i+1}`] = path; });
+      function nextExt(){
+        if(extIdx >= exts.length){ tryLoad(i + 1); return; } // no extension worked
+        const path = HERO_BASE + i + exts[extIdx++];
+        const img = new Image();
+        img.onload  = () => {
+          heroImages[`img-hero-${i}`] = path;
+          loaded++;
+          tryLoad(i + 1);
+        };
+        img.onerror = nextExt;
+        img.src = path;
+      }
+      nextExt();
+    }
+
+    function startSlideshow(){
+      if(!loaded) return; // no images found
       updateSlideshow();
     }
+
+    tryLoad(1);
   }
 
   // ---- Slideshow state ----

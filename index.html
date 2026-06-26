@@ -1097,13 +1097,13 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   // ---- Image slot definitions ----
   // key → how to apply the image to the DOM element
   const IMAGE_SLOTS = [
-    { key:'img-background', maxW:1400, maxH:1000, quality:.75,
+    { key:'img-background', maxW:900, maxH:650, quality:.65,
       apply: (el, url) => { document.body.style.backgroundImage = `url('${url}')`; } },
-    { key:'img-hero-1', maxW:1600, maxH:1200, quality:.82, apply:()=>{} },
-    { key:'img-hero-2', maxW:1600, maxH:1200, quality:.82, apply:()=>{} },
-    { key:'img-hero-3', maxW:1600, maxH:1200, quality:.82, apply:()=>{} },
-    { key:'img-hero-4', maxW:1600, maxH:1200, quality:.82, apply:()=>{} },
-    { key:'img-hero-5', maxW:1600, maxH:1200, quality:.82, apply:()=>{} },
+    { key:'img-hero-1', maxW:900, maxH:700, quality:.65, apply:()=>{} },
+    { key:'img-hero-2', maxW:900, maxH:700, quality:.65, apply:()=>{} },
+    { key:'img-hero-3', maxW:900, maxH:700, quality:.65, apply:()=>{} },
+    { key:'img-hero-4', maxW:900, maxH:700, quality:.65, apply:()=>{} },
+    { key:'img-hero-5', maxW:900, maxH:700, quality:.65, apply:()=>{} },
     { key:'img-venue',     maxW:900,  maxH:1125, quality:.88,
       apply: (el, url) => { el.style.backgroundImage = `url('${url}')`; } },
     { key:'img-story-1',   maxW:900,  maxH:1200, quality:.85,
@@ -1147,9 +1147,54 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   // We build this dynamically from the DOM so no manual list needed
   function buildEditableMap(){
     const map = [];
+    const seen = new Set();
+
+    // 1. Explicitly keyed elements (data-editable-key)
     document.querySelectorAll('[data-editable-key]').forEach(el => {
-      map.push({ el, key: el.getAttribute('data-editable-key') });
+      const key = el.getAttribute('data-editable-key');
+      if(!seen.has(el)){ map.push({el, key}); seen.add(el); }
     });
+
+    // 2. Auto-discover all remaining text content across every section
+    // Selectors → auto-generated keys based on section + tag + index
+    const AUTO_SECTIONS = [
+      '#story', '#schedule', '#wedding-party',
+      '#venue', '#travel', '#faq', '#registry', '#rsvp', 'footer'
+    ];
+    const EDITABLE_TAGS = ['h1','h2','h3','h4','p','li','blockquote','figcaption'];
+    const SKIP = [
+      '.eyebrow',        // already keyed
+      '.sec-num',        // roman numerals — decorative
+      '.img-placeholder',// placeholder labels
+      '.gph',            // gallery placeholders
+      'nav', '.navlinks', // navigation — excluded by request
+      '.rsvp-intro', '.found', // RSVP UI text
+      '#thanksTitle', '#thanksMsg',
+      'script', 'style',
+    ];
+
+    AUTO_SECTIONS.forEach(secSel => {
+      const sec = document.querySelector(secSel);
+      if(!sec) return;
+      const secId = secSel.replace(/[#.]/g,'');
+
+      EDITABLE_TAGS.forEach(tag => {
+        sec.querySelectorAll(tag).forEach((el, idx) => {
+          if(seen.has(el)) return;
+          // Skip if matches any exclusion selector
+          if(SKIP.some(s => el.matches(s) || el.closest(s))) return;
+          // Skip empty or purely-icon text
+          if(!el.textContent.trim()) return;
+          // Skip elements that are parents of other editable elements (avoid double-wrapping)
+          if(EDITABLE_TAGS.some(t => t!==tag && el.querySelector(t))) return;
+
+          const key = `auto-${secId}-${tag}-${idx}`;
+          map.push({el, key});
+          seen.add(el);
+        });
+      });
+    });
+
     return map;
   }
 
@@ -1184,8 +1229,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   document.getElementById('admin-login-btn').addEventListener('click', tryLogin);
   pwInput.addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
 
-  // ---- Compress image — auto-reduces quality until under 900KB ----
-  const FIRESTORE_LIMIT = 900 * 1024; // 900KB safe limit (Firestore max is 1MB)
+  const FIRESTORE_LIMIT = 700 * 1024; // 700KB — safe margin under Firestore's 1MB doc limit
   async function compressImage(file, maxW, maxH, quality){
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -1194,28 +1238,23 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         const img = new Image();
         img.onerror = reject;
         img.onload = () => {
-          const tryCompress = (q) => {
-            let w = img.naturalWidth, h = img.naturalHeight;
-            const ratio = Math.min(maxW/w, maxH/h, 1);
-            w = Math.round(w * ratio); h = Math.round(h * ratio);
+          const attempt = (w, h, q) => {
+            const ratio = Math.min(w/img.naturalWidth, h/img.naturalHeight, 1);
+            const cw = Math.round(img.naturalWidth  * ratio);
+            const ch = Math.round(img.naturalHeight * ratio);
             const canvas = document.createElement('canvas');
-            canvas.width = w; canvas.height = h;
-            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            canvas.width = cw; canvas.height = ch;
+            canvas.getContext('2d').drawImage(img, 0, 0, cw, ch);
             const result = canvas.toDataURL('image/jpeg', q);
-            const bytes = Math.round(result.length * 0.75);
-            if(bytes > FIRESTORE_LIMIT && q > 0.3){
-              // Too large — retry at lower quality
-              return tryCompress(Math.round((q - 0.1) * 10) / 10);
-            }
+            const bytes  = Math.round(result.length * 0.75);
             if(bytes > FIRESTORE_LIMIT){
-              // Still too large — halve dimensions and retry
-              maxW = Math.round(maxW * 0.6);
-              maxH = Math.round(maxH * 0.6);
-              return tryCompress(0.7);
+              if(q > 0.3) return attempt(w, h, Math.round((q - 0.1) * 10) / 10);
+              // Still too big — shrink dimensions by 30% and retry
+              return attempt(Math.round(w * 0.7), Math.round(h * 0.7), 0.6);
             }
             resolve(result);
           };
-          tryCompress(quality);
+          attempt(maxW, maxH, quality);
         };
         img.src = e.target.result;
       };
@@ -1313,11 +1352,13 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     if(el) slot.apply(el, dataUrl);
   }
 
-  // ---- Init Firestore ----
-  async function initFirestore(){
+  // ---- Init Firebase (Firestore + Storage) ----
+  let storage, sm; // sm = storage module
+  async function initFirebase(){
     if(db) return;
     const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
     fm = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    sm = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js');
     const app = initializeApp({
       apiKey:"AIzaSyAnoerW4ZRNT-g5J4WIotApJEFYobkTRpk",
       authDomain:"theweltons.firebaseapp.com",
@@ -1325,8 +1366,27 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       storageBucket:"theweltons.firebasestorage.app",
       messagingSenderId:"787343913156",
       appId:"1:787343913156:web:c9e56c10ef14b316f3d991"
-    }, 'admin-app-v2');
-    db = fm.getFirestore(app);
+    }, 'admin-app-v3');
+    db      = fm.getFirestore(app);
+    storage = sm.getStorage(app);
+  }
+  // Keep initFirestore as alias so existing calls work
+  const initFirestore = initFirebase;
+
+  // ---- Save image to Firestore (base64) ----
+  async function saveImage(key, dataUrl){
+    await initFirestore();
+    const bytes = Math.round(dataUrl.length * 0.75);
+    const kb = Math.round(bytes / 1024);
+    if(bytes > 950 * 1024) throw new Error(`Image too large after compression (${kb}KB). Try a different photo.`);
+    console.log(`Saving ${key}: ${kb}KB`);
+    await fm.setDoc(fm.doc(db,'siteImages', key), {
+      dataUrl, updatedAt: new Date().toISOString()
+    });
+    // Verify write succeeded
+    const check = await fm.getDoc(fm.doc(db,'siteImages', key));
+    if(!check.exists()) throw new Error('Firestore write not confirmed');
+    return kb;
   }
 
   // ---- Load all saved content (text + images) ----
@@ -1343,13 +1403,21 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     // Links
     const linkSnap = await fm.getDoc(fm.doc(db,'siteLinks','main'));
     if(linkSnap.exists()) applyLinks(linkSnap.data());
-    // Images
-    for(const slot of IMAGE_SLOTS){
+    // Images — load all in parallel
+    const imageKeys = [
+      'img-background',
+      'img-hero-1','img-hero-2','img-hero-3','img-hero-4','img-hero-5',
+      'img-venue',
+      'img-story-1','img-story-2','img-story-3',
+      'img-gallery-1','img-gallery-2','img-gallery-3',
+      'img-gallery-4','img-gallery-5','img-gallery-6','img-gallery-7',
+    ];
+    await Promise.all(imageKeys.map(async key => {
       try {
-        const snap = await fm.getDoc(fm.doc(db,'siteImages', slot.key));
-        if(snap.exists() && snap.data().dataUrl) applyImage(slot.key, snap.data().dataUrl);
+        const snap = await fm.getDoc(fm.doc(db,'siteImages', key));
+        if(snap.exists() && snap.data().dataUrl) applyImage(key, snap.data().dataUrl);
       } catch(e){}
-    }
+    }));
   }
 
   // ---- Activate admin ----
@@ -1401,26 +1469,19 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       btn.addEventListener('click', e => { e.stopPropagation(); input.click(); });
 
       input.addEventListener('change', async () => {
-        const file = input.files[0];
-        if(!file) return;
+        const file = input.files[0]; if(!file) return;
         btn.classList.add('uploading');
-        setStatus(`Compressing ${slot.key}…`);
+        setStatus('Compressing…');
         try {
           const dataUrl = await compressImage(file, slot.maxW, slot.maxH, slot.quality);
-          const sizeKB  = Math.round(dataUrl.length * .75 / 1024);
-          setStatus(`Saving (${sizeKB}KB)…`);
-          // Save to its own Firestore doc
-          await initFirestore();
-          await fm.setDoc(fm.doc(db,'siteImages', slot.key), {
-            dataUrl,
-            updatedAt: new Date().toISOString()
-          });
+          setStatus('Saving…');
+          const kb = await saveImage(slot.key, dataUrl);
           applyImage(slot.key, dataUrl);
-          setStatus('Image saved ✓');
+          setStatus(`Saved ✓ (${kb}KB)`);
           setTimeout(()=>setStatus(''),3000);
         } catch(err){
           console.error('Image upload failed:', err);
-          setStatus('Upload failed — check console');
+          setStatus('Failed: ' + err.message.slice(0,50));
         }
         btn.classList.remove('uploading');
         input.value = '';
@@ -1461,22 +1522,18 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const file = bgInput.files[0]; if(!file) return;
     const bgBtn = document.getElementById('ab-bg');
     bgBtn.textContent = 'Uploading…'; bgBtn.disabled = true;
-    setStatus('Compressing background…');
+    setStatus('Compressing…');
     try {
       const slot = IMAGE_SLOTS.find(s => s.key === 'img-background');
       const dataUrl = await compressImage(file, slot.maxW, slot.maxH, slot.quality);
-      const sizeKB = Math.round(dataUrl.length * .75 / 1024);
-      setStatus(`Saving (${sizeKB}KB)…`);
-      await initFirestore();
-      await fm.setDoc(fm.doc(db,'siteImages','img-background'), {
-        dataUrl, updatedAt: new Date().toISOString()
-      });
+      setStatus('Saving…');
+      const kb = await saveImage('img-background', dataUrl);
       document.body.style.backgroundImage = `url('${dataUrl}')`;
-      setStatus('Background saved ✓');
+      setStatus(`Background saved ✓ (${kb}KB)`);
       setTimeout(()=>setStatus(''),3000);
     } catch(e){
-      console.error('Background upload failed:', e);
-      setStatus('Upload failed');
+      console.error('BG upload failed:', e);
+      setStatus('Failed: ' + e.message.slice(0,50));
     }
     bgBtn.textContent = '📷 BG'; bgBtn.disabled = false;
     bgInput.value = '';
@@ -1507,20 +1564,14 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       heroBtn.textContent = `Uploading ${f+1}/${files.length}…`;
       setStatus(`Compressing photo ${f+1}…`);
       try {
-        const dataUrl = await compressImage(file, 1600, 1200, .82);
-        const sizeKB = Math.round(dataUrl.length * .75 / 1024);
-        setStatus(`Saving slot ${slotNum} (${sizeKB}KB)…`);
-        await initFirestore();
-        await fm.setDoc(fm.doc(db,'siteImages', key), {
-          dataUrl, updatedAt: new Date().toISOString()
-        });
-        const check = await fm.getDoc(fm.doc(db,'siteImages', key));
-        if(!check.exists() || !check.data().dataUrl) throw new Error('Save verification failed');
+        const dataUrl = await compressImage(file, 900, 700, .65);
+        setStatus(`Saving photo ${f+1}…`);
+        const kb = await saveImage(key, dataUrl);
         applyImage(key, dataUrl);
-        setStatus(`Photo ${f+1} saved ✓ (${sizeKB}KB)`);
+        setStatus(`Photo ${f+1} saved ✓ (${kb}KB)`);
       } catch(e){
         console.error(`Hero slot ${slotNum} failed:`, e);
-        setStatus(`Photo ${f+1} failed: ${e.message.slice(0,30)}`);
+        setStatus(`Photo ${f+1} failed: ${e.message.slice(0,40)}`);
       }
     }
     setStatus(`${files.length} photo${files.length>1?'s':''} saved ✓`);

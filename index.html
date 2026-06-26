@@ -83,7 +83,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:500;o
 .skip:focus{top:0}
 
 /* ---- NAV ---- */
-nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:20px 32px;transition:background .4s,box-shadow .4s,padding .4s}
+nav{position:fixed;top:0;left:0;right:0;z-index:9000;display:flex;align-items:center;justify-content:space-between;padding:20px 32px;transition:background .4s,box-shadow .4s,padding .4s;isolation:isolate}
 nav.scrolled{background:rgba(247,242,234,.88);backdrop-filter:blur(14px);box-shadow:0 1px 0 var(--line);padding:13px 32px}
 .monogram{font-family:var(--serif);font-style:italic;font-size:1.4rem;letter-spacing:.03em;text-decoration:none}
 .navlinks{display:flex;gap:28px;list-style:none}
@@ -99,13 +99,15 @@ nav.scrolled{background:rgba(247,242,234,.88);backdrop-filter:blur(14px);box-sha
     flex-direction:column;justify-content:center;align-items:center;gap:30px;
     transform:translateX(100%);
     transition:transform .5s cubic-bezier(.7,0,.2,1);
-    z-index:9100;visibility:hidden;
-    isolation:isolate; /* prevents body background bleeding through */
+    z-index:100; /* sits above grain (z-index:500 removed by nav isolation) within nav stacking context */
+    visibility:hidden;
+    /* belt-and-suspenders: block grain/body bg bleed-through */
+    isolation:isolate;
     -webkit-transform:translateX(100%);
   }
   .navlinks.open{transform:translateX(0);-webkit-transform:translateX(0);visibility:visible}
   .navlinks a{font-size:1.05rem}
-  .menu-btn{display:flex;z-index:9200}
+  .menu-btn{display:flex;z-index:200} /* above navlinks within nav context */
   .menu-btn.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
   .menu-btn.open span:nth-child(2){opacity:0}
   .menu-btn.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
@@ -818,13 +820,26 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
   // ---- Mobile menu ----
   const mb = document.getElementById('menuBtn'), nl = document.getElementById('navlinks');
+  let _scrollY = 0;
   function openMenu(open){
     mb.classList.toggle('open', open);
     nl.classList.toggle('open', open);
     mb.setAttribute('aria-expanded', open);
     mb.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-    // Lock body scroll while menu is open
-    document.body.style.overflow = open ? 'hidden' : '';
+    // Lock body scroll while menu is open (save/restore position for iOS)
+    if(open){
+      _scrollY = window.scrollY;
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${_scrollY}px`;
+      document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo(0, _scrollY);
+    }
   }
   mb.addEventListener('click', () => openMenu(!nl.classList.contains('open')));
   nl.querySelectorAll('a').forEach(a => a.addEventListener('click', () => openMenu(false)));

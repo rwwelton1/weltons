@@ -90,8 +90,8 @@ nav.scrolled{background:rgba(247,242,234,.88);backdrop-filter:blur(14px);box-sha
 .menu-btn{display:none;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;z-index:201;padding:4px}
 .menu-btn span{width:24px;height:1.5px;background:var(--ink);display:block;transition:.3s}
 @media(max-width:880px){
-  .navlinks{position:fixed;inset:0;background:var(--ivory);flex-direction:column;justify-content:center;align-items:center;gap:30px;transform:translateX(100%);transition:transform .5s cubic-bezier(.7,0,.2,1);z-index:200}
-  .navlinks.open{transform:none}.navlinks a{font-size:1.05rem}
+  .navlinks{position:fixed;inset:0;background:var(--ivory);flex-direction:column;justify-content:center;align-items:center;gap:30px;transform:translateX(100%);transition:transform .5s cubic-bezier(.7,0,.2,1);z-index:200;visibility:hidden}
+  .navlinks.open{transform:none;visibility:visible}.navlinks a{font-size:1.05rem}
   .menu-btn{display:flex}
   .menu-btn.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
   .menu-btn.open span:nth-child(2){opacity:0}
@@ -345,7 +345,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
 <!-- HERO -->
 <header class="hero" id="hero" tabindex="-1">
-  <div class="hero-bg" role="img" aria-label="Tate House exterior"></div>
+  <div class="hero-bg" role="img" aria-label="Tate House exterior" data-img-key="img-hero"></div>
   <p class="eyebrow" aria-hidden="false">Together with their families</p>
   <div class="hero-names">
     <h1>Grayson<span class="amp" aria-hidden="true">&amp;</span><span class="sr-only"> and </span>Ryan</h1>
@@ -373,20 +373,17 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       <p>From Atlanta to the mountains of North Georgia, from a Thursday afternoon at the track to a spring morning in Smyrna — this day has been a long time coming.</p>
     </div>
     <div class="story-grid reveal">
-      <!-- STORY SLOT 1 — replace src with your image path (e.g. images/story-keeneland.jpg) -->
-      <div class="story-img">
+      <div class="story-img" data-img-key="img-story-1">
         <img src="images/story-keeneland.jpg" alt="Grayson and Ryan at Keeneland Race Track" loading="lazy"
              onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
         <div class="img-placeholder" style="display:none"><span>Story Image 1 · Keeneland</span></div>
       </div>
-      <!-- STORY SLOT 2 — replace src (e.g. images/story-engagement.jpg) -->
-      <div class="story-img">
+      <div class="story-img" data-img-key="img-story-2">
         <img src="images/story-engagement.jpg" alt="Grayson and Ryan engagement photo" loading="lazy"
              onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
         <div class="img-placeholder" style="display:none"><span>Story Image 2 · Engagement</span></div>
       </div>
-      <!-- STORY SLOT 3 — replace src (e.g. images/story-together.jpg) -->
-      <div class="story-img">
+      <div class="story-img" data-img-key="img-story-3">
         <img src="images/story-together.jpg" alt="Grayson and Ryan together" loading="lazy"
              onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
         <div class="img-placeholder" style="display:none"><span>Story Image 3 · Together</span></div>
@@ -465,7 +462,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   <div class="wrap">
     <div class="venue-grid reveal">
       <!-- VENUE SLOT — image set via --img-venue CSS variable at top of file -->
-      <div class="venue-photo" role="img" aria-label="Tate House, the pink marble estate in Tate, Georgia">
+      <div class="venue-photo" role="img" aria-label="Tate House, the pink marble estate in Tate, Georgia" data-img-key="img-venue">
         <span class="venue-caption">Tate House · Tate, Georgia</span>
       </div>
       <div class="venue-copy">
@@ -485,40 +482,13 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 <!-- GALLERY -->
 <section id="gallery" aria-label="Photo gallery">
   <div class="gallery-track">
-    <!--
-      GALLERY SLOTS — for each item below, add:
-        style="background-image:url('images/gallery-1.jpg')"
-      Replace the placeholder label text once images are added.
-      Recommended sizes noted per slot.
-    -->
-    <!-- GALLERY SLOT 1 — landscape, 1200×900px -->
-    <div class="gallery-item" role="img" aria-label="Gallery photo 1" style="">
-      <span class="gph">Photo 1</span>
-    </div>
-    <!-- GALLERY SLOT 2 — portrait, 600×800px -->
-    <div class="gallery-item" role="img" aria-label="Gallery photo 2" style="">
-      <span class="gph">Photo 2</span>
-    </div>
-    <!-- GALLERY SLOT 3 — portrait, 600×800px -->
-    <div class="gallery-item" role="img" aria-label="Gallery photo 3" style="">
-      <span class="gph">Photo 3</span>
-    </div>
-    <!-- GALLERY SLOT 4 — landscape, 1200×900px -->
-    <div class="gallery-item" role="img" aria-label="Gallery photo 4" style="">
-      <span class="gph">Photo 4</span>
-    </div>
-    <!-- GALLERY SLOT 5 — wide landscape, 1600×900px -->
-    <div class="gallery-item" role="img" aria-label="Gallery photo 5" style="">
-      <span class="gph">Photo 5</span>
-    </div>
-    <!-- GALLERY SLOT 6 — portrait, 600×800px -->
-    <div class="gallery-item" role="img" aria-label="Gallery photo 6" style="">
-      <span class="gph">Photo 6</span>
-    </div>
-    <!-- GALLERY SLOT 7 — portrait, 600×800px -->
-    <div class="gallery-item" role="img" aria-label="Gallery photo 7" style="">
-      <span class="gph">Photo 7</span>
-    </div>
+    <div class="gallery-item" role="img" aria-label="Gallery photo 1" data-img-key="img-gallery-1"><span class="gph">Photo 1</span></div>
+    <div class="gallery-item" role="img" aria-label="Gallery photo 2" data-img-key="img-gallery-2"><span class="gph">Photo 2</span></div>
+    <div class="gallery-item" role="img" aria-label="Gallery photo 3" data-img-key="img-gallery-3"><span class="gph">Photo 3</span></div>
+    <div class="gallery-item" role="img" aria-label="Gallery photo 4" data-img-key="img-gallery-4"><span class="gph">Photo 4</span></div>
+    <div class="gallery-item" role="img" aria-label="Gallery photo 5" data-img-key="img-gallery-5"><span class="gph">Photo 5</span></div>
+    <div class="gallery-item" role="img" aria-label="Gallery photo 6" data-img-key="img-gallery-6"><span class="gph">Photo 6</span></div>
+    <div class="gallery-item" role="img" aria-label="Gallery photo 7" data-img-key="img-gallery-7"><span class="gph">Photo 7</span></div>
   </div>
 </section>
 
@@ -678,6 +648,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     nl.classList.toggle('open', open);
     mb.setAttribute('aria-expanded', open);
     mb.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    // Lock body scroll while menu is open
+    document.body.style.overflow = open ? 'hidden' : '';
   }
   mb.addEventListener('click', () => openMenu(!nl.classList.contains('open')));
   nl.querySelectorAll('a').forEach(a => a.addEventListener('click', () => openMenu(false)));
@@ -842,6 +814,460 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   } catch(e) {
     console.warn('Firebase unavailable (likely local preview):', e.message);
   }
+</script>
+<!-- ============================================================
+     ADMIN MODE
+     Access: add ?admin to the URL → theweltons.org?admin
+     Password protected. Edits save to Firestore collection "siteContent".
+     Guests never see the admin UI.
+     ============================================================ -->
+<style>
+  /* Admin bar */
+  #admin-bar{
+    position:fixed;bottom:0;left:0;right:0;z-index:9000;
+    background:var(--ink);color:var(--ivory);
+    display:none;align-items:center;justify-content:space-between;
+    padding:12px 20px;gap:12px;font-family:var(--sans);font-size:.78rem;
+    box-shadow:0 -2px 20px rgba(0,0,0,.35);
+  }
+  #admin-bar.visible{display:flex}
+  #admin-bar .ab-left{display:flex;align-items:center;gap:10px}
+  #admin-bar .ab-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0}
+  #admin-bar .ab-label{letter-spacing:.12em;text-transform:uppercase;font-size:.66rem;opacity:.75}
+  #admin-bar .ab-btns{display:flex;gap:8px}
+  .ab-btn{padding:8px 18px;border-radius:30px;border:none;cursor:pointer;font-family:var(--sans);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;transition:.25s}
+  #ab-save{background:var(--sage);color:var(--ivory)}
+  #ab-save:hover{background:var(--sage-deep)}
+  #ab-save:disabled{opacity:.5;cursor:default}
+  #ab-discard{background:transparent;color:rgba(247,242,234,.6);border:1px solid rgba(247,242,234,.2)}
+  #ab-discard:hover{color:var(--ivory);border-color:rgba(247,242,234,.5)}
+  #ab-exit{background:transparent;color:rgba(247,242,234,.5);border:none;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;padding:4px 8px}
+  #ab-exit:hover{color:var(--ivory)}
+  #ab-status{font-size:.7rem;opacity:.6;min-width:80px;text-align:right}
+
+  /* Editable elements in admin mode */
+  body.admin-mode [data-editable]{
+    outline:1.5px dashed rgba(126,139,109,.5);
+    border-radius:3px;cursor:text;
+    transition:outline .2s,background .2s;
+    position:relative;
+  }
+  body.admin-mode [data-editable]:hover{
+    outline:1.5px solid var(--sage);
+    background:rgba(126,139,109,.07);
+  }
+  body.admin-mode [data-editable]:focus{
+    outline:2px solid var(--sage-deep);
+    background:rgba(126,139,109,.1);
+  }
+  body.admin-mode [data-editable][data-dirty]{
+    outline-color:var(--gold);
+  }
+
+  /* Image upload buttons in admin mode */
+  body.admin-mode [data-img-key]{
+    position:relative;
+  }
+  body.admin-mode [data-img-key] .img-upload-btn{
+    display:flex;
+  }
+  .img-upload-btn{
+    display:none;
+    position:absolute;inset:0;z-index:10;
+    align-items:center;justify-content:center;
+    background:rgba(40,35,31,.45);
+    cursor:pointer;
+    flex-direction:column;gap:8px;
+    transition:background .25s;
+  }
+  .img-upload-btn:hover{background:rgba(40,35,31,.6)}
+  .img-upload-btn .iub-icon{font-size:1.8rem;line-height:1}
+  .img-upload-btn .iub-label{
+    font-family:var(--sans);font-size:.62rem;letter-spacing:.2em;
+    text-transform:uppercase;color:rgba(247,242,234,.9);
+  }
+  .img-upload-btn .iub-prog{
+    font-family:var(--sans);font-size:.7rem;color:rgba(247,242,234,.8);
+    display:none;
+  }
+  .img-upload-btn.uploading .iub-icon,.img-upload-btn.uploading .iub-label{display:none}
+  .img-upload-btn.uploading .iub-prog{display:block}
+  /* hidden file input */
+  .img-file-input{display:none!important}
+  #admin-modal{
+    position:fixed;inset:0;z-index:9999;
+    background:rgba(40,35,31,.7);backdrop-filter:blur(6px);
+    display:none;align-items:center;justify-content:center;
+  }
+  #admin-modal.visible{display:flex}
+  .am-box{
+    background:var(--ivory);border-radius:10px;padding:40px 36px;
+    max-width:360px;width:90%;text-align:center;
+    box-shadow:0 24px 60px rgba(40,35,31,.4);
+  }
+  .am-box h3{font-family:var(--serif);font-style:italic;font-size:1.6rem;margin-bottom:6px}
+  .am-box p{font-size:.85rem;color:var(--ink-soft);margin-bottom:22px}
+  .am-box input{
+    width:100%;padding:13px 16px;border:1px solid var(--line);border-radius:6px;
+    font-family:var(--sans);font-size:1rem;color:var(--ink);background:var(--ivory);
+    margin-bottom:12px;letter-spacing:.12em;text-align:center;
+  }
+  .am-box input:focus{outline:2px solid var(--sage);border-color:var(--sage)}
+  .am-box .am-err{font-size:.78rem;color:var(--rose-ink);min-height:18px;margin-bottom:8px}
+  .am-box .btn{width:100%}
+</style>
+
+<!-- Password modal -->
+<div id="admin-modal" role="dialog" aria-modal="true" aria-label="Admin login">
+  <div class="am-box">
+    <h3>Admin</h3>
+    <p>Enter the admin password to edit site content.</p>
+    <input type="password" id="admin-pw" placeholder="Password" autocomplete="current-password">
+    <div class="am-err" id="admin-err" aria-live="polite"></div>
+    <button class="btn" id="admin-login-btn">Enter</button>
+  </div>
+</div>
+
+<!-- Admin bar -->
+<div id="admin-bar" role="toolbar" aria-label="Admin controls">
+  <div class="ab-left">
+    <span class="ab-dot"></span>
+    <span class="ab-label">Admin Mode — click any text to edit</span>
+  </div>
+  <div class="ab-btns">
+    <span id="ab-status"></span>
+    <button class="ab-btn" id="ab-discard">Discard</button>
+    <button class="ab-btn" id="ab-save">Save Changes</button>
+  </div>
+  <button id="ab-exit">Exit</button>
+</div>
+
+<script type="module">
+(function(){
+  const ADMIN_PASSWORD = 'welton2027';
+
+  // ---- Image slot definitions ----
+  // key → how to apply the image to the DOM element
+  const IMAGE_SLOTS = [
+    { key:'img-hero',      maxW:2400, maxH:1600, quality:.88,
+      apply: (el, url) => { el.style.backgroundImage = `url('${url}')`; } },
+    { key:'img-venue',     maxW:900,  maxH:1125, quality:.88,
+      apply: (el, url) => { el.style.backgroundImage = `url('${url}')`; } },
+    { key:'img-story-1',   maxW:900,  maxH:1200, quality:.85,
+      apply: (el, url) => {
+        let img = el.querySelector('img');
+        if(!img){ img = document.createElement('img'); img.alt='Story photo 1'; el.prepend(img); }
+        img.src = url; img.style.display='block';
+        const ph = el.querySelector('.img-placeholder'); if(ph) ph.style.display='none';
+      }},
+    { key:'img-story-2',   maxW:900,  maxH:900,  quality:.85,
+      apply: (el, url) => {
+        let img = el.querySelector('img');
+        if(!img){ img = document.createElement('img'); img.alt='Story photo 2'; el.prepend(img); }
+        img.src = url; img.style.display='block';
+        const ph = el.querySelector('.img-placeholder'); if(ph) ph.style.display='none';
+      }},
+    { key:'img-story-3',   maxW:900,  maxH:1200, quality:.85,
+      apply: (el, url) => {
+        let img = el.querySelector('img');
+        if(!img){ img = document.createElement('img'); img.alt='Story photo 3'; el.prepend(img); }
+        img.src = url; img.style.display='block';
+        const ph = el.querySelector('.img-placeholder'); if(ph) ph.style.display='none';
+      }},
+    { key:'img-gallery-1', maxW:1200, maxH:900,  quality:.82,
+      apply: (el, url) => { el.style.backgroundImage=`url('${url}')`; el.querySelector('.gph').style.display='none'; }},
+    { key:'img-gallery-2', maxW:800,  maxH:1000, quality:.82,
+      apply: (el, url) => { el.style.backgroundImage=`url('${url}')`; el.querySelector('.gph').style.display='none'; }},
+    { key:'img-gallery-3', maxW:800,  maxH:1000, quality:.82,
+      apply: (el, url) => { el.style.backgroundImage=`url('${url}')`; el.querySelector('.gph').style.display='none'; }},
+    { key:'img-gallery-4', maxW:1200, maxH:900,  quality:.82,
+      apply: (el, url) => { el.style.backgroundImage=`url('${url}')`; el.querySelector('.gph').style.display='none'; }},
+    { key:'img-gallery-5', maxW:1600, maxH:900,  quality:.82,
+      apply: (el, url) => { el.style.backgroundImage=`url('${url}')`; el.querySelector('.gph').style.display='none'; }},
+    { key:'img-gallery-6', maxW:800,  maxH:1000, quality:.82,
+      apply: (el, url) => { el.style.backgroundImage=`url('${url}')`; el.querySelector('.gph').style.display='none'; }},
+    { key:'img-gallery-7', maxW:800,  maxH:1000, quality:.82,
+      apply: (el, url) => { el.style.backgroundImage=`url('${url}')`; el.querySelector('.gph').style.display='none'; }},
+  ];
+
+  // ---- Text editable map ----
+  const EDITABLE_MAP = [
+    { sel:'.hero .eyebrow',              key:'hero-eyebrow'  },
+    { sel:'.hero-date',                  key:'hero-date'     },
+    { sel:'.hero-place',                 key:'hero-place'    },
+    { sel:'.story-intro .pull',          key:'story-pull'    },
+    { sel:'.story-intro p:last-child',   key:'story-body'    },
+    { sel:'.story-caption p:nth-child(1)', key:'caption-1'   },
+    { sel:'.story-caption p:nth-child(2)', key:'caption-2'   },
+    { sel:'.story-caption p:nth-child(3)', key:'caption-3'   },
+    { sel:'.sched-row:nth-child(1) h3',    key:'sched-1-title'},
+    { sel:'.sched-row:nth-child(1) .note', key:'sched-1-note' },
+    { sel:'.sched-row:nth-child(2) h3',    key:'sched-2-title'},
+    { sel:'.sched-row:nth-child(2) .note', key:'sched-2-note' },
+    { sel:'.sched-row:nth-child(3) h3',    key:'sched-3-title'},
+    { sel:'.sched-row:nth-child(3) .note', key:'sched-3-note' },
+    { sel:'.sched-row:nth-child(4) h3',    key:'sched-4-title'},
+    { sel:'.sched-row:nth-child(4) .note', key:'sched-4-note' },
+    { sel:'.venue-copy .lead',             key:'venue-lead'   },
+    { sel:'.venue-copy p:nth-child(5)',    key:'venue-body-1' },
+    { sel:'.venue-copy p:nth-child(6)',    key:'venue-body-2' },
+    { sel:'.travel-intro',                 key:'travel-intro' },
+    { sel:'.shuttle',                      key:'shuttle-note' },
+    { sel:'.registry-shell p',             key:'registry-note'},
+    { sel:'.reg-card .s',                  key:'registry-date'},
+    { sel:'footer .fd',                    key:'footer-date'  },
+    { sel:'footer .fn',                    key:'footer-note'  },
+  ];
+
+  // ---- State ----
+  let adminActive = false;
+  let dirty = {}, savedContent = {};
+  let db, fm;
+
+  const modal      = document.getElementById('admin-modal');
+  const bar        = document.getElementById('admin-bar');
+  const pwInput    = document.getElementById('admin-pw');
+  const errEl      = document.getElementById('admin-err');
+  const saveBtn    = document.getElementById('ab-save');
+  const discardBtn = document.getElementById('ab-discard');
+  const exitBtn    = document.getElementById('ab-exit');
+  const statusEl   = document.getElementById('ab-status');
+
+  if(location.search.includes('admin')){
+    modal.classList.add('visible');
+    setTimeout(() => pwInput.focus(), 100);
+  }
+
+  function tryLogin(){
+    if(pwInput.value === ADMIN_PASSWORD){
+      modal.classList.remove('visible');
+      errEl.textContent = '';
+      activateAdmin();
+    } else {
+      errEl.textContent = 'Incorrect password.';
+      pwInput.value = ''; pwInput.focus();
+    }
+  }
+  document.getElementById('admin-login-btn').addEventListener('click', tryLogin);
+  pwInput.addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
+
+  // ---- Compress image via canvas ----
+  function compressImage(file, maxW, maxH, quality){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = e => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          let w = img.naturalWidth, h = img.naturalHeight;
+          const ratio = Math.min(maxW/w, maxH/h, 1);
+          w = Math.round(w * ratio); h = Math.round(h * ratio);
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ---- Apply image data to DOM ----
+  function applyImage(key, dataUrl){
+    const slot = IMAGE_SLOTS.find(s => s.key === key);
+    const el   = document.querySelector(`[data-img-key="${key}"]`);
+    if(slot && el) slot.apply(el, dataUrl);
+  }
+
+  // ---- Init Firestore ----
+  async function initFirestore(){
+    if(db) return;
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    fm = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const app = initializeApp({
+      apiKey:"AIzaSyAnoerW4ZRNT-g5J4WIotApJEFYobkTRpk",
+      authDomain:"theweltons.firebaseapp.com",
+      projectId:"theweltons",
+      storageBucket:"theweltons.firebasestorage.app",
+      messagingSenderId:"787343913156",
+      appId:"1:787343913156:web:c9e56c10ef14b316f3d991"
+    }, 'admin-app-v2');
+    db = fm.getFirestore(app);
+  }
+
+  // ---- Load all saved content (text + images) ----
+  async function loadContent(){
+    await initFirestore();
+    // Text content
+    const textSnap = await fm.getDoc(fm.doc(db,'siteContent','main'));
+    if(textSnap.exists()){
+      savedContent = textSnap.data();
+      EDITABLE_MAP.forEach(({sel,key}) => {
+        if(savedContent[key]){ const el=document.querySelector(sel); if(el) el.innerHTML=savedContent[key]; }
+      });
+    }
+    // Images — stored in separate docs to stay under 1MB limit per doc
+    for(const slot of IMAGE_SLOTS){
+      try {
+        const snap = await fm.getDoc(fm.doc(db,'siteImages', slot.key));
+        if(snap.exists() && snap.data().dataUrl){
+          applyImage(slot.key, snap.data().dataUrl);
+        }
+      } catch(e){ /* image not yet uploaded */ }
+    }
+  }
+
+  // ---- Activate admin ----
+  async function activateAdmin(){
+    adminActive = true;
+    document.body.classList.add('admin-mode');
+    bar.classList.add('visible');
+    saveBtn.disabled = true;
+
+    try {
+      await loadContent();
+      setStatus('Ready');
+      setTimeout(()=>setStatus(''),2000);
+    } catch(e){
+      console.warn('Admin: Firestore unavailable:', e.message);
+      setStatus('Offline');
+    }
+
+    // ---- Text editables ----
+    EDITABLE_MAP.forEach(({sel,key}) => {
+      const el = document.querySelector(sel);
+      if(!el) return;
+      el.setAttribute('contenteditable','true');
+      el.setAttribute('data-editable', key);
+      el.setAttribute('spellcheck','true');
+      el.addEventListener('input', () => {
+        dirty[key] = el.innerHTML;
+        el.setAttribute('data-dirty','');
+        saveBtn.disabled = false;
+        setStatus('Unsaved changes');
+      });
+      el.addEventListener('keydown', e => { if(e.key==='Enter') e.preventDefault(); });
+    });
+
+    // ---- Image upload buttons ----
+    IMAGE_SLOTS.forEach(slot => {
+      const el = document.querySelector(`[data-img-key="${slot.key}"]`);
+      if(!el) return;
+
+      // Create overlay button
+      const btn = document.createElement('div');
+      btn.className = 'img-upload-btn';
+      btn.innerHTML = `<span class="iub-icon">📷</span><span class="iub-label">Tap to change</span><span class="iub-prog">Uploading…</span>`;
+
+      // Hidden file input
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.className = 'img-file-input';
+      // This triggers iPhone photo picker
+      input.setAttribute('capture', 'environment');
+
+      btn.addEventListener('click', e => { e.stopPropagation(); input.click(); });
+
+      input.addEventListener('change', async () => {
+        const file = input.files[0];
+        if(!file) return;
+        btn.classList.add('uploading');
+        setStatus(`Compressing ${slot.key}…`);
+        try {
+          const dataUrl = await compressImage(file, slot.maxW, slot.maxH, slot.quality);
+          const sizeKB  = Math.round(dataUrl.length * .75 / 1024);
+          setStatus(`Saving (${sizeKB}KB)…`);
+          // Save to its own Firestore doc
+          await initFirestore();
+          await fm.setDoc(fm.doc(db,'siteImages', slot.key), {
+            dataUrl,
+            updatedAt: new Date().toISOString()
+          });
+          applyImage(slot.key, dataUrl);
+          setStatus('Image saved ✓');
+          setTimeout(()=>setStatus(''),3000);
+        } catch(err){
+          console.error('Image upload failed:', err);
+          setStatus('Upload failed — check console');
+        }
+        btn.classList.remove('uploading');
+        input.value = '';
+      });
+
+      el.appendChild(btn);
+      el.appendChild(input);
+    });
+  }
+
+  // ---- Save text changes ----
+  saveBtn.addEventListener('click', async () => {
+    if(!Object.keys(dirty).length) return;
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
+    setStatus('Saving…');
+    try {
+      await initFirestore();
+      const merged = {...savedContent,...dirty};
+      await fm.setDoc(fm.doc(db,'siteContent','main'), merged);
+      savedContent = merged; dirty = {};
+      document.querySelectorAll('[data-dirty]').forEach(el=>el.removeAttribute('data-dirty'));
+      setStatus('Saved ✓');
+      setTimeout(()=>setStatus(''),3000);
+    } catch(e){
+      console.error('Save failed:',e);
+      setStatus('Save failed');
+    }
+    saveBtn.textContent = 'Save Changes';
+  });
+
+  discardBtn.addEventListener('click', () => {
+    if(!Object.keys(dirty).length) return;
+    if(!confirm('Discard all unsaved text changes?')) return;
+    EDITABLE_MAP.forEach(({sel,key}) => {
+      const el = document.querySelector(sel);
+      if(!el) return;
+      if(savedContent[key]) el.innerHTML = savedContent[key];
+      el.removeAttribute('data-dirty');
+    });
+    dirty = {}; saveBtn.disabled = true;
+    setStatus('Discarded'); setTimeout(()=>setStatus(''),2000);
+  });
+
+  exitBtn.addEventListener('click', () => {
+    if(Object.keys(dirty).length && !confirm('Unsaved changes. Exit anyway?')) return;
+    adminActive = false;
+    document.body.classList.remove('admin-mode');
+    bar.classList.remove('visible');
+    // Remove upload buttons
+    document.querySelectorAll('.img-upload-btn,.img-file-input').forEach(el=>el.remove());
+    EDITABLE_MAP.forEach(({sel}) => {
+      const el = document.querySelector(sel);
+      if(!el) return;
+      el.removeAttribute('contenteditable');
+      el.removeAttribute('data-editable');
+      el.removeAttribute('data-dirty');
+    });
+    const url = new URL(location.href);
+    url.searchParams.delete('admin');
+    history.replaceState({},'',(url.pathname));
+  });
+
+  function setStatus(msg){ statusEl.textContent = msg; }
+
+  // ---- Load published content for all visitors ----
+  if(!location.search.includes('admin')){
+    (async()=>{
+      try {
+        await initFirestore();
+        await loadContent();
+      } catch(e){ /* silent */ }
+    })();
+  }
+})();
 </script>
 </body>
 </html>

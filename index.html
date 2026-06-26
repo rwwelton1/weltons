@@ -1373,11 +1373,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       document.body.style.backgroundImage = `url('${dataUrl}')`;
       return;
     }
-    if(key.startsWith('img-hero-')){
-      heroImages[key] = dataUrl;
-      updateSlideshow();
-      return;
-    }
+    // img-hero-* are served from GitHub — never overwrite from Firestore
+    if(key.startsWith('img-hero-')) return;
     const el = document.querySelector(`[data-img-key="${key}"]`);
     if(el) slot.apply(el, dataUrl);
   }
@@ -1707,19 +1704,19 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   function setStatus(msg){ statusEl.textContent = msg; }
 
   // ---- Load published content for all visitors ----
-  // Hero slideshow always loads from static files
-  initHeroSlideshow();
-
   if(!location.search.includes('admin')){
     (async()=>{
       try {
         await initFirestore();
         await loadContent();
-        // Load links
         const lsnap = await fm.getDoc(fm.doc(db,'siteLinks','main'));
         if(lsnap.exists()) applyLinks(lsnap.data());
       } catch(e){ /* silent */ }
+      // Hero always loads from GitHub — runs after Firestore so it always wins
+      initHeroSlideshow();
     })();
+  } else {
+    initHeroSlideshow();
   }
 })();
 </script>

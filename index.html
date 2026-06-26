@@ -93,9 +93,9 @@ nav.scrolled{background:rgba(247,242,234,.88);backdrop-filter:blur(14px);box-sha
 .menu-btn{display:none;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;z-index:201;padding:4px}
 .menu-btn span{width:24px;height:1.5px;background:var(--ink);display:block;transition:.3s}
 @media(max-width:880px){
-  .navlinks{position:fixed;inset:0;background:var(--ivory);flex-direction:column;justify-content:center;align-items:center;gap:30px;transform:translateX(100%);transition:transform .5s cubic-bezier(.7,0,.2,1);z-index:200;visibility:hidden}
+  .navlinks{position:fixed;inset:0;background:var(--ivory);flex-direction:column;justify-content:center;align-items:center;gap:30px;transform:translateX(100%);transition:transform .5s cubic-bezier(.7,0,.2,1);z-index:9100;visibility:hidden}
   .navlinks.open{transform:none;visibility:visible}.navlinks a{font-size:1.05rem}
-  .menu-btn{display:flex}
+  .menu-btn{display:flex;z-index:9200}
   .menu-btn.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
   .menu-btn.open span:nth-child(2){opacity:0}
   .menu-btn.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
@@ -106,10 +106,26 @@ nav.scrolled{background:rgba(247,242,234,.88);backdrop-filter:blur(14px);box-sha
 .hero-bg{
   position:absolute;inset:0;z-index:-1;
   background-color: var(--ivory);
-  background-image: linear-gradient(180deg, rgba(247,242,234,.35) 0%, rgba(238,228,215,.25) 50%, rgba(247,242,234,.98) 100%);
+  background-image: linear-gradient(180deg, rgba(247,242,234,.3) 0%, rgba(238,228,215,.2) 50%, rgba(247,242,234,.98) 100%);
 }
-.hero-bg::before{display:none}
-.hero-bg::after{content:"";position:absolute;left:0;right:0;bottom:0;height:200px;background:linear-gradient(to bottom,transparent,var(--ivory))}
+/* Dark overlay sits on top of the hero image for readability */
+.hero-bg::before{
+  content:"";position:absolute;inset:0;
+  background: linear-gradient(
+    180deg,
+    rgba(20,17,14,.15) 0%,
+    rgba(20,17,14,.45) 35%,
+    rgba(20,17,14,.55) 60%,
+    rgba(247,242,234,0) 100%
+  );
+  display:none; /* shown only when hero image is loaded via JS */
+}
+.hero-bg.has-image::before{display:block}
+.hero-bg.has-image{background-color:var(--ink)}
+/* When hero image is set, lighten the text */
+.hero-bg.has-image ~ * .hero-names h1,
+.hero-names.on-image h1{color:var(--ivory)}
+.hero-bg::after{content:"";position:absolute;left:0;right:0;bottom:0;height:220px;background:linear-gradient(to bottom,transparent,var(--ivory))}
 .hero .eyebrow{margin-bottom:34px;opacity:0;animation:rise .9s .2s forwards;color:var(--sage-deep);position:relative;z-index:1}
 .hero-names{position:relative;z-index:1;opacity:0;animation:rise 1.1s .4s forwards}
 .hero-names h1{font-size:clamp(3.6rem,15vw,10rem);font-weight:300;letter-spacing:-.015em;line-height:.92;color:var(--ink)}
@@ -1171,11 +1187,29 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     }
     if(key === 'img-hero'){
       const hb = document.querySelector('.hero-bg');
-      if(hb){ hb.style.backgroundImage=`url('${dataUrl}')`;hb.style.backgroundSize='cover';hb.style.backgroundPosition='center'; }
+      if(!hb) return;
+      hb.style.backgroundImage = `url('${dataUrl}')`;
+      hb.style.backgroundSize = 'cover';
+      hb.style.backgroundPosition = 'center';
+      hb.classList.add('has-image');
+      // Switch hero text to ivory for readability over the dark overlay
+      const q = s => document.querySelector(s);
+      const qa = s => document.querySelectorAll(s);
+      if(q('.hero-names h1'))   q('.hero-names h1').style.color   = 'var(--ivory)';
+      if(q('.hero-names .amp')) q('.hero-names .amp').style.color = 'var(--rose)';
+      if(q('.hero-date'))       q('.hero-date').style.color       = 'rgba(247,242,234,.92)';
+      if(q('.hero-place'))      q('.hero-place').style.color      = 'rgba(247,242,234,.72)';
+      if(q('.hero .eyebrow'))   q('.hero .eyebrow').style.color   = 'rgba(247,242,234,.8)';
+      if(q('.scroll-cue'))      q('.scroll-cue').style.color      = 'rgba(247,242,234,.55)';
+      qa('.count .num').forEach(el => el.style.color = 'var(--ivory)');
+      qa('.count .lbl').forEach(el => el.style.color = 'rgba(247,242,234,.65)');
+      qa('.count div+div').forEach(el => el.style.setProperty('--divider-color','rgba(247,242,234,.25)'));
+      const btn = q('.hero .btn');
+      if(btn){ btn.style.borderColor='rgba(247,242,234,.7)'; btn.style.color='var(--ivory)'; }
       return;
     }
     const el = document.querySelector(`[data-img-key="${key}"]`);
-    if(slot && el) slot.apply(el, dataUrl);
+    if(el) slot.apply(el, dataUrl);
   }
 
   // ---- Init Firestore ----

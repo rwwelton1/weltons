@@ -220,58 +220,64 @@ section{padding:120px 0;position:relative;z-index:2}
 
 /* ---- OUR STORY ---- */
 /* background now set above */
-.story-intro{max-width:780px;margin:0 auto 64px}
+.story-intro{max-width:680px;margin:0 auto 64px;text-align:center}
 
-/* Opening display quote — large, centered, italic serif */
-.story-intro p.pull{
+.story-prose{
   font-family:var(--serif);
-  font-size:clamp(1.45rem,3.2vw,2rem);
   font-style:italic;
   font-weight:300;
   color:var(--ink);
-  line-height:1.4;
   text-align:center;
-  margin-bottom:40px;
-  padding:0 10px;
+  line-height:1.55;
 }
 
-/* Thin rule between pull and body */
-.story-intro p.pull::after{
-  content:"";
+/* Opening — grand entrance */
+.story-prose .s-open{
   display:block;
-  width:40px;
-  height:1px;
-  background:var(--rose-deep);
-  margin:28px auto 0;
-}
-
-/* Body paragraphs — readable width, left-aligned, with indent rhythm */
-.story-intro p{
-  color:var(--ink-soft);
-  font-size:1.05rem;
-  line-height:1.85;
-  max-width:580px;
-  margin:0 auto 20px;
-  text-align:left;
-}
-
-/* First body paragraph gets a drop-style indent marker */
-.story-intro p.body-1{
-  padding-left:18px;
-  border-left:2px solid var(--rose);
-}
-
-/* Invitation line — centered, spaced out, treated as a closer */
-.story-intro p.invite{
-  font-family:var(--serif);
-  font-style:italic;
-  font-size:1.1rem;
+  font-size:clamp(1.6rem,4.5vw,2.4rem);
   color:var(--ink);
-  text-align:center;
-  margin-top:36px;
-  padding-top:32px;
-  border-top:1px solid var(--line);
-  max-width:580px;
+  margin-bottom:.5em;
+  letter-spacing:-.01em;
+}
+
+/* Middle — quieter, the meat of the story */
+.story-prose .s-mid{
+  display:block;
+  font-size:clamp(1.05rem,2.4vw,1.3rem);
+  color:var(--ink-soft);
+  margin-bottom:.6em;
+  max-width:560px;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+/* Pivot word — a single breath */
+.story-prose .s-pivot{
+  display:block;
+  font-size:clamp(1.25rem,3vw,1.65rem);
+  color:var(--rose-ink);
+  margin-bottom:.5em;
+  letter-spacing:.02em;
+}
+
+/* Closing — rising back up, the invitation */
+.story-prose .s-close{
+  display:block;
+  font-size:clamp(1.3rem,3.2vw,1.8rem);
+  color:var(--ink);
+  margin-top:.3em;
+  letter-spacing:-.005em;
+}
+
+.story-prose .s-date{
+  display:block;
+  font-family:var(--sans);
+  font-style:normal;
+  font-size:.72rem;
+  letter-spacing:.34em;
+  text-transform:uppercase;
+  color:var(--sage-deep);
+  margin-top:28px;
 }
 .story-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;max-width:var(--max);align-items:start}
 .story-img{border-radius:4px;overflow:hidden;position:relative}
@@ -493,9 +499,14 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       <h2 class="sec-title">Our <em>Story</em></h2>
     </div>
     <div class="story-intro reveal">
-      <p class="pull">The circumstances were, by all accounts, quite ordinary — a bustling day at the Keeneland racecourse, the air thick with anticipation.</p>
-      <p>Yet, as any observer of human nature might note, it is often in these unassuming moments that the most significant events are set in motion. Fate, that most elusive of conspirators, saw fit to weave two disparate threads together after being introduced by friends amidst the thundering hooves, joining our lives in a narrative that has led us here.</p>
-      <p>We are thrilled to invite you to the next chapter of our story. Please join us as we celebrate our marriage at the Tate House on 04.03.27.</p>
+      <p class="story-prose">
+        <span class="s-open">The circumstances were, by all accounts, quite ordinary —</span>
+        <span class="s-mid">a bustling day at the Keeneland racecourse, the air thick with anticipation. Yet, as any observer of human nature might note, it is often in these unassuming moments that the most significant events are set in motion.</span>
+        <span class="s-pivot">Fate, that most elusive of conspirators,</span>
+        <span class="s-mid">saw fit to weave two disparate threads together after being introduced by friends amidst the thundering hooves, joining our lives in a narrative that has led us here.</span>
+        <span class="s-close">We are thrilled to invite you to the next chapter of our story — please join us as we celebrate our marriage at the Tate House.</span>
+        <span class="s-date">April 3rd, 2027 · Tate, Georgia</span>
+      </p>
     </div>
     <div class="story-grid reveal">
       <div class="story-img" data-img-key="img-story-1">

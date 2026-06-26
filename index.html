@@ -93,8 +93,18 @@ nav.scrolled{background:rgba(247,242,234,.88);backdrop-filter:blur(14px);box-sha
 .menu-btn{display:none;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;z-index:201;padding:4px}
 .menu-btn span{width:24px;height:1.5px;background:var(--ink);display:block;transition:.3s}
 @media(max-width:880px){
-  .navlinks{position:fixed;inset:0;background:var(--ivory);flex-direction:column;justify-content:center;align-items:center;gap:30px;transform:translateX(100%);transition:transform .5s cubic-bezier(.7,0,.2,1);z-index:9100;visibility:hidden}
-  .navlinks.open{transform:none;visibility:visible}.navlinks a{font-size:1.05rem}
+  .navlinks{
+    position:fixed;inset:0;
+    background:#F7F2EA; /* solid hex — CSS vars can be transparent on iOS */
+    flex-direction:column;justify-content:center;align-items:center;gap:30px;
+    transform:translateX(100%);
+    transition:transform .5s cubic-bezier(.7,0,.2,1);
+    z-index:9100;visibility:hidden;
+    isolation:isolate; /* prevents body background bleeding through */
+    -webkit-transform:translateX(100%);
+  }
+  .navlinks.open{transform:translateX(0);-webkit-transform:translateX(0);visibility:visible}
+  .navlinks a{font-size:1.05rem}
   .menu-btn{display:flex;z-index:9200}
   .menu-btn.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
   .menu-btn.open span:nth-child(2){opacity:0}
@@ -1399,9 +1409,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       await fm.setDoc(fm.doc(db,'siteImages','img-hero'), {
         dataUrl, updatedAt: new Date().toISOString()
       });
-      document.querySelector('.hero-bg').style.backgroundImage = `url('${dataUrl}')`;
-      document.querySelector('.hero-bg').style.backgroundSize = 'cover';
-      document.querySelector('.hero-bg').style.backgroundPosition = 'center';
+      applyImage('img-hero', dataUrl);
       setStatus('Hero saved ✓');
       setTimeout(()=>setStatus(''),3000);
     } catch(e){

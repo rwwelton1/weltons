@@ -169,24 +169,45 @@ nav.scrolled{background:rgba(247,242,234,.88);backdrop-filter:blur(14px);box-sha
 #hero.has-images .hero-content{opacity:1}
 #hero.no-images .hero-content{opacity:1}
 
-/* TOP BLOCK — pinned to top */
+/* TOP BLOCK — pinned high */
 .hero-top{
   position:absolute;
   top:0;left:0;right:0;
-  padding:clamp(72px,12vh,110px) 32px 32px;
+  padding:clamp(72px,11vh,100px) 32px 20px;
   display:flex;flex-direction:column;align-items:center;
 }
 
-/* BOTTOM BLOCK — pinned to bottom */
+/* Frame rule — top edge of the open portrait zone */
+.hero-rule-top{
+  position:absolute;
+  left:10%;right:10%;
+  height:1px;
+  background:rgba(247,242,234,.55);
+  top:clamp(168px,30vh,220px);
+  z-index:3;
+}
+
+/* Frame rule — bottom edge of the open portrait zone */
+.hero-rule-bottom{
+  position:absolute;
+  left:10%;right:10%;
+  height:1px;
+  background:rgba(247,242,234,.55);
+  bottom:clamp(168px,30vh,220px);
+  z-index:3;
+}
+
+/* BOTTOM BLOCK — pinned low */
 .hero-bottom{
   position:absolute;
   bottom:0;left:0;right:0;
-  padding:24px 32px clamp(60px,10vh,90px);
-  display:flex;flex-direction:column;align-items:center;gap:16px;
+  padding:20px 32px clamp(56px,9vh,80px);
+  display:flex;flex-direction:column;align-items:center;gap:14px;
 }
 
-.hero .eyebrow{margin-bottom:18px;color:var(--sage-deep);position:relative;z-index:1}
+.hero .eyebrow{margin-bottom:10px;color:var(--sage-deep);position:relative;z-index:1}
 .hero-names{position:relative;z-index:1}
+.hero-names h1{font-size:clamp(2rem,8.5vw,5.5rem);font-weight:300;letter-spacing:-.01em;line-height:1;color:var(--ink);white-space:nowrap}
 .hero-slides.has-images ~ * h1{text-shadow:0 2px 20px rgba(20,17,14,.5)}
 
 /* When hero has images — all text switches to ivory */
@@ -201,7 +222,7 @@ nav.scrolled{background:rgba(247,242,234,.88);backdrop-filter:blur(14px);box-sha
 #hero.has-images .count div+div::before{background:rgba(247,242,234,.3)}
 #hero.has-images .btn{border-color:rgba(247,242,234,.75);color:var(--ivory)}
 #hero.has-images .btn:hover{background:var(--ivory);color:var(--ink)}
-.hero-names .amp{display:block;font-style:italic;font-size:clamp(2.2rem,7vw,4.4rem);color:var(--rose-ink);margin:.02em 0;font-weight:400}
+.hero-names .amp{display:inline;font-style:italic;font-size:.85em;color:var(--rose-ink);font-weight:400;margin:0 .08em}
 .hero-meta{display:flex;flex-direction:column;gap:6px;align-items:center;position:relative;z-index:1}
 .hero-date{font-family:var(--serif);font-size:clamp(1.05rem,2.4vw,1.4rem);font-style:italic;color:var(--ink)}
 .hero-place{font-size:.78rem;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-soft)}
@@ -497,11 +518,13 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   </div>
   <div class="hero-dots" id="heroDots" aria-hidden="true"></div>
   <div class="hero-content">
-    <!-- TOP: names float in the upper dark band -->
+    <div class="hero-rule-top" aria-hidden="true"></div>
+    <div class="hero-rule-bottom" aria-hidden="true"></div>
+    <!-- TOP: names -->
     <div class="hero-top">
       <p class="eyebrow">Together with their families</p>
       <div class="hero-names">
-        <h1>Grayson<span class="amp" aria-hidden="true">&amp;</span><span class="sr-only"> and </span>Ryan</h1>
+        <h1>Grayson <span class="amp" aria-hidden="true">&amp;</span><span class="sr-only"> and </span> Ryan</h1>
       </div>
     </div>
 

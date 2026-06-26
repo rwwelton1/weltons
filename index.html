@@ -889,13 +889,13 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   #ab-exit{background:transparent;color:rgba(247,242,234,.45);border:none;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:4px 6px;white-space:nowrap}
   #ab-exit:hover{color:var(--ivory)}
   #admin-bar .ab-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;width:100%}
-  #admin-bar .ab-btns2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;width:100%}
+  #admin-bar .ab-btns2{display:grid;grid-template-columns:1fr;gap:6px;width:100%}
   .ab-btn{padding:10px 8px;border-radius:30px;border:none;cursor:pointer;font-family:var(--sans);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;transition:.25s;white-space:nowrap;text-align:center}
   #ab-save{background:var(--sage);color:var(--ivory)}
   #ab-save:hover{background:var(--sage-deep)}
   #ab-save:disabled{opacity:.5;cursor:default}
-  #ab-bg,#ab-hero,#ab-links{background:rgba(247,242,234,.12);color:var(--ivory);border:1px solid rgba(247,242,234,.25)}
-  #ab-bg:hover,#ab-hero:hover,#ab-links:hover{background:rgba(247,242,234,.2)}
+  #ab-bg,#ab-links{background:rgba(247,242,234,.12);color:var(--ivory);border:1px solid rgba(247,242,234,.25)}
+  #ab-bg:hover,#ab-links:hover{background:rgba(247,242,234,.2)}
   #ab-dashboard{background:rgba(185,144,90,.25);color:var(--ivory);border:1px solid rgba(185,144,90,.4)}
   #ab-dashboard:hover{background:rgba(185,144,90,.4)}
 
@@ -1080,12 +1080,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   </div>
   <div class="ab-btns">
     <button class="ab-btn" id="ab-bg">📷 BG</button>
-    <button class="ab-btn" id="ab-hero">🖼 Add Hero</button>
-    <button class="ab-btn" id="ab-hero-clear">🗑 Clear Hero</button>
-  </div>
-  <div class="ab-btns2">
     <button class="ab-btn" id="ab-links">🔗 Links</button>
     <button class="ab-btn" id="ab-dashboard">📋 RSVPs</button>
+  </div>
+  <div class="ab-btns2">
     <button class="ab-btn" id="ab-save">Save Text</button>
   </div>
 </div>
@@ -1097,13 +1095,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   // ---- Image slot definitions ----
   // key → how to apply the image to the DOM element
   const IMAGE_SLOTS = [
-    { key:'img-background', maxW:900, maxH:650, quality:.65,
+    { key:'img-background', maxW:1400, maxH:1000, quality:.78,
       apply: (el, url) => { document.body.style.backgroundImage = `url('${url}')`; } },
-    { key:'img-hero-1', maxW:900, maxH:700, quality:.65, apply:()=>{} },
-    { key:'img-hero-2', maxW:900, maxH:700, quality:.65, apply:()=>{} },
-    { key:'img-hero-3', maxW:900, maxH:700, quality:.65, apply:()=>{} },
-    { key:'img-hero-4', maxW:900, maxH:700, quality:.65, apply:()=>{} },
-    { key:'img-hero-5', maxW:900, maxH:700, quality:.65, apply:()=>{} },
     { key:'img-venue',     maxW:900,  maxH:1125, quality:.88,
       apply: (el, url) => { el.style.backgroundImage = `url('${url}')`; } },
     { key:'img-story-1',   maxW:900,  maxH:1200, quality:.85,
@@ -1229,7 +1222,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   document.getElementById('admin-login-btn').addEventListener('click', tryLogin);
   pwInput.addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
 
-  const FIRESTORE_LIMIT = 700 * 1024; // 700KB — safe margin under Firestore's 1MB doc limit
+  const FIRESTORE_LIMIT = 850 * 1024; // 850KB — safe margin under Firestore's 1MB doc limit
   async function compressImage(file, maxW, maxH, quality){
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -1262,9 +1255,41 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     });
   }
 
-  // ---- Apply image data to DOM ----
+  // ---- Hero slideshow — loads from static files in /images/hero/ ----
+  // To add/change photos: commit files named hero-1.jpg through hero-5.jpg
+  // to the /images/hero/ folder in your GitHub repo. Vercel deploys automatically.
+  const HERO_PATHS = [
+    'images/hero/hero-1.jpg',
+    'images/hero/hero-2.jpg',
+    'images/hero/hero-3.jpg',
+    'images/hero/hero-4.jpg',
+    'images/hero/hero-5.jpg',
+  ];
+
+  function initHeroSlideshow(){
+    let loaded = [];
+    let pending = HERO_PATHS.length;
+
+    HERO_PATHS.forEach((path, i) => {
+      const img = new Image();
+      img.onload  = () => { loaded.push({ i, path }); check(); };
+      img.onerror = () => { pending--; check(); }; // file doesn't exist — skip
+      img.src = path;
+    });
+
+    function check(){
+      pending--;
+      if(pending > 0) return;
+      // Sort by original index so order matches filenames
+      loaded.sort((a,b) => a.i - b.i);
+      if(!loaded.length) return; // no hero images committed yet
+      loaded.forEach(({i, path}) => { heroImages[`img-hero-${i+1}`] = path; });
+      updateSlideshow();
+    }
+  }
+
   // ---- Slideshow state ----
-  let heroImages = {}; // key → dataUrl
+  let heroImages = {};
   let slideshowTimer = null;
   let currentSlide = 0;
 
@@ -1412,7 +1437,6 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     // Images — load all in parallel with individual error logging
     const imageKeys = [
       'img-background',
-      'img-hero-1','img-hero-2','img-hero-3','img-hero-4','img-hero-5',
       'img-venue',
       'img-story-1','img-story-2','img-story-3',
       'img-gallery-1','img-gallery-2','img-gallery-3',
@@ -1558,84 +1582,6 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     bgInput.value = '';
   });
 
-  // ---- Hero slideshow upload ----
-  const heroInput = document.createElement('input');
-  heroInput.type = 'file'; heroInput.accept = 'image/*'; heroInput.multiple = true;
-  heroInput.style.display = 'none';
-  document.body.appendChild(heroInput);
-
-  document.getElementById('ab-hero').addEventListener('click', () => heroInput.click());
-
-  heroInput.addEventListener('change', async () => {
-    const files = Array.from(heroInput.files); if(!files.length) return;
-    const heroBtn = document.getElementById('ab-hero');
-    heroBtn.disabled = true;
-
-    for(let f = 0; f < files.length; f++){
-      const file = files[f];
-      // Find next available slot (or cycle from 1 if all full)
-      let slotNum = 1;
-      for(let i = 1; i <= 5; i++){
-        if(!heroImages[`img-hero-${i}`]){ slotNum = i; break; }
-        if(i === 5) slotNum = 1; // all full — overwrite from slot 1
-      }
-      const key = `img-hero-${slotNum}`;
-      heroBtn.textContent = `Uploading ${f+1}/${files.length}…`;
-      setStatus(`Compressing photo ${f+1}…`);
-      try {
-        const dataUrl = await compressImage(file, 900, 700, .65);
-        setStatus(`Saving photo ${f+1}…`);
-        const kb = await saveImage(key, dataUrl);
-        applyImage(key, dataUrl);
-        setStatus(`Photo ${f+1} saved ✓ (${kb}KB)`);
-      } catch(e){
-        console.error(`Hero slot ${slotNum} failed:`, e);
-        setStatus(`Photo ${f+1} failed: ${e.message.slice(0,40)}`);
-      }
-    }
-    setStatus(`${files.length} photo${files.length>1?'s':''} saved ✓`);
-    setTimeout(()=>setStatus(''),4000);
-    heroBtn.textContent = '🖼 Hero'; heroBtn.disabled = false;
-    heroInput.value = '';
-  });
-
-  // ---- Clear all hero images ----
-  document.getElementById('ab-hero-clear').addEventListener('click', async () => {
-    if(!confirm('Remove all hero slideshow photos?')) return;
-    setStatus('Clearing…');
-    try {
-      await initFirestore();
-      for(let i = 1; i <= 5; i++){
-        await fm.deleteDoc(fm.doc(db,'siteImages',`img-hero-${i}`)).catch(()=>{});
-      }
-      heroImages = {};
-      if(slideshowTimer){ clearInterval(slideshowTimer); slideshowTimer = null; }
-      // Reset slides
-      document.querySelectorAll('.hero-slide').forEach((s,i) => {
-        s.style.backgroundImage='';
-        s.classList.toggle('active', i===0);
-      });
-      document.getElementById('heroSlides').classList.remove('has-images');
-      document.getElementById('heroDots').classList.remove('visible');
-      // Reset text colors
-      const q = s => document.querySelector(s);
-      const qa = s => document.querySelectorAll(s);
-      if(q('.hero-names h1'))   q('.hero-names h1').style.color   = '';
-      if(q('.hero-names .amp')) q('.hero-names .amp').style.color = '';
-      if(q('.hero-date'))       q('.hero-date').style.color       = '';
-      if(q('.hero-place'))      q('.hero-place').style.color      = '';
-      if(q('.hero .eyebrow'))   q('.hero .eyebrow').style.color   = '';
-      if(q('.scroll-cue'))      q('.scroll-cue').style.color      = '';
-      qa('.count .num').forEach(el => el.style.color = '');
-      qa('.count .lbl').forEach(el => el.style.color = '');
-      const btn = q('.hero .btn');
-      if(btn){ btn.style.borderColor=''; btn.style.color=''; }
-      setStatus('Hero cleared ✓');
-      setTimeout(()=>setStatus(''),3000);
-    } catch(e){
-      setStatus('Clear failed'); console.error(e);
-    }
-  });
   document.getElementById('ab-dashboard').addEventListener('click', async () => {
     document.getElementById('dashboard-modal').classList.add('visible');
     document.getElementById('dash-table-wrap').innerHTML = '<div class="am2-empty">Loading…</div>';
@@ -1756,6 +1702,9 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   function setStatus(msg){ statusEl.textContent = msg; }
 
   // ---- Load published content for all visitors ----
+  // Hero slideshow always loads from static files
+  initHeroSlideshow();
+
   if(!location.search.includes('admin')){
     (async()=>{
       try {

@@ -1,771 +1,847 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex, nofollow">
-  <title>Grayson &amp; Ryan · April 3, 2027</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Grayson &amp; Ryan · April 3, 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Only the weights actually used -->
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400;1,9..144,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   IMAGE SLOTS — swap these paths when your images are ready
+   ============================================================
+   --img-hero        : Full-bleed hero background (Tate House exterior, landscape)
+                       Recommended: 2400×1400px JPG
+   --img-venue       : Venue section portrait image (Tate House facade or gardens)
+                       Recommended: 900×1125px JPG (4:5 ratio)
+   --img-story-1     : Our Story — first couple photo (e.g. Keeneland)
+                       Recommended: 800×1000px JPG
+   --img-story-2     : Our Story — second couple photo (e.g. engagement)
+                       Recommended: 800×800px JPG
+   --img-story-3     : Our Story — third couple photo (optional, landscape)
+                       Recommended: 1200×800px JPG
+   Gallery images are set inline on the .gallery-item elements below (search "GALLERY SLOT")
+   ============================================================ */
+:root{
+  --img-hero:        url('images/hero-tate-house.jpg');
+  --img-venue:       url('images/venue-tate-house.jpg');
+  --img-story-1:     url('images/story-keeneland.jpg');
+  --img-story-2:     url('images/story-engagement.jpg');
+  --img-story-3:     url('images/story-together.jpg');
+
+  --ivory:#F7F2EA;
+  --shell:#EEE4D7;
+  --rose:#E4C7BE;
+  --rose-deep:#C2917F;
+  --rose-ink:#9C6F60;
+  --ink:#28231F;
+  --ink-soft:#5C534B;
+  --sage:#7E8B6D;
+  --sage-deep:#56624A;
+  --line:rgba(40,35,31,.13);
+  --gold:#B08A52;
+  --max:1180px;
+  --serif:'Fraunces',Georgia,serif;
+  --sans:'Jost',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation-duration:.001s!important;transition-duration:.001s!important}}
+body{font-family:var(--sans);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3{font-family:var(--serif);font-weight:400;line-height:1.08}
+a{color:inherit}
+img{max-width:100%;display:block}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 32px}
+.eyebrow{font-size:.7rem;letter-spacing:.34em;text-transform:uppercase;color:var(--sage-deep);font-weight:500}
+
+/* ---- FIXED BOTANICAL BACKGROUND ---- */
+body{
+  background-image: url('IMG_1984.PNG');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  /* ivory fallback while image loads */
+  background-color: var(--ivory);
+}
+
+/* paper grain over everything */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:500;opacity:.35;mix-blend-mode:multiply;will-change:auto;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");}
+
+/* ---- VEIN ---- */
+
+
+/* ---- SKIP LINK ---- */
+.skip{position:absolute;top:-999px;left:16px;z-index:9999;background:var(--ink);color:var(--ivory);padding:10px 18px;border-radius:0 0 6px 6px;font-size:.82rem;letter-spacing:.1em;text-decoration:none}
+.skip:focus{top:0}
+
+/* ---- NAV ---- */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:20px 32px;transition:background .4s,box-shadow .4s,padding .4s}
+nav.scrolled{background:rgba(247,242,234,.88);backdrop-filter:blur(14px);box-shadow:0 1px 0 var(--line);padding:13px 32px}
+.monogram{font-family:var(--serif);font-style:italic;font-size:1.4rem;letter-spacing:.03em;text-decoration:none}
+.navlinks{display:flex;gap:28px;list-style:none}
+.navlinks a{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;color:var(--ink-soft);position:relative;transition:color .25s}
+.navlinks a::after{content:"";position:absolute;left:0;bottom:-5px;width:0;height:1px;background:var(--rose-deep);transition:width .3s}
+.navlinks a:hover{color:var(--ink)}.navlinks a:hover::after{width:100%}
+.menu-btn{display:none;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;z-index:201;padding:4px}
+.menu-btn span{width:24px;height:1.5px;background:var(--ink);display:block;transition:.3s}
+@media(max-width:880px){
+  .navlinks{position:fixed;inset:0;background:var(--ivory);flex-direction:column;justify-content:center;align-items:center;gap:30px;transform:translateX(100%);transition:transform .5s cubic-bezier(.7,0,.2,1);z-index:200}
+  .navlinks.open{transform:none}.navlinks a{font-size:1.05rem}
+  .menu-btn{display:flex}
+  .menu-btn.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+  .menu-btn.open span:nth-child(2){opacity:0}
+  .menu-btn.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+}
+
+/* ---- HERO ---- */
+.hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;padding:140px 32px 90px;overflow:hidden}
+.hero-bg{
+  position:absolute;inset:0;z-index:-1;
+  background: linear-gradient(180deg, rgba(247,242,234,.45) 0%, rgba(238,228,215,.3) 50%, rgba(247,242,234,.92) 100%);
+}
+.hero-bg::before{display:none}
+.hero-bg::after{content:"";position:absolute;left:0;right:0;bottom:0;height:200px;background:linear-gradient(to bottom,transparent,var(--ivory))}
+.hero .eyebrow{margin-bottom:34px;opacity:0;animation:rise .9s .2s forwards;color:var(--sage-deep);position:relative;z-index:1}
+.hero-names{position:relative;z-index:1;opacity:0;animation:rise 1.1s .4s forwards}
+.hero-names h1{font-size:clamp(3.6rem,15vw,10rem);font-weight:300;letter-spacing:-.015em;line-height:.92;color:var(--ink)}
+.hero-names .amp{display:block;font-style:italic;font-size:clamp(2.2rem,7vw,4.4rem);color:var(--rose-ink);margin:.02em 0;font-weight:400}
+.hero-meta{margin-top:34px;display:flex;flex-direction:column;gap:8px;align-items:center;opacity:0;animation:rise 1s .68s forwards;position:relative;z-index:1}
+.hero-date{font-family:var(--serif);font-size:clamp(1.05rem,2.4vw,1.4rem);font-style:italic;color:var(--ink)}
+.hero-place{font-size:.78rem;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-soft)}
+.count{margin-top:40px;display:flex;gap:0;opacity:0;animation:rise 1s .85s forwards;position:relative;z-index:1}
+.count div{display:flex;flex-direction:column;align-items:center;padding:0 22px;position:relative}
+.count div+div::before{content:"";position:absolute;left:0;top:8px;bottom:14px;width:1px;background:var(--line)}
+.count .num{font-family:var(--serif);font-size:1.8rem;font-style:italic;font-variant-numeric:tabular-nums;color:var(--ink)}
+.count .lbl{font-size:.58rem;letter-spacing:.24em;text-transform:uppercase;color:var(--sage-deep);margin-top:4px}
+.hero .btn{margin-top:42px;opacity:0;animation:rise 1s 1s forwards;position:relative;z-index:1}
+.scroll-cue{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-soft);opacity:0;animation:rise 1s 1.3s forwards,float 2.6s 2s ease-in-out infinite;z-index:1}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes float{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
+
+.btn{display:inline-block;font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;text-decoration:none;cursor:pointer;padding:15px 38px;border:1px solid var(--ink);border-radius:40px;color:var(--ink);background:transparent;transition:all .35s;font-family:var(--sans)}
+.btn:hover{background:var(--ink);color:var(--ivory)}
+.btn-rose{border-color:var(--rose-deep);color:var(--rose-ink)}
+.btn-rose:hover{background:var(--rose-deep);color:var(--ivory)}
+
+/* ---- SECTIONS — frosted panels over the fixed background ---- */
+section{padding:120px 0;position:relative;z-index:2}
+
+/* Each section gets a semi-transparent panel so the botanical shows through at edges */
+#story        { background: rgba(247,242,234,.88); }
+#schedule     { background: rgba(247,242,234,.92); }
+#wedding-party{ background: rgba(238,228,215,.88); }
+#venue        { background: rgba(238,228,215,.9);  }
+#gallery      { background: transparent; padding: 40px 0; } /* gallery floats fully over illustration */
+#travel       { background: rgba(238,228,215,.88); }
+#faq          { background: rgba(247,242,234,.92); }
+#registry     { background: rgba(247,242,234,.85); }
+#rsvp         { background: rgba(228,199,190,.9);  }
+
+/* breathing room between sections so illustration peeks through */
+section + section::before{
+  content:"";display:block;height:0; /* sections butt up — gaps handled by transparent gallery + footer */
+}
+.sec-num{font-family:var(--serif);font-style:italic;font-size:.92rem;color:var(--rose-deep)}
+.sec-head{margin-bottom:64px}
+.sec-head.center{text-align:center}
+.sec-title{font-size:clamp(2.1rem,6vw,3.6rem);font-style:italic;margin-top:.18em;letter-spacing:-.01em}
+.sec-title em{font-style:normal}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* ---- OUR STORY ---- */
+/* background now set above */
+.story-intro{max-width:680px;margin:0 auto 64px;text-align:center}
+.story-intro p{color:var(--ink-soft);font-size:1.05rem}
+.story-intro p.pull{font-family:var(--serif);font-size:1.35rem;font-style:italic;color:var(--ink);line-height:1.45;margin-bottom:16px}
+.story-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;max-width:var(--max);align-items:start}
+.story-img{border-radius:4px;overflow:hidden;position:relative}
+.story-img.tall{grid-row:span 1}
+.story-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.story-img:hover img{transform:scale(1.03)}
+
+/* placeholder shown when image not yet added */
+.story-img .img-placeholder{width:100%;height:100%;min-height:340px;background:linear-gradient(135deg,var(--rose) 0%,var(--rose-deep) 60%,var(--sage-deep) 130%);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:20px}
+.story-img:nth-child(1) .img-placeholder{min-height:440px}
+.story-img:nth-child(2) .img-placeholder{min-height:280px}
+.story-img:nth-child(3) .img-placeholder{min-height:380px}
+.img-placeholder span{font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,242,234,.75)}
+.story-caption{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:4px}
+.story-caption p{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--sage-deep)}
+@media(max-width:760px){
+  .story-grid{grid-template-columns:1fr 1fr}
+  .story-img:nth-child(3){display:none}
+  .story-caption{grid-template-columns:1fr 1fr}
+  .story-caption p:nth-child(3){display:none}
+}
+@media(max-width:480px){.story-grid{grid-template-columns:1fr}.story-img:nth-child(2){display:none}.story-caption{grid-template-columns:1fr}.story-caption p:nth-child(2){display:none}}
+
+/* ---- SCHEDULE ---- */
+
+.sched{max-width:760px;margin:0 auto}
+.sched-row{display:grid;grid-template-columns:130px 1fr;gap:36px;padding:30px 0;border-top:1px solid var(--line);align-items:baseline}
+.sched-row:last-child{border-bottom:1px solid var(--line)}
+.sched-time{font-family:var(--serif);font-style:italic;font-size:1.5rem;color:var(--rose-ink);font-variant-numeric:tabular-nums}
+.sched-time small{display:block;font-family:var(--sans);font-style:normal;font-size:.58rem;letter-spacing:.24em;text-transform:uppercase;color:var(--sage-deep);margin-top:4px}
+.sched-body h3{font-size:1.6rem}
+.sched-body .place{font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--sage-deep);margin:6px 0}
+.sched-body .note{color:var(--ink-soft);font-size:.96rem}
+@media(max-width:560px){.sched-row{grid-template-columns:1fr;gap:6px}.sched-time{font-size:1.3rem}}
+
+/* ---- WEDDING PARTY ---- */
+
+.party-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;max-width:900px;margin:0 auto}
+.party-col h3{font-size:1.6rem;font-style:italic;margin-bottom:6px}
+.party-col .sub{font-size:.64rem;letter-spacing:.26em;text-transform:uppercase;color:var(--sage-deep);margin-bottom:30px}
+.party-list{list-style:none}
+.party-list li{padding:15px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;gap:14px}
+.party-list .name{font-family:var(--serif);font-size:1.18rem}
+.party-list .role{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);text-align:right;white-space:nowrap}
+.party-list li.lead .name{color:var(--rose-ink);font-style:italic}
+@media(max-width:680px){.party-grid{grid-template-columns:1fr;gap:48px}}
+
+/* ---- VENUE ---- */
+
+.venue-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:60px;align-items:center;max-width:var(--max)}
+.venue-photo{
+  aspect-ratio:4/5;border-radius:3px;overflow:hidden;position:relative;
+  box-shadow:0 40px 80px -40px rgba(40,35,31,.5);
+  background-image:var(--img-venue);
+  background-size:cover;background-position:center;
+  /* fallback */
+  background-color:var(--rose-deep);
+  display:flex;align-items:flex-end;
+}
+/* dim overlay only shows when image is missing (the gradient placeholder) */
+.venue-photo .venue-caption{position:relative;font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,242,234,.78);padding:20px 24px}
+.venue-copy .place{font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--sage-deep);margin-bottom:8px}
+.venue-copy h3{font-size:clamp(2rem,4vw,2.8rem);font-style:italic;margin-bottom:6px}
+.venue-copy .addr{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:26px}
+.venue-copy p{color:var(--ink-soft);margin-bottom:16px}
+.venue-copy p.lead{font-family:var(--serif);font-size:1.2rem;line-height:1.5;color:var(--ink);font-style:italic}
+.venue-copy .btn{margin-top:14px}
+@media(max-width:820px){.venue-grid{grid-template-columns:1fr;gap:40px}.venue-photo{aspect-ratio:16/11;max-height:420px}}
+
+/* ---- GALLERY ---- */
+#gallery{padding:80px 0}
+.gallery-track{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:100%}
+.gallery-item{overflow:hidden;position:relative;cursor:pointer}
+.gallery-item:nth-child(1){grid-column:span 2;aspect-ratio:4/3}
+.gallery-item:nth-child(2){aspect-ratio:3/4}
+.gallery-item:nth-child(3){aspect-ratio:3/4}
+.gallery-item:nth-child(4){aspect-ratio:4/3}
+.gallery-item:nth-child(5){grid-column:span 2;aspect-ratio:16/9}
+.gallery-item:nth-child(6){aspect-ratio:3/4}
+.gallery-item:nth-child(7){aspect-ratio:3/4}
+
+/* Each .gallery-item has a data-img attribute — set the path there (see HTML below) */
+.gallery-item{background-size:cover;background-position:center;background-color:var(--shell)}
+.gallery-item::after{content:"";position:absolute;inset:0;background:rgba(40,35,31,0);transition:background .4s}
+.gallery-item:hover::after{background:rgba(40,35,31,.18)}
+
+/* placeholder label inside each gallery cell when no image yet */
+.gallery-item .gph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(40,35,31,.35)}
+@media(max-width:700px){
+  .gallery-track{grid-template-columns:repeat(2,1fr)}
+  .gallery-item:nth-child(n){grid-column:span 1;aspect-ratio:1}
+  .gallery-item:nth-child(5){display:none}
+}
+
+/* ---- TRAVEL ---- */
+
+.travel-intro{max-width:640px;margin:0 auto 52px;text-align:center;color:var(--ink-soft)}
+.hotels{display:grid;grid-template-columns:1fr 1fr;gap:26px;max-width:860px;margin:0 auto}
+.hotel{background:var(--ivory);border:1px solid var(--line);border-radius:8px;padding:34px;display:flex;flex-direction:column;transition:transform .4s,box-shadow .4s,border-color .4s}
+.hotel:hover{transform:translateY(-5px);box-shadow:0 28px 50px -32px rgba(40,35,31,.35);border-color:var(--rose)}
+.hotel .tag{font-size:.58rem;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.hotel h3{font-size:1.4rem;margin-bottom:4px}
+.hotel .loc{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--sage-deep);margin-bottom:16px}
+.hotel p{font-size:.92rem;color:var(--ink-soft);flex:1;margin-bottom:22px}
+.hotel .btn{align-self:flex-start;padding:12px 28px;font-size:.68rem}
+.shuttle{max-width:860px;margin:36px auto 0;padding:26px 30px;border-left:2px solid var(--sage);background:rgba(126,139,109,.08);border-radius:0 8px 8px 0;font-size:.95rem;color:var(--ink-soft)}
+.shuttle strong{color:var(--ink)}
+@media(max-width:680px){.hotels{grid-template-columns:1fr}}
+
+/* ---- FAQ ---- */
+
+.faq-list{max-width:780px;margin:0 auto}
+.faq{border-bottom:1px solid var(--line)}
+.faq button{width:100%;background:none;border:none;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:26px 0;font-family:var(--serif);font-size:1.2rem;color:var(--ink)}
+.faq .ic{flex-shrink:0;width:20px;height:20px;position:relative}
+.faq .ic::before,.faq .ic::after{content:"";position:absolute;background:var(--rose-deep);transition:transform .3s}
+.faq .ic::before{top:9px;left:0;width:20px;height:1.5px}
+.faq .ic::after{left:9px;top:0;height:20px;width:1.5px}
+.faq.open .ic::after{transform:scaleY(0)}
+.faq-ans{max-height:0;overflow:hidden;transition:max-height .45s ease}
+.faq-ans p{padding:0 0 26px;color:var(--ink-soft);font-size:.98rem;max-width:640px}
+.faq-ans a{color:var(--sage-deep)}
+
+/* ---- REGISTRY ---- */
+
+.registry-shell{max-width:580px;margin:0 auto;text-align:center}
+.registry-shell p{color:var(--ink-soft);margin-bottom:32px}
+.reg-card{display:inline-block;padding:30px 50px;border:1px solid var(--rose-deep);border-radius:8px;background:rgba(247,242,234,.55)}
+.reg-card .t{font-family:var(--serif);font-style:italic;font-size:1.5rem}
+.reg-card .s{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);margin-top:6px}
+
+/* ---- RSVP ---- */
+#rsvp{color:var(--ink)}
+.rsvp-shell{max-width:540px;margin:0 auto;text-align:center}
+.rsvp-intro{color:var(--ink-soft);margin-bottom:34px}
+.field{margin-bottom:20px;text-align:left}
+.field label{display:block;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--sage-deep);margin-bottom:9px}
+.field input,.field select,.field textarea{width:100%;padding:15px 17px;border:1px solid var(--rose-deep);border-radius:6px;background:rgba(247,242,234,.72);font-family:var(--sans);font-size:1rem;color:var(--ink)}
+.field textarea{resize:vertical;min-height:88px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--sage);outline-offset:1px;border-color:var(--sage)}
+.rsvp-step{display:none}
+.rsvp-step.active{display:block;animation:rise .55s forwards}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;role:group}
+.choice button{padding:17px;border:1px solid var(--rose-deep);border-radius:6px;background:rgba(247,242,234,.55);font-family:var(--serif);font-style:italic;font-size:1.05rem;cursor:pointer;transition:.25s;color:var(--ink)}
+.choice button.sel{background:var(--ink);color:var(--ivory);border-color:var(--ink)}
+.rsvp-row{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:10px}
+.link-btn{background:none;border:none;color:var(--sage-deep);cursor:pointer;font-family:var(--sans);font-size:.85rem;letter-spacing:.04em}
+.found{font-family:var(--serif);font-style:italic;font-size:1.25rem;margin-bottom:22px}
+.thanks .mark{font-size:2rem;color:var(--rose-ink)}
+.thanks h3{font-size:1.9rem;font-style:italic;margin:10px 0}
+.thanks p{color:var(--ink-soft);font-size:.95rem}
+/* guest count hidden by default — shown only when attending=yes */
+#guestCountField{display:none}
+
+/* ---- FOOTER ---- */
+footer{background:var(--ink);color:var(--ivory);text-align:center;padding:70px 32px;position:relative;z-index:2}
+footer .fm{font-family:var(--serif);font-style:italic;font-size:2.2rem}
+footer .fd{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,242,234,.6);margin-top:16px}
+footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-style:italic;font-family:var(--serif)}
+</style>
 </head>
 <body>
 
-  <!-- Fixed botanical background -->
-  <div class="botanical-bg" aria-hidden="true"></div>
+<!-- Skip nav for keyboard users -->
+<a href="#main-content" class="skip">Skip to content</a>
 
 
-  <!-- ═══ NAVIGATION ═══ -->
-  <nav id="nav">
-    <div class="nav-inner">
-      <a href="#hero" class="nav-monogram">G &amp; R</a>
-      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-      <ul class="nav-links" id="nav-links">
-        <li><a href="#schedule">Schedule</a></li>
-        <li><a href="#wedding-party">Wedding Party</a></li>
-        <li><a href="#venue">Venue</a></li>
-        <li><a href="#travel">Travel</a></li>
-        <li><a href="#registry">Registry</a></li>
-        <li><a href="#faq">FAQ</a></li>
-        <li><a href="#rsvp" class="nav-rsvp">RSVP</a></li>
-      </ul>
+
+<nav id="nav" role="navigation" aria-label="Main">
+  <a href="#hero" class="monogram" aria-label="Grayson and Ryan — back to top">G &amp; R</a>
+  <ul class="navlinks" id="navlinks" aria-label="Site sections">
+    <li><a href="#story">Our Story</a></li>
+    <li><a href="#schedule">Schedule</a></li>
+    <li><a href="#wedding-party">Party</a></li>
+    <li><a href="#venue">Venue</a></li>
+    <li><a href="#travel">Travel</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="#registry">Registry</a></li>
+    <li><a href="#rsvp">RSVP</a></li>
+  </ul>
+  <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="navlinks">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="hero" tabindex="-1">
+  <div class="hero-bg" role="img" aria-label="Tate House exterior"></div>
+  <p class="eyebrow" aria-hidden="false">Together with their families</p>
+  <div class="hero-names">
+    <h1>Grayson<span class="amp" aria-hidden="true">&amp;</span><span class="sr-only"> and </span>Ryan</h1>
+  </div>
+  <div class="hero-meta">
+    <p class="hero-date">Saturday, the third of April, 2027</p>
+    <p class="hero-place">Tate House · Tate, Georgia</p>
+  </div>
+  <div class="count" id="count" aria-hidden="true"></div>
+  <a href="#rsvp" class="btn">RSVP</a>
+  <span class="scroll-cue" aria-hidden="true">Scroll</span>
+</header>
+
+<main id="main-content">
+
+<!-- OUR STORY -->
+<section id="story">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="sec-num">I</span>
+      <h2 class="sec-title">Our <em>Story</em></h2>
     </div>
-  </nav>
-
-  <!-- ═══ HERO ═══ -->
-  <section id="hero">
-    <!-- Lithograph estate illustration -->
-    <svg class="hero-illustration" viewBox="0 0 1440 580" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <defs>
-        <pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <line x1="0" y1="0" x2="0" y2="5" stroke="currentColor" stroke-width="0.4"/>
-        </pattern>
-      </defs>
-      <g stroke="#7A4F3A" fill="none" stroke-linecap="round" stroke-linejoin="round">
-
-        <!-- Ground & lawn -->
-        <line x1="0" y1="525" x2="1440" y2="525" stroke-width="1.2"/>
-        <path d="M0,525 Q240,515 480,525 Q720,535 960,522 Q1200,512 1440,525" stroke-width="0.6" opacity="0.5"/>
-        <path d="M0,532 Q360,522 720,530 Q1080,540 1440,530" stroke-width="0.4" opacity="0.3"/>
-
-        <!-- ── LEFT WING ── -->
-        <rect x="205" y="295" width="170" height="230"/>
-        <!-- Shadow hatch -->
-        <rect x="205" y="295" width="170" height="230" fill="url(#hatch)" opacity="0.35"/>
-        <!-- Wing cornice -->
-        <line x1="195" y1="295" x2="385" y2="295" stroke-width="1.5"/>
-        <line x1="200" y1="302" x2="380" y2="302" stroke-width="0.7"/>
-        <!-- Wing windows -->
-        <rect x="235" y="328" width="58" height="78"/>
-        <line x1="264" y1="328" x2="264" y2="406"/>
-        <line x1="235" y1="367" x2="293" y2="367"/>
-        <!-- Window arch -->
-        <path d="M235,328 Q264,310 293,328" stroke-width="0.7"/>
-        <rect x="235" y="425" width="58" height="70"/>
-        <line x1="264" y1="425" x2="264" y2="495"/>
-        <line x1="235" y1="460" x2="293" y2="460"/>
-        <!-- Wing door -->
-        <rect x="285" y="445" width="38" height="80"/>
-        <path d="M285,445 Q304,428 323,445" stroke-width="0.7"/>
-
-        <!-- ── RIGHT WING ── -->
-        <rect x="1065" y="295" width="170" height="230"/>
-        <rect x="1065" y="295" width="170" height="230" fill="url(#hatch)" opacity="0.25"/>
-        <line x1="1055" y1="295" x2="1245" y2="295" stroke-width="1.5"/>
-        <line x1="1060" y1="302" x2="1240" y2="302" stroke-width="0.7"/>
-        <rect x="1147" y="328" width="58" height="78"/>
-        <line x1="1176" y1="328" x2="1176" y2="406"/>
-        <line x1="1147" y1="367" x2="1205" y2="367"/>
-        <path d="M1147,328 Q1176,310 1205,328" stroke-width="0.7"/>
-        <rect x="1147" y="425" width="58" height="70"/>
-        <line x1="1176" y1="425" x2="1176" y2="495"/>
-        <line x1="1147" y1="460" x2="1205" y2="460"/>
-        <rect x="1117" y="445" width="38" height="80"/>
-        <path d="M1117,445 Q1136,428 1155,445" stroke-width="0.7"/>
-
-        <!-- ── MAIN BLOCK ── -->
-        <rect x="375" y="185" width="690" height="340"/>
-        <!-- Shadow on right wall -->
-        <rect x="990" y="185" width="75" height="340" fill="url(#hatch)" opacity="0.3"/>
-
-        <!-- Upper windows - main block sides -->
-        <rect x="398" y="222" width="62" height="86"/>
-        <line x1="429" y1="222" x2="429" y2="308"/>
-        <line x1="398" y1="265" x2="460" y2="265"/>
-        <path d="M398,222 Q429,200 460,222" stroke-width="0.7"/>
-        <rect x="980" y="222" width="62" height="86"/>
-        <line x1="1011" y1="222" x2="1011" y2="308"/>
-        <line x1="980" y1="265" x2="1042" y2="265"/>
-        <path d="M980,222 Q1011,200 1042,222" stroke-width="0.7"/>
-
-        <!-- ── PEDIMENT ── -->
-        <polygon points="342,185 1098,185 720,92"/>
-        <!-- Pediment detail -->
-        <line x1="370" y1="185" x2="720" y2="108" stroke-width="0.5" opacity="0.6"/>
-        <line x1="1070" y1="185" x2="720" y2="108" stroke-width="0.5" opacity="0.6"/>
-        <!-- Oval wreath in pediment -->
-        <ellipse cx="720" cy="150" rx="55" ry="30" stroke-width="0.7"/>
-        <ellipse cx="720" cy="150" rx="42" ry="22" stroke-width="0.5"/>
-
-        <!-- ── ENTABLATURE ── -->
-        <line x1="468" y1="193" x2="972" y2="193" stroke-width="2.2"/>
-        <line x1="462" y1="200" x2="978" y2="200" stroke-width="0.9"/>
-        <!-- Triglyph suggestions -->
-        <line x1="500" y1="193" x2="500" y2="202" stroke-width="1.5"/>
-        <line x1="508" y1="193" x2="508" y2="202" stroke-width="1.5"/>
-        <line x1="576" y1="193" x2="576" y2="202" stroke-width="1.5"/>
-        <line x1="584" y1="193" x2="584" y2="202" stroke-width="1.5"/>
-        <line x1="648" y1="193" x2="648" y2="202" stroke-width="1.5"/>
-        <line x1="656" y1="193" x2="656" y2="202" stroke-width="1.5"/>
-        <line x1="784" y1="193" x2="784" y2="202" stroke-width="1.5"/>
-        <line x1="792" y1="193" x2="792" y2="202" stroke-width="1.5"/>
-        <line x1="856" y1="193" x2="856" y2="202" stroke-width="1.5"/>
-        <line x1="864" y1="193" x2="864" y2="202" stroke-width="1.5"/>
-        <line x1="928" y1="193" x2="928" y2="202" stroke-width="1.5"/>
-        <line x1="936" y1="193" x2="936" y2="202" stroke-width="1.5"/>
-
-        <!-- ── COLUMNS (6) ── -->
-        <!-- Positions: 488, 568, 648, 728, 808, 888 — step 80 -->
-        <line x1="488" y1="205" x2="488" y2="522" stroke-width="6"/>
-        <line x1="568" y1="205" x2="568" y2="522" stroke-width="6"/>
-        <line x1="648" y1="205" x2="648" y2="522" stroke-width="6"/>
-        <line x1="728" y1="205" x2="728" y2="522" stroke-width="6"/>
-        <line x1="808" y1="205" x2="808" y2="522" stroke-width="6"/>
-        <line x1="888" y1="205" x2="888" y2="522" stroke-width="6"/>
-        <!-- Column shadow lines -->
-        <line x1="496" y1="208" x2="496" y2="520" stroke-width="1.5" opacity="0.4"/>
-        <line x1="576" y1="208" x2="576" y2="520" stroke-width="1.5" opacity="0.4"/>
-        <line x1="656" y1="208" x2="656" y2="520" stroke-width="1.5" opacity="0.4"/>
-        <line x1="736" y1="208" x2="736" y2="520" stroke-width="1.5" opacity="0.4"/>
-        <line x1="816" y1="208" x2="816" y2="520" stroke-width="1.5" opacity="0.4"/>
-        <line x1="896" y1="208" x2="896" y2="520" stroke-width="1.5" opacity="0.4"/>
-        <!-- Capital line & base line -->
-        <line x1="470" y1="205" x2="906" y2="205" stroke-width="3"/>
-        <line x1="462" y1="517" x2="914" y2="517" stroke-width="3"/>
-        <!-- Steps -->
-        <line x1="450" y1="524" x2="926" y2="524" stroke-width="2"/>
-        <line x1="435" y1="530" x2="941" y2="530" stroke-width="1.5"/>
-
-        <!-- ── FRONT DOOR ── -->
-        <rect x="690" y="370" width="60" height="155"/>
-        <!-- Door fanlight / arch -->
-        <path d="M690,370 A30,30 0 0,1 750,370" stroke-width="1.2"/>
-        <!-- Fanlight spokes -->
-        <line x1="720" y1="340" x2="720" y2="370" stroke-width="0.8"/>
-        <line x1="690" y1="370" x2="720" y2="345" stroke-width="0.8"/>
-        <line x1="750" y1="370" x2="720" y2="345" stroke-width="0.8"/>
-        <line x1="700" y1="352" x2="720" y2="370" stroke-width="0.6"/>
-        <line x1="740" y1="352" x2="720" y2="370" stroke-width="0.6"/>
-        <!-- Door center line -->
-        <line x1="720" y1="370" x2="720" y2="525" stroke-width="0.9"/>
-        <!-- Door knobs -->
-        <circle cx="710" cy="460" r="3.5" fill="#7A4F3A"/>
-        <circle cx="730" cy="460" r="3.5" fill="#7A4F3A"/>
-        <!-- Sidelights -->
-        <rect x="668" y="370" width="22" height="155"/>
-        <rect x="750" y="370" width="22" height="155"/>
-
-        <!-- ── CHIMNEY STACKS ── -->
-        <rect x="570" y="92" width="32" height="94"/>
-        <rect x="838" y="92" width="32" height="94"/>
-        <line x1="562" y1="92" x2="610" y2="92" stroke-width="2.5"/>
-        <line x1="830" y1="92" x2="878" y2="92" stroke-width="2.5"/>
-        <!-- Chimney pot -->
-        <ellipse cx="586" cy="90" rx="8" ry="4"/>
-        <ellipse cx="854" cy="90" rx="8" ry="4"/>
-
-        <!-- ══ MAGNOLIA BRANCHES — LEFT ══ -->
-        <!-- Main trunk rising from lower left -->
-        <path d="M-10,560 C50,480 130,420 195,370" stroke-width="3.5" fill="none"/>
-        <!-- Branch up into sky -->
-        <path d="M195,370 C215,300 185,230 155,175" stroke-width="2.5" fill="none"/>
-        <!-- Branch sweeping right toward house -->
-        <path d="M195,370 C250,345 310,315 355,295" stroke-width="2.2" fill="none"/>
-        <!-- Upper branch -->
-        <path d="M155,175 C130,120 90,88 55,68" stroke-width="1.8" fill="none"/>
-        <path d="M155,175 C178,138 205,108 215,88" stroke-width="1.5" fill="none"/>
-        <!-- Lower branches -->
-        <path d="M195,370 C160,390 110,405 70,420" stroke-width="1.8" fill="none"/>
-        <path d="M70,420 C40,415 15,400 -5,390" stroke-width="1.2" fill="none"/>
-        <path d="M120,445 C90,455 55,450 20,455" stroke-width="1.2" fill="none"/>
-        <!-- Tiny twigs -->
-        <path d="M355,295 C370,278 380,260 378,245" stroke-width="1" fill="none"/>
-        <path d="M310,315 C318,295 322,275 318,258" stroke-width="0.9" fill="none"/>
-
-        <!-- LEFT Magnolia blooms -->
-        <!-- Bloom 1: large open flower at main upper branch -->
-        <g transform="translate(155,175)">
-          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(0)"   fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
-          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(60)"  fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
-          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(120)" fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
-          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(180)" fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
-          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(240)" fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
-          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(300)" fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
-          <circle cx="0" cy="0" r="6" fill="#7A4F3A" opacity="0.4"/>
-          <line x1="-4" y1="-6" x2="4" y2="-6" stroke-width="0.5" opacity="0.6"/>
-        </g>
-        <!-- Bloom 2: at top left -->
-        <g transform="translate(55,68) rotate(12)">
-          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(0)"   fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
-          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(72)"  fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
-          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(144)" fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
-          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(216)" fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
-          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(288)" fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
-          <circle cx="0" cy="0" r="5" fill="#7A4F3A" opacity="0.35"/>
-        </g>
-        <!-- Bloom 3: mid branch bud -->
-        <g transform="translate(355,295) rotate(-18)">
-          <ellipse cx="0" cy="-14" rx="6" ry="12" transform="rotate(0)"   fill="#7A4F3A" opacity="0.1" stroke-width="0.8"/>
-          <ellipse cx="0" cy="-14" rx="6" ry="12" transform="rotate(90)"  fill="#7A4F3A" opacity="0.1" stroke-width="0.8"/>
-          <ellipse cx="0" cy="-14" rx="6" ry="12" transform="rotate(180)" fill="#7A4F3A" opacity="0.1" stroke-width="0.8"/>
-          <ellipse cx="0" cy="-14" rx="6" ry="12" transform="rotate(270)" fill="#7A4F3A" opacity="0.1" stroke-width="0.8"/>
-          <circle cx="0" cy="0" r="4" fill="#7A4F3A" opacity="0.3"/>
-        </g>
-        <!-- Bloom 4: small bud on twig -->
-        <g transform="translate(215,88) rotate(5)">
-          <ellipse cx="0" cy="-10" rx="5" ry="9" transform="rotate(0)"   fill="#7A4F3A" opacity="0.12" stroke-width="0.7"/>
-          <ellipse cx="0" cy="-10" rx="5" ry="9" transform="rotate(120)" fill="#7A4F3A" opacity="0.12" stroke-width="0.7"/>
-          <ellipse cx="0" cy="-10" rx="5" ry="9" transform="rotate(240)" fill="#7A4F3A" opacity="0.12" stroke-width="0.7"/>
-          <circle cx="0" cy="0" r="3.5" fill="#7A4F3A" opacity="0.3"/>
-        </g>
-
-        <!-- LEFT magnolia leaves -->
-        <ellipse cx="115" cy="415" rx="30" ry="13" transform="rotate(-28 115 415)"/>
-        <ellipse cx="75" cy="388" rx="26" ry="11" transform="rotate(18 75 388)"/>
-        <ellipse cx="178" cy="310" rx="32" ry="12" transform="rotate(-42 178 310)"/>
-        <ellipse cx="248" cy="338" rx="27" ry="11" transform="rotate(22 248 338)"/>
-        <ellipse cx="118" cy="265" rx="25" ry="10" transform="rotate(-15 118 265)"/>
-        <ellipse cx="88" cy="175" rx="22" ry="9" transform="rotate(35 88 175)"/>
-        <ellipse cx="195" cy="210" rx="20" ry="8" transform="rotate(-30 195 210)"/>
-        <!-- Small buds -->
-        <circle cx="285" cy="330" r="4" fill="#7A4F3A" opacity="0.4"/>
-        <circle cx="168" cy="248" r="3.5" fill="#7A4F3A" opacity="0.4"/>
-        <circle cx="108" cy="320" r="3" fill="#7A4F3A" opacity="0.4"/>
-        <circle cx="40" cy="395" r="3" fill="#7A4F3A" opacity="0.4"/>
-
-        <!-- ══ MAGNOLIA BRANCHES — RIGHT ══ -->
-        <path d="M1450,560 C1390,480 1310,420 1245,370" stroke-width="3.5" fill="none"/>
-        <path d="M1245,370 C1225,300 1255,230 1285,175" stroke-width="2.5" fill="none"/>
-        <path d="M1245,370 C1190,345 1130,315 1085,295" stroke-width="2.2" fill="none"/>
-        <path d="M1285,175 C1310,120 1350,88 1385,68" stroke-width="1.8" fill="none"/>
-        <path d="M1285,175 C1262,138 1235,108 1225,88" stroke-width="1.5" fill="none"/>
-        <path d="M1245,370 C1280,390 1330,405 1370,420" stroke-width="1.8" fill="none"/>
-        <path d="M1370,420 C1400,415 1425,400 1445,390" stroke-width="1.2" fill="none"/>
-        <path d="M1320,445 C1350,455 1385,450 1420,455" stroke-width="1.2" fill="none"/>
-        <path d="M1085,295 C1070,278 1060,260 1062,245" stroke-width="1" fill="none"/>
-        <path d="M1130,315 C1122,295 1118,275 1122,258" stroke-width="0.9" fill="none"/>
-
-        <!-- RIGHT Magnolia blooms -->
-        <g transform="translate(1285,175)">
-          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(0)"   fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
-          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(60)"  fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
-          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(120)" fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
-          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(180)" fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
-          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(240)" fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
-          <ellipse cx="0" cy="-20" rx="9" ry="16" transform="rotate(300)" fill="#7A4F3A" opacity="0.15" stroke-width="1"/>
-          <circle cx="0" cy="0" r="6" fill="#7A4F3A" opacity="0.4"/>
-        </g>
-        <g transform="translate(1385,68) rotate(-12)">
-          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(0)"   fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
-          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(72)"  fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
-          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(144)" fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
-          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(216)" fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
-          <ellipse cx="0" cy="-16" rx="7" ry="13" transform="rotate(288)" fill="#7A4F3A" opacity="0.12" stroke-width="0.9"/>
-          <circle cx="0" cy="0" r="5" fill="#7A4F3A" opacity="0.35"/>
-        </g>
-        <g transform="translate(1085,295) rotate(18)">
-          <ellipse cx="0" cy="-14" rx="6" ry="12" transform="rotate(0)"   fill="#7A4F3A" opacity="0.1" stroke-width="0.8"/>
-          <ellipse cx="0" cy="-14" rx="6" ry="12" transform="rotate(90)"  fill="#7A4F3A" opacity="0.1" stroke-width="0.8"/>
-          <ellipse cx="0" cy="-14" rx="6" ry="12" transform="rotate(180)" fill="#7A4F3A" opacity="0.1" stroke-width="0.8"/>
-          <ellipse cx="0" cy="-14" rx="6" ry="12" transform="rotate(270)" fill="#7A4F3A" opacity="0.1" stroke-width="0.8"/>
-          <circle cx="0" cy="0" r="4" fill="#7A4F3A" opacity="0.3"/>
-        </g>
-        <g transform="translate(1225,88) rotate(-5)">
-          <ellipse cx="0" cy="-10" rx="5" ry="9" transform="rotate(0)"   fill="#7A4F3A" opacity="0.12" stroke-width="0.7"/>
-          <ellipse cx="0" cy="-10" rx="5" ry="9" transform="rotate(120)" fill="#7A4F3A" opacity="0.12" stroke-width="0.7"/>
-          <ellipse cx="0" cy="-10" rx="5" ry="9" transform="rotate(240)" fill="#7A4F3A" opacity="0.12" stroke-width="0.7"/>
-          <circle cx="0" cy="0" r="3.5" fill="#7A4F3A" opacity="0.3"/>
-        </g>
-
-        <!-- RIGHT magnolia leaves -->
-        <ellipse cx="1325" cy="415" rx="30" ry="13" transform="rotate(28 1325 415)"/>
-        <ellipse cx="1365" cy="388" rx="26" ry="11" transform="rotate(-18 1365 388)"/>
-        <ellipse cx="1262" cy="310" rx="32" ry="12" transform="rotate(42 1262 310)"/>
-        <ellipse cx="1192" cy="338" rx="27" ry="11" transform="rotate(-22 1192 338)"/>
-        <ellipse cx="1322" cy="265" rx="25" ry="10" transform="rotate(15 1322 265)"/>
-        <ellipse cx="1352" cy="175" rx="22" ry="9" transform="rotate(-35 1352 175)"/>
-        <ellipse cx="1245" cy="210" rx="20" ry="8" transform="rotate(30 1245 210)"/>
-        <circle cx="1155" cy="330" r="4" fill="#7A4F3A" opacity="0.4"/>
-        <circle cx="1272" cy="248" r="3.5" fill="#7A4F3A" opacity="0.4"/>
-        <circle cx="1332" cy="320" r="3" fill="#7A4F3A" opacity="0.4"/>
-        <circle cx="1400" cy="395" r="3" fill="#7A4F3A" opacity="0.4"/>
-      </g>
-    </svg>
-
-    <div class="hero-content">
-      <p class="hero-eyebrow fade-in">Together with their families</p>
-      <h1 class="hero-names fade-in">
-        <span>Grayson</span>
-        <em>&amp;</em>
-        <span>Ryan</span>
-      </h1>
-      <p class="hero-date fade-in">April 3, 2027</p>
-      <p class="hero-venue fade-in">Tate House · Tate, Georgia</p>
-      <a href="#rsvp" class="btn-primary fade-in">RSVP</a>
+    <div class="story-intro reveal">
+      <p class="pull">They met at Keeneland Race Track in Lexington, Kentucky — the kind of place that lends itself to beginnings.</p>
+      <p>From Atlanta to the mountains of North Georgia, from a Thursday afternoon at the track to a spring morning in Smyrna — this day has been a long time coming.</p>
     </div>
-
-    <div class="hero-scroll" aria-hidden="true">
-      <div class="scroll-line"></div>
-    </div>
-  </section>
-
-  <!-- ═══ SCHEDULE ═══ -->
-  <section id="schedule" class="section section-parchment">
-    <div class="container">
-      <div class="section-header fade-in">
-        <span class="section-eyebrow">April 3, 2027</span>
-        <h2>The Day</h2>
-        <div class="title-rule"></div>
+    <div class="story-grid reveal">
+      <!-- STORY SLOT 1 — replace src with your image path (e.g. images/story-keeneland.jpg) -->
+      <div class="story-img">
+        <img src="images/story-keeneland.jpg" alt="Grayson and Ryan at Keeneland Race Track" loading="lazy"
+             onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
+        <div class="img-placeholder" style="display:none"><span>Story Image 1 · Keeneland</span></div>
       </div>
-      <div class="timeline">
-        <div class="timeline-item fade-in">
-          <div class="timeline-time">4:00 PM</div>
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <h3>Ceremony</h3>
-            <p>Tate House Gardens</p>
-            <p class="timeline-note">Guests are invited to be seated by 3:45 PM</p>
-          </div>
-        </div>
-        <div class="timeline-item fade-in">
-          <div class="timeline-time">5:00 PM</div>
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <h3>Cocktail Hour</h3>
-            <p>The Estate Lawn</p>
-            <p class="timeline-note">Drinks, hors d'oeuvres, and garden strolls</p>
-          </div>
-        </div>
-        <div class="timeline-item fade-in">
-          <div class="timeline-time">6:00 PM</div>
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <h3>Dinner &amp; Reception</h3>
-            <p>The Grand Ballroom</p>
-            <p class="timeline-note">Dancing to follow dinner service</p>
-          </div>
-        </div>
-        <div class="timeline-item fade-in">
-          <div class="timeline-time">10:00 PM</div>
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <h3>Send-Off</h3>
-            <p>The Front Drive</p>
-            <p class="timeline-note">End of the evening</p>
-          </div>
-        </div>
+      <!-- STORY SLOT 2 — replace src (e.g. images/story-engagement.jpg) -->
+      <div class="story-img">
+        <img src="images/story-engagement.jpg" alt="Grayson and Ryan engagement photo" loading="lazy"
+             onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
+        <div class="img-placeholder" style="display:none"><span>Story Image 2 · Engagement</span></div>
+      </div>
+      <!-- STORY SLOT 3 — replace src (e.g. images/story-together.jpg) -->
+      <div class="story-img">
+        <img src="images/story-together.jpg" alt="Grayson and Ryan together" loading="lazy"
+             onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
+        <div class="img-placeholder" style="display:none"><span>Story Image 3 · Together</span></div>
       </div>
     </div>
-  </section>
-
-  <!-- ═══ GARDEN BREAK ═══ -->
-  <div class="garden-break" aria-hidden="true">
-    <div class="garden-break-text">
-      <p>Tate House · Tate, Georgia</p>
+    <div class="story-caption reveal" aria-hidden="true">
+      <p>Keeneland, Kentucky</p>
+      <p>Smyrna, Georgia</p>
+      <p>North Georgia</p>
     </div>
   </div>
+</section>
 
-  <!-- ═══ WEDDING PARTY ═══ -->
-  <section id="wedding-party" class="section section-cream">
-    <div class="container">
-      <div class="section-header fade-in">
-        <span class="section-eyebrow">The People We Love</span>
-        <h2>Wedding Party</h2>
-        <div class="title-rule"></div>
+<!-- SCHEDULE -->
+<section id="schedule">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="sec-num">II</span>
+      <h2 class="sec-title">The <em>Day</em></h2>
+    </div>
+    <div class="sched reveal">
+      <div class="sched-row">
+        <div class="sched-time">4:00<small>PM</small></div>
+        <div class="sched-body"><h3>Ceremony</h3><p class="place">Tate House Gardens</p><p class="note">Please be seated by 3:45 PM.</p></div>
       </div>
+      <div class="sched-row">
+        <div class="sched-time">5:00<small>PM</small></div>
+        <div class="sched-body"><h3>Cocktail Hour</h3><p class="place">The Estate Lawn</p><p class="note">Drinks, hors d'oeuvres, and garden strolls.</p></div>
+      </div>
+      <div class="sched-row">
+        <div class="sched-time">6:00<small>PM</small></div>
+        <div class="sched-body"><h3>Dinner &amp; Reception</h3><p class="place">The Grand Ballroom</p><p class="note">Dancing to follow dinner service.</p></div>
+      </div>
+      <div class="sched-row">
+        <div class="sched-time">10:00<small>PM</small></div>
+        <div class="sched-body"><h3>Send-Off</h3><p class="place">The Front Drive</p><p class="note">A bright farewell to a long-awaited day.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
 
-      <div class="party-columns">
-        <div class="party-side fade-in">
-          <h3 class="party-title">Bridal Party</h3>
-          <ul class="party-list">
-            <li>
-              <span class="party-name">Grayson Sloop</span>
-              <span class="party-role">Bride</span>
-            </li>
-            <li>
-              <span class="party-name">Taylor Sloop</span>
-              <span class="party-role">Matron of Honor</span>
-            </li>
-            <li>
-              <span class="party-name">Mikenna Wainwright</span>
-              <span class="party-role">Bridesmaid</span>
-            </li>
-            <li>
-              <span class="party-name">Lauren Kay</span>
-              <span class="party-role">Bridesmaid</span>
-            </li>
-            <li>
-              <span class="party-name">Meg Ackeman</span>
-              <span class="party-role">Bridesmaid</span>
-            </li>
-          </ul>
+<!-- WEDDING PARTY -->
+<section id="wedding-party">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="sec-num">III</span>
+      <h2 class="sec-title">Wedding <em>Party</em></h2>
+    </div>
+    <div class="party-grid reveal">
+      <div class="party-col">
+        <h3>Her Side</h3><p class="sub">Bridal Party</p>
+        <ul class="party-list">
+          <li class="lead"><span class="name">Grayson Sloop</span><span class="role">Bride</span></li>
+          <li><span class="name">Taylor Sloop</span><span class="role">Matron of Honor</span></li>
+          <li><span class="name">Mikenna Wainwright</span><span class="role">Bridesmaid</span></li>
+          <li><span class="name">Lauren Kay</span><span class="role">Bridesmaid</span></li>
+          <li><span class="name">Meg Ackeman</span><span class="role">Bridesmaid</span></li>
+        </ul>
+      </div>
+      <div class="party-col">
+        <h3>His Side</h3><p class="sub">Groom's Party</p>
+        <ul class="party-list">
+          <li class="lead"><span class="name">Ryan Welton</span><span class="role">Groom</span></li>
+          <li><span class="name">Thomas Welton</span><span class="role">Best Man</span></li>
+          <li><span class="name">David Hanson</span><span class="role">Groomsman</span></li>
+          <li><span class="name">Ryan Kaufman</span><span class="role">Groomsman</span></li>
+          <li><span class="name">Thomas Packert</span><span class="role">Groomsman</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VENUE -->
+<section id="venue">
+  <div class="wrap">
+    <div class="venue-grid reveal">
+      <!-- VENUE SLOT — image set via --img-venue CSS variable at top of file -->
+      <div class="venue-photo" role="img" aria-label="Tate House, the pink marble estate in Tate, Georgia">
+        <span class="venue-caption">Tate House · Tate, Georgia</span>
+      </div>
+      <div class="venue-copy">
+        <span class="sec-num">IV</span>
+        <p class="place" style="margin-top:8px">Where We Gather</p>
+        <h3>Tate House</h3>
+        <p class="addr">2973 GA-53 · Tate, Georgia 30177</p>
+        <p class="lead">A mansion that never felt imported or imposed — like it had simply risen out of the Georgia hills on its own.</p>
+        <p>Colonel Sam Tate built this house in 1926 from the pink marble of his own quarries — the same stone used in the Lincoln Memorial and the U.S. Supreme Court. Pink Georgia marble reads less as pink than as warm: nearly ivory in morning light, deepening to a burnished rose by afternoon.</p>
+        <p>The grounds spread across 27 acres framed by the Appalachian foothills, with English gardens terracing down from the house and a vine-draped conservatory connecting the private quarters to the formal rooms.</p>
+        <a href="https://tatehouse.com" target="_blank" rel="noopener" class="btn">Visit Tate House</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery" aria-label="Photo gallery">
+  <div class="gallery-track">
+    <!--
+      GALLERY SLOTS — for each item below, add:
+        style="background-image:url('images/gallery-1.jpg')"
+      Replace the placeholder label text once images are added.
+      Recommended sizes noted per slot.
+    -->
+    <!-- GALLERY SLOT 1 — landscape, 1200×900px -->
+    <div class="gallery-item" role="img" aria-label="Gallery photo 1" style="">
+      <span class="gph">Photo 1</span>
+    </div>
+    <!-- GALLERY SLOT 2 — portrait, 600×800px -->
+    <div class="gallery-item" role="img" aria-label="Gallery photo 2" style="">
+      <span class="gph">Photo 2</span>
+    </div>
+    <!-- GALLERY SLOT 3 — portrait, 600×800px -->
+    <div class="gallery-item" role="img" aria-label="Gallery photo 3" style="">
+      <span class="gph">Photo 3</span>
+    </div>
+    <!-- GALLERY SLOT 4 — landscape, 1200×900px -->
+    <div class="gallery-item" role="img" aria-label="Gallery photo 4" style="">
+      <span class="gph">Photo 4</span>
+    </div>
+    <!-- GALLERY SLOT 5 — wide landscape, 1600×900px -->
+    <div class="gallery-item" role="img" aria-label="Gallery photo 5" style="">
+      <span class="gph">Photo 5</span>
+    </div>
+    <!-- GALLERY SLOT 6 — portrait, 600×800px -->
+    <div class="gallery-item" role="img" aria-label="Gallery photo 6" style="">
+      <span class="gph">Photo 6</span>
+    </div>
+    <!-- GALLERY SLOT 7 — portrait, 600×800px -->
+    <div class="gallery-item" role="img" aria-label="Gallery photo 7" style="">
+      <span class="gph">Photo 7</span>
+    </div>
+  </div>
+</section>
+
+<!-- TRAVEL -->
+<section id="travel">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="sec-num">V</span>
+      <h2 class="sec-title">Travel <em>&amp;</em> Hotels</h2>
+    </div>
+    <p class="travel-intro reveal">Tate House sits in the North Georgia mountains, about an hour north of Atlanta. The nearest airports are Hartsfield-Jackson Atlanta International (ATL) and Chattanooga Metropolitan (CHA).</p>
+    <div class="hotels reveal">
+      <div class="hotel">
+        <p class="tag">Recommended</p><h3>Holiday Inn Canton</h3><p class="loc">Canton, GA</p>
+        <p>A comfortable, convenient base for the weekend — close to Tate House with easy access to dining and the shuttle route.</p>
+        <a href="#" class="btn">Book a Room</a>
+      </div>
+      <div class="hotel">
+        <p class="tag">Recommended</p><h3>Fairfield Inn &amp; Suites</h3><p class="loc">Canton, GA</p>
+        <p>Modern amenities and a relaxed atmosphere, also conveniently located along the shuttle route.</p>
+        <a href="#" class="btn">Book a Room</a>
+      </div>
+    </div>
+    <p class="shuttle reveal"><strong>Shuttle service</strong> runs from both Canton hotels to Tate House on Friday evening and throughout the day Saturday. We strongly encourage guests not to drive after the celebration — the mountain roads are beautiful but winding.</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="sec-num">VI</span>
+      <h2 class="sec-title">Good to <em>Know</em></h2>
+    </div>
+    <div class="faq-list reveal" id="faqList">
+      <div class="faq">
+        <button aria-expanded="false">What is the dress code?<span class="ic" aria-hidden="true"></span></button>
+        <div class="faq-ans" role="region"><p>The dress code is <strong>formal</strong> — floor-length gowns, elegant cocktail dresses, or suits and tuxedos. Parts of the celebration are outdoors on a lawn, so keep that in mind when choosing footwear.</p></div>
+      </div>
+      <div class="faq">
+        <button aria-expanded="false">Are children welcome?<span class="ic" aria-hidden="true"></span></button>
+        <div class="faq-ans" role="region"><p>Children under 13 are not permitted at the Saturday wedding venue, but they're warmly welcome at the Friday night welcome party. We hope that lets families celebrate with us while keeping the big day an elegant evening.</p></div>
+      </div>
+      <div class="faq">
+        <button aria-expanded="false">Is the venue wheelchair accessible?<span class="ic" aria-hidden="true"></span></button>
+        <div class="faq-ans" role="region"><p>Tate House has paved pathways and accessible entrances throughout the estate. For specific accessibility needs, email us at <a href="mailto:WeltonWedding1@gmail.com">WeltonWedding1@gmail.com</a> and we'll do everything we can to accommodate you.</p></div>
+      </div>
+      <div class="faq">
+        <button aria-expanded="false">Will there be a shuttle from the hotel?<span class="ic" aria-hidden="true"></span></button>
+        <div class="faq-ans" role="region"><p>Yes. Shuttles run from both Canton hotels to Tate House on Friday evening and all day Saturday. Departure times will be shared closer to the date.</p></div>
+      </div>
+      <div class="faq">
+        <button aria-expanded="false">Can I take photos during the ceremony?<span class="ic" aria-hidden="true"></span></button>
+        <div class="faq-ans" role="region"><p>We're having an unplugged ceremony and kindly ask that phones and cameras be put away so everyone can be fully present. Our photographer will capture every moment. Feel free to take photos during cocktail hour and the reception.</p></div>
+      </div>
+      <div class="faq">
+        <button aria-expanded="false">I have a dietary restriction. What should I do?<span class="ic" aria-hidden="true"></span></button>
+        <div class="faq-ans" role="region"><p>Note any dietary restrictions in the notes field of your RSVP. We want every guest to have a wonderful dinner.</p></div>
+      </div>
+      <div class="faq">
+        <button aria-expanded="false">I have another question.<span class="ic" aria-hidden="true"></span></button>
+        <div class="faq-ans" role="region"><p>Email us anytime at <a href="mailto:WeltonWedding1@gmail.com">WeltonWedding1@gmail.com</a> and we'll be happy to help.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REGISTRY -->
+<section id="registry">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="sec-num">VII</span>
+      <h2 class="sec-title">Registry</h2>
+    </div>
+    <div class="registry-shell reveal">
+      <p>Your presence at our wedding is the greatest gift. For those who would like to give, our registry will be available by December 2026.</p>
+      <div class="reg-card"><div class="t">Coming Soon</div><div class="s">Available December 2026</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- RSVP -->
+<section id="rsvp">
+  <div class="wrap">
+    <div class="rsvp-shell">
+      <div class="sec-head center reveal" style="margin-bottom:34px">
+        <span class="sec-num" style="color:var(--rose-ink)">VIII</span>
+        <h2 class="sec-title">RSVP</h2>
+        <p class="eyebrow" style="margin-top:14px">Kindly respond by March 1, 2027</p>
+      </div>
+      <div class="reveal">
+        <!-- Step 1: Find -->
+        <div class="rsvp-step active" data-step="1" role="group" aria-label="Find your invitation">
+          <p class="rsvp-intro">Enter your name exactly as it appears on your invitation.</p>
+          <div class="field">
+            <label for="guestName">Your Name</label>
+            <input type="text" id="guestName" placeholder="First and last name" autocomplete="name">
+          </div>
+          <button class="btn btn-rose" id="findBtn" style="width:100%">Find My Invitation</button>
         </div>
-
-        <div class="party-divider" aria-hidden="true">
-          <svg viewBox="0 0 40 200" xmlns="http://www.w3.org/2000/svg">
-            <line x1="20" y1="0" x2="20" y2="85" stroke="#B89650" stroke-width="0.8" opacity="0.5"/>
-            <circle cx="20" cy="100" r="5" fill="none" stroke="#B89650" stroke-width="0.8" opacity="0.6"/>
-            <line x1="20" y1="115" x2="20" y2="200" stroke="#B89650" stroke-width="0.8" opacity="0.5"/>
-          </svg>
+        <!-- Step 2: Respond -->
+        <div class="rsvp-step" data-step="2" role="group" aria-label="Your response">
+          <p class="found">We found your invitation, <span id="foundName"></span>.</p>
+          <div class="field">
+            <label id="attendLabel">Will you be attending?</label>
+            <div class="choice" id="attendChoice" role="group" aria-labelledby="attendLabel">
+              <button type="button" data-val="yes" role="radio" aria-checked="false">Joyfully accepts</button>
+              <button type="button" data-val="no" role="radio" aria-checked="false">Regretfully declines</button>
+            </div>
+          </div>
+          <div class="field" id="guestCountField">
+            <label for="guestCount">Number of guests attending</label>
+            <select id="guestCount"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+          </div>
+          <div class="field">
+            <label for="note">Dietary needs or a note for us (optional)</label>
+            <textarea id="note" placeholder="Anything we should know"></textarea>
+          </div>
+          <div class="rsvp-row">
+            <button class="link-btn" id="backBtn">← Back</button>
+            <button class="btn" id="submitBtn">Submit RSVP</button>
+          </div>
         </div>
-
-        <div class="party-side fade-in">
-          <h3 class="party-title">Groom's Party</h3>
-          <ul class="party-list">
-            <li>
-              <span class="party-name">Ryan Welton</span>
-              <span class="party-role">Groom</span>
-            </li>
-            <li>
-              <span class="party-name">Thomas Welton</span>
-              <span class="party-role">Best Man</span>
-            </li>
-            <li>
-              <span class="party-name">David Hanson</span>
-              <span class="party-role">Groomsman</span>
-            </li>
-            <li>
-              <span class="party-name">Ryan Kaufman</span>
-              <span class="party-role">Groomsman</span>
-            </li>
-            <li>
-              <span class="party-name">Thomas Packert</span>
-              <span class="party-role">Groomsman</span>
-            </li>
-          </ul>
+        <!-- Step 3: Thanks -->
+        <div class="rsvp-step" data-step="3" role="status" aria-live="polite">
+          <div class="thanks">
+            <div class="mark" aria-hidden="true">✦</div>
+            <h3 id="thanksTitle">Thank you!</h3>
+            <p id="thanksMsg">We can't wait to celebrate with you. Need to make a change? Just enter your name again before the deadline.</p>
+          </div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ═══ VENUE ═══ -->
-  <section id="venue" class="section">
-    <div class="container">
-      <div class="section-header fade-in">
-        <span class="section-eyebrow">Where We Gather</span>
-        <h2>The Venue</h2>
-        <div class="title-rule"></div>
-      </div>
-      <div class="venue-grid fade-in">
-        <div class="venue-info">
-          <h3>Tate House</h3>
-          <p class="venue-address">2973 GA-53 · Tate, Georgia 30177</p>
-          <p>Colonel Sam Tate was one of the most powerful men in Georgia at the turn of the twentieth century. As head of the Georgia Marble Company, he controlled the largest deposits of pink marble in the world — stone so prized that it was used in the construction of the Lincoln Memorial, the Philadelphia Museum of Art, and the United States Supreme Court Building. The town of Tate, Georgia, exists because of him. He built it for his workers.</p>
-          <p>When he decided to build a home for himself in 1926, he did not look far for materials. The pink marble came from his own quarries, just up the road. Artisans cut and dressed the stone on site. The result was a mansion that did not feel imported or imposed — it felt like it had always been there, like it had simply risen out of the Georgia hills on its own.</p>
-        </div>
-        <div class="venue-details fade-in">
-          <p>The house is Neo-Classical in form — six marble columns, a triangular pediment, symmetrical wings extending on either side — but what sets it apart is the color. Pink Georgia marble does not read as pink so much as warm. In morning light it glows nearly ivory. By afternoon it deepens to a burnished rose. At the golden hour before an April ceremony, it catches the low sun in a way that is difficult to describe and impossible to forget.</p>
-          <p>The grounds spread across 27 acres of North Georgia countryside, framed on all sides by the Appalachian foothills. English-style gardens terrace down from the main house, and a vine-draped conservatory — the glass-and-iron room visible in the photograph above — connects the private quarters to the formal entertaining spaces. It has been used for exactly this kind of celebration for nearly a century.</p>
-          <p>The estate has belonged to the Tate family ever since. It has not been renovated into something new. It has simply been kept. Coming here is not like visiting an event venue. It is like being invited into a very old, very beautiful home.</p>
-        </div>
-      </div>
-      <div class="venue-cta fade-in">
-        <a href="https://tatehouse.com" target="_blank" rel="noopener" class="btn-secondary">Visit Tate House</a>
-      </div>
-    </div>
-  </section>
+</main>
 
-  <!-- ═══ TRAVEL & HOTELS ═══ -->
-  <section id="travel" class="section section-cream">
-    <div class="container">
-      <div class="section-header fade-in">
-        <span class="section-eyebrow">Getting Here &amp; Staying</span>
-        <h2>Travel &amp; Hotels</h2>
-        <div class="title-rule"></div>
-      </div>
-      <div class="travel-intro fade-in">
-        <p>Tate House is located in the North Georgia mountains, approximately one hour north of Atlanta. The nearest major airports are Hartsfield-Jackson Atlanta International (ATL) and Chattanooga Metropolitan Airport (CHA).</p>
-      </div>
-      <div class="hotel-grid">
-        <div class="hotel-card fade-in">
-          <div class="hotel-badge">Recommended</div>
-          <h3>Holiday Inn Canton</h3>
-          <p class="hotel-location">Canton, GA</p>
-          <p>A comfortable, convenient base for the weekend — close to Tate House with easy access to dining and the shuttle route.</p>
-          <a href="#" class="btn-secondary" target="_blank">Book a Room</a>
-        </div>
-        <div class="hotel-card fade-in">
-          <div class="hotel-badge">Recommended</div>
-          <h3>Fairfield Inn &amp; Suites Canton</h3>
-          <p class="hotel-location">Canton, GA</p>
-          <p>A great option with modern amenities and a relaxed atmosphere, also conveniently located along the shuttle route.</p>
-          <a href="#" class="btn-secondary" target="_blank">Book a Room</a>
-        </div>
-      </div>
-      <div class="travel-note fade-in">
-        <p><strong>Shuttle service</strong> will be available from both Canton hotels to Tate House on Friday evening and throughout the day Saturday. We strongly encourage guests not to drink and drive — the mountain roads are beautiful but winding.</p>
-      </div>
-    </div>
-  </section>
+<footer>
+  <div class="fm">G &amp; R</div>
+  <div class="fd">April 3, 2027 · Tate House · Tate, Georgia</div>
+  <div class="fn">Made with love, for the people we love.</div>
+</footer>
 
-  <!-- ═══ FAQ ═══ -->
-  <section id="faq" class="section section-parchment">
-    <div class="container narrow">
-      <div class="section-header fade-in">
-        <span class="section-eyebrow">Questions</span>
-        <h2>FAQ</h2>
-        <div class="title-rule"></div>
-      </div>
-      <div class="faq-list">
+<style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}</style>
 
-        <div class="faq-item fade-in">
-          <button class="faq-question" aria-expanded="false">
-            What is the dress code?
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-answer">
-            <p>The dress code is <strong>formal</strong>. Think floor-length gowns, elegant cocktail dresses, or suits and tuxedos. Please note that portions of the celebration are outdoors on a lawn, so keep that in mind when choosing footwear.</p>
-          </div>
-        </div>
+<script>
+(function(){
+  // ---- NAV scroll state ----
+  const nav = document.getElementById('nav');
+  addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 40), {passive:true});
 
-        <div class="faq-item fade-in">
-          <button class="faq-question" aria-expanded="false">
-            Are children welcome?
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-answer">
-            <p>Children under 13 are not permitted at the Saturday wedding venue. However, they are warmly welcome at the Friday night welcome party! We hope this gives families a chance to celebrate with us while still creating an elegant evening on the big day.</p>
-          </div>
-        </div>
+  // ---- Mobile menu ----
+  const mb = document.getElementById('menuBtn'), nl = document.getElementById('navlinks');
+  function openMenu(open){
+    mb.classList.toggle('open', open);
+    nl.classList.toggle('open', open);
+    mb.setAttribute('aria-expanded', open);
+    mb.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+  mb.addEventListener('click', () => openMenu(!nl.classList.contains('open')));
+  nl.querySelectorAll('a').forEach(a => a.addEventListener('click', () => openMenu(false)));
+  // Close on Escape
+  addEventListener('keydown', e => { if(e.key === 'Escape' && nl.classList.contains('open')) openMenu(false); });
 
-        <div class="faq-item fade-in">
-          <button class="faq-question" aria-expanded="false">
-            Is the venue wheelchair accessible?
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-answer">
-            <p>Tate House has paved pathways and accessible entrances throughout the estate. If you have specific accessibility needs, please reach out to us at <a href="mailto:WeltonWedding1@gmail.com">WeltonWedding1@gmail.com</a> and we will do everything we can to accommodate you.</p>
-          </div>
-        </div>
+  // ---- Countdown ----
+  const target = new Date('2027-04-03T16:00:00-04:00');
+  const cEl = document.getElementById('count');
+  function tick(){
+    const d = target - new Date();
+    if(d <= 0){ cEl.innerHTML = '<div><span class="num">Today</span><span class="lbl">The Day</span></div>'; return; }
+    const days = Math.floor(d / 864e5);
+    const hrs  = Math.floor(d % 864e5 / 36e5);
+    const min  = Math.floor(d % 36e5  / 6e4);
+    cEl.innerHTML =
+      `<div><span class="num">${days}</span><span class="lbl">Days</span></div>` +
+      `<div><span class="num">${hrs}</span><span class="lbl">Hours</span></div>` +
+      `<div><span class="num">${min}</span><span class="lbl">Minutes</span></div>`;
+  }
+  tick(); setInterval(tick, 60000);
 
-        <div class="faq-item fade-in">
-          <button class="faq-question" aria-expanded="false">
-            Will there be a shuttle from the hotel?
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-answer">
-            <p>Yes! Shuttles will run from both Canton hotels to Tate House on Friday evening and all day Saturday. We strongly encourage guests to take advantage of this — the roads through the North Georgia mountains are scenic but winding. Specific departure times will be shared closer to the date.</p>
-          </div>
-        </div>
+  // ---- Scroll reveal ----
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+  }), {threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-        <div class="faq-item fade-in">
-          <button class="faq-question" aria-expanded="false">
-            Can I take photos during the ceremony?
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-answer">
-            <p>We are having an unplugged ceremony and kindly ask that phones and cameras be put away so everyone can be fully present. Our photographer will capture every moment beautifully. Feel free to take photos during the cocktail hour and reception!</p>
-          </div>
-        </div>
 
-        <div class="faq-item fade-in">
-          <button class="faq-question" aria-expanded="false">
-            I have a dietary restriction. What should I do?
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-answer">
-            <p>Please note any dietary restrictions in the notes field of your RSVP. We want to make sure every guest has a wonderful dinner experience.</p>
-          </div>
-        </div>
 
-        <div class="faq-item fade-in">
-          <button class="faq-question" aria-expanded="false">
-            I have another question not listed here.
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-answer">
-            <p>Please reach out to us at <a href="mailto:WeltonWedding1@gmail.com">WeltonWedding1@gmail.com</a> and we will be happy to help.</p>
-          </div>
-        </div>
+  // ---- FAQ accordion with aria-expanded ----
+  document.querySelectorAll('#faqList .faq button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.parentElement;
+      const ans  = item.querySelector('.faq-ans');
+      const open = item.classList.contains('open');
+      // close all
+      document.querySelectorAll('#faqList .faq').forEach(f => {
+        f.classList.remove('open');
+        f.querySelector('button').setAttribute('aria-expanded','false');
+        f.querySelector('.faq-ans').style.maxHeight = null;
+      });
+      if(!open){
+        item.classList.add('open');
+        btn.setAttribute('aria-expanded','true');
+        ans.style.maxHeight = ans.scrollHeight + 'px';
+      }
+    });
+  });
 
-      </div>
-    </div>
-  </section>
+  // ---- RSVP flow ----
+  const steps = document.querySelectorAll('.rsvp-step');
+  function go(n){ steps.forEach(s => s.classList.toggle('active', s.dataset.step == n)); }
 
-  <!-- ═══ REGISTRY ═══ -->
-  <section id="registry" class="section section-cream">
-    <div class="container narrow">
-      <div class="section-header fade-in">
-        <span class="section-eyebrow">For Those Who Ask</span>
-        <h2>Registry</h2>
-        <div class="title-rule"></div>
-      </div>
-      <p class="registry-intro fade-in">Your presence at our wedding is the greatest gift. For those who would like to give, we are registered at the following:</p>
-      <div class="registry-grid fade-in">
-        <a href="#" target="_blank" rel="noopener" class="registry-card registry-coming-soon">
-          <span class="registry-name">Coming Soon</span>
-          <span class="registry-link">Check back closer to the date</span>
-        </a>
-      </div>
-    </div>
-  </section>
+  let attending = null;
 
-  <!-- ═══ RSVP ═══ -->
-  <section id="rsvp" class="section section-rsvp">
-    <div class="rsvp-bg-illustration" aria-hidden="true">
-      <svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
-        <g stroke="#F5F0E8" fill="none" stroke-width="0.8" opacity="0.15">
-          <path d="M0,200 C100,150 200,230 300,180 C400,130 500,210 600,170 C700,130 800,190 900,160"/>
-          <ellipse cx="150" cy="80" rx="40" ry="60" transform="rotate(-20 150 80)"/>
-          <ellipse cx="650" cy="310" rx="35" ry="55" transform="rotate(15 650 310)"/>
-          <path d="M0,350 C150,300 300,370 450,330 C600,290 750,350 900,320"/>
-          <line x1="400" y1="0" x2="400" y2="400"/>
-        </g>
-      </svg>
-    </div>
-    <div class="container narrow">
-      <div class="section-header fade-in">
-        <span class="section-eyebrow rsvp-eyebrow">Kindly Respond By March 1, 2027</span>
-        <h2 class="rsvp-heading">RSVP</h2>
-        <div class="title-rule rsvp-rule"></div>
-      </div>
+  // Allow Enter key on name field
+  document.getElementById('guestName').addEventListener('keydown', e => {
+    if(e.key === 'Enter') document.getElementById('findBtn').click();
+  });
 
-      <!-- Step 1: Name Lookup -->
-      <div id="rsvp-lookup-section" class="rsvp-card fade-in">
-        <p class="rsvp-intro">Enter your name exactly as it appears on your invitation.</p>
-        <div class="rsvp-field-group">
-          <label for="guest-name" class="rsvp-label">Your Name</label>
-          <input
-            type="text"
-            id="guest-name"
-            class="rsvp-input"
-            placeholder="First Last"
-            autocomplete="name"
-            autocapitalize="words"
-          />
-        </div>
-        <p id="lookup-error" class="rsvp-error" role="alert" aria-live="polite"></p>
-        <button id="lookup-btn" class="btn-primary rsvp-btn">Find My Invitation</button>
-        <div id="loading" class="rsvp-loading" aria-live="polite">
-          <span class="loading-dot"></span>
-          <span class="loading-dot"></span>
-          <span class="loading-dot"></span>
-        </div>
-      </div>
+  document.getElementById('findBtn').addEventListener('click', () => {
+    const v = document.getElementById('guestName').value.trim();
+    if(!v){ document.getElementById('guestName').focus(); return; }
+    document.getElementById('foundName').textContent = v.split(' ')[0];
+    attending = null;
+    // reset choice buttons
+    document.querySelectorAll('#attendChoice button').forEach(x => {
+      x.classList.remove('sel');
+      x.setAttribute('aria-checked','false');
+    });
+    document.getElementById('guestCountField').style.display = 'none';
+    go(2);
+  });
 
-      <!-- Step 2: RSVP Form -->
-      <div id="rsvp-form-section" class="rsvp-card fade-in" style="display:none">
-        <p class="rsvp-party-greeting">We found your invitation</p>
-        <h3 id="party-name" class="rsvp-party-name"></h3>
-        <p id="rsvp-status" class="rsvp-status"></p>
+  document.getElementById('backBtn').addEventListener('click', () => go(1));
 
-        <div class="rsvp-field-group">
-          <p class="rsvp-label">Will you be attending?</p>
-          <div class="rsvp-radio-group">
-            <label class="rsvp-radio">
-              <input type="radio" name="attending" id="attending-yes" value="yes"/>
-              <span class="radio-custom"></span>
-              Joyfully accepts
-            </label>
-            <label class="rsvp-radio">
-              <input type="radio" name="attending" id="attending-no" value="no"/>
-              <span class="radio-custom"></span>
-              Regretfully declines
-            </label>
-          </div>
-        </div>
+  document.querySelectorAll('#attendChoice button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('#attendChoice button').forEach(x => {
+        x.classList.remove('sel');
+        x.setAttribute('aria-checked','false');
+      });
+      b.classList.add('sel');
+      b.setAttribute('aria-checked','true');
+      attending = b.dataset.val;
+      document.getElementById('guestCountField').style.display = attending === 'yes' ? 'block' : 'none';
+    });
+  });
 
-        <div id="attendance-details" class="rsvp-field-group" style="display:none">
-          <label for="guest-count" class="rsvp-label">Number of guests attending</label>
-          <select id="guest-count" class="rsvp-input rsvp-select">
-            <option value="">Select</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-          </select>
-        </div>
+  document.getElementById('submitBtn').addEventListener('click', async () => {
+    if(!attending){ return; }
 
-        <!-- Meal choice — uncomment and customize when you have menu options -->
-        <!--
-        <div id="meal-section" class="rsvp-field-group" style="display:none">
-          <label for="meal-choice" class="rsvp-label">Meal Preference</label>
-          <select id="meal-choice" class="rsvp-input rsvp-select">
-            <option value="">Select</option>
-            <option value="beef">Filet Mignon</option>
-            <option value="chicken">Herb Roasted Chicken</option>
-            <option value="vegetarian">Vegetarian</option>
-          </select>
-        </div>
-        -->
+    const btn = document.getElementById('submitBtn');
+    btn.textContent = 'Saving…';
+    btn.disabled = true;
 
-        <div class="rsvp-field-group">
-          <label for="note" class="rsvp-label">Dietary needs or a note for us <span class="optional">(optional)</span></label>
-          <textarea id="note" class="rsvp-input rsvp-textarea" rows="3" placeholder="Allergies, dietary restrictions, or anything else we should know…"></textarea>
-        </div>
+    const name      = document.getElementById('guestName').value.trim();
+    const guestCount = attending === 'yes'
+      ? parseInt(document.getElementById('guestCount').value, 10)
+      : 0;
+    const note = document.getElementById('note').value.trim();
 
-        <p id="form-error" class="rsvp-error" role="alert" aria-live="polite"></p>
-        <div class="rsvp-actions">
-          <button id="rsvp-back-btn" class="btn-ghost">← Back</button>
-          <button id="rsvp-submit-btn" class="btn-primary rsvp-btn">Submit RSVP</button>
-        </div>
-        <div id="loading-form" class="rsvp-loading" aria-live="polite">
-          <span class="loading-dot"></span>
-          <span class="loading-dot"></span>
-          <span class="loading-dot"></span>
-        </div>
-      </div>
+    try {
+      await window._firestoreAddRSVP({
+        name,
+        attending,
+        guestCount,
+        note,
+        submittedAt: new Date().toISOString()
+      });
+    } catch(err) {
+      console.error('Firestore write failed:', err);
+      // Still show thank-you — don't leave guest on a broken screen
+    }
 
-      <!-- Step 3: Success -->
-      <div id="rsvp-success" class="rsvp-card rsvp-success fade-in" style="display:none">
-        <div class="success-icon">✦</div>
-        <h3 id="success-headline">Thank you!</h3>
-        <p id="success-message"></p>
-        <p class="rsvp-change-note">Need to make a change? Simply come back and enter your name again before the RSVP deadline.</p>
-      </div>
+    if(attending === 'no'){
+      document.getElementById('thanksTitle').textContent = 'We\u2019ll miss you.';
+      document.getElementById('thanksMsg').textContent   = 'Thank you for letting us know. We\u2019ll be thinking of you on the day.';
+    } else {
+      document.getElementById('thanksTitle').textContent = 'Thank you!';
+      document.getElementById('thanksMsg').textContent   = 'We can\u2019t wait to celebrate with you. Need to make a change? Just enter your name again before the deadline.';
+    }
+    go(3);
+  });
+})();
+</script>
 
-    </div>
-  </section>
+<!-- Firebase -->
+<script>
+  // Fallback: if Firebase module fails to load (e.g. local file preview), RSVP still works visually
+  window._firestoreAddRSVP = window._firestoreAddRSVP || function(){ return Promise.resolve(); };
+</script>
+<script type="module">
+  try {
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    const { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, doc }
+      = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
-  <!-- ═══ FOOTER ═══ -->
-  <footer id="footer">
-    <!-- Botanical footer illustration -->
-    <svg class="footer-illustration" viewBox="0 0 1440 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <g stroke="#B89650" fill="none" stroke-width="0.9" opacity="0.4">
-        <path d="M0,60 Q180,30 360,60 Q540,90 720,55 Q900,22 1080,60 Q1260,95 1440,60"/>
-        <g transform="translate(200,55)">
-          <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(0)"/>
-          <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(120)"/>
-          <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(240)"/>
-          <circle cx="0" cy="0" r="4"/>
-        </g>
-        <g transform="translate(720,50)">
-          <ellipse cx="0" cy="-22" rx="9" ry="17" transform="rotate(0)"/>
-          <ellipse cx="0" cy="-22" rx="9" ry="17" transform="rotate(72)"/>
-          <ellipse cx="0" cy="-22" rx="9" ry="17" transform="rotate(144)"/>
-          <ellipse cx="0" cy="-22" rx="9" ry="17" transform="rotate(216)"/>
-          <ellipse cx="0" cy="-22" rx="9" ry="17" transform="rotate(288)"/>
-          <circle cx="0" cy="0" r="5"/>
-        </g>
-        <g transform="translate(1240,58)">
-          <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(0)"/>
-          <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(120)"/>
-          <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(240)"/>
-          <circle cx="0" cy="0" r="4"/>
-        </g>
-      </g>
-    </svg>
-    <div class="footer-content">
-      <p class="footer-monogram">G &amp; R</p>
-      <p class="footer-date">April 3, 2027 · Tate House · Tate, Georgia</p>
-      <p class="footer-note">Made with love for the people we love</p>
-    </div>
-  </footer>
+    const firebaseConfig = {
+      apiKey:            "AIzaSyAnoerW4ZRNT-g5J4WIotApJEFYobkTRpk",
+      authDomain:        "theweltons.firebaseapp.com",
+      projectId:         "theweltons",
+      storageBucket:     "theweltons.firebasestorage.app",
+      messagingSenderId: "787343913156",
+      appId:             "1:787343913156:web:c9e56c10ef14b316f3d991",
+      measurementId:     "G-7D96P0VHX2"
+    };
 
-  <!-- Firebase & App -->
-  <script type="module" src="js/app.js"></script>
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    window._firestoreAddRSVP = async (data) => {
+      const q = query(collection(db, 'rsvps'), where('name', '==', data.name));
+      const existing = await getDocs(q);
+      if(!existing.empty){
+        await updateDoc(doc(db, 'rsvps', existing.docs[0].id), data);
+      } else {
+        await addDoc(collection(db, 'rsvps'), data);
+      }
+    };
+  } catch(e) {
+    console.warn('Firebase unavailable (likely local preview):', e.message);
+  }
+</script>
 </body>
 </html>

@@ -1393,17 +1393,23 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   async function loadContent(){
     await initFirestore();
     // Text
-    const textSnap = await fm.getDoc(fm.doc(db,'siteContent','main'));
-    if(textSnap.exists()){
-      savedContent = textSnap.data();
-      buildEditableMap().forEach(({el,key}) => {
-        if(savedContent[key]) el.innerHTML = savedContent[key];
-      });
-    }
+    try {
+      const textSnap = await fm.getDoc(fm.doc(db,'siteContent','main'));
+      if(textSnap.exists()){
+        savedContent = textSnap.data();
+        buildEditableMap().forEach(({el,key}) => {
+          if(savedContent[key]) el.innerHTML = savedContent[key];
+        });
+      }
+    } catch(e){ console.error('loadContent text failed:', e); }
+
     // Links
-    const linkSnap = await fm.getDoc(fm.doc(db,'siteLinks','main'));
-    if(linkSnap.exists()) applyLinks(linkSnap.data());
-    // Images — load all in parallel
+    try {
+      const linkSnap = await fm.getDoc(fm.doc(db,'siteLinks','main'));
+      if(linkSnap.exists()) applyLinks(linkSnap.data());
+    } catch(e){ console.error('loadContent links failed:', e); }
+
+    // Images — load all in parallel with individual error logging
     const imageKeys = [
       'img-background',
       'img-hero-1','img-hero-2','img-hero-3','img-hero-4','img-hero-5',
@@ -1415,9 +1421,22 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     await Promise.all(imageKeys.map(async key => {
       try {
         const snap = await fm.getDoc(fm.doc(db,'siteImages', key));
-        if(snap.exists() && snap.data().dataUrl) applyImage(key, snap.data().dataUrl);
-      } catch(e){}
+        if(snap.exists()){
+          const data = snap.data();
+          if(data.dataUrl){
+            console.log(`✓ Loaded ${key} (${Math.round(data.dataUrl.length * 0.75 / 1024)}KB)`);
+            applyImage(key, data.dataUrl);
+          } else {
+            console.warn(`✗ ${key} exists but has no dataUrl`);
+          }
+        } else {
+          console.log(`– ${key} not in Firestore (not uploaded yet)`);
+        }
+      } catch(e){
+        console.error(`✗ ${key} load error:`, e.code, e.message);
+      }
     }));
+    console.log('loadContent complete');
   }
 
   // ---- Activate admin ----

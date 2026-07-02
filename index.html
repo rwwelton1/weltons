@@ -468,11 +468,6 @@ section{padding:120px 0;position:relative;z-index:2}
 .rsvp-event-name{font-family:var(--serif);font-style:italic;font-size:1.15rem;margin-bottom:3px}
 .rsvp-event-meta{font-size:.78rem;color:var(--ink-soft);margin-bottom:10px}
 .rsvp-event-desc{font-size:.88rem;line-height:1.55;margin-bottom:16px}
-.rsvp-event-guest{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
-.rsvp-event-guest:first-of-type{border-top:none}
-.rsvp-event-guest .peg-name{font-size:.9rem}
-.rsvp-event-guest label{display:flex;align-items:center;gap:7px;font-size:.82rem;color:var(--ink-soft);cursor:pointer}
-.rsvp-event-guest input[type="checkbox"]{width:17px;height:17px}
 
 /* ---- FOOTER ---- */
 footer{background:var(--ink);color:var(--ivory);text-align:center;padding:70px 32px;position:relative;z-index:2}
@@ -943,21 +938,28 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         ${ev.details ? `<div class="rsvp-event-meta">${ev.details}</div>` : ''}
         ${ev.invite ? `<div class="rsvp-event-desc">${ev.invite}</div>` : ''}
         ${currentParty.names.map((name, i) => `
-          <div class="rsvp-event-guest">
-            <span class="peg-name">${name}</span>
-            <label>
-              <input type="checkbox" data-event="${ev.id}" data-name="${i}">
-              Will attend
-            </label>
+          <div class="party-guest">
+            <div class="pg-name">${name}</div>
+            <div class="choice" role="group" aria-label="${name} attending ${ev.name}?">
+              <button type="button" data-event="${ev.id}" data-name="${i}" data-val="yes" role="radio" aria-checked="false">Joyfully accepts</button>
+              <button type="button" data-event="${ev.id}" data-name="${i}" data-val="no" role="radio" aria-checked="false">Regretfully declines</button>
+            </div>
           </div>`).join('')}
       </div>`).join('');
 
-    wrap.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-      cb.addEventListener('change', () => {
-        const eventId = cb.dataset.event;
-        const name = currentParty.names[cb.dataset.name];
+    wrap.querySelectorAll('.rsvp-event .choice button').forEach(b => {
+      b.addEventListener('click', () => {
+        const eventId = b.dataset.event;
+        const name = currentParty.names[b.dataset.name];
+        const group = b.closest('.choice');
+        group.querySelectorAll('button').forEach(x => {
+          x.classList.remove('sel');
+          x.setAttribute('aria-checked','false');
+        });
+        b.classList.add('sel');
+        b.setAttribute('aria-checked','true');
         currentEventResponses[eventId] = currentEventResponses[eventId] || {};
-        currentEventResponses[eventId][name] = cb.checked;
+        currentEventResponses[eventId][name] = b.dataset.val;
       });
     });
   }
@@ -1046,7 +1048,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const responses = currentParty.names.map(name => {
       const events = {};
       Object.keys(currentEventResponses).forEach(eventId => {
-        if(currentEventResponses[eventId][name]) events[eventId] = 'yes';
+        const val = currentEventResponses[eventId][name];
+        if(val === 'yes' || val === 'no') events[eventId] = val;
       });
       return { name, attending: currentResponses[name], events };
     });

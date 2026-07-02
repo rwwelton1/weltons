@@ -462,6 +462,8 @@ section{padding:120px 0;position:relative;z-index:2}
 .rsvp-row{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:10px}
 .link-btn{background:none;border:none;color:var(--sage-deep);cursor:pointer;font-family:var(--sans);font-size:.85rem;letter-spacing:.04em}
 .found{font-family:var(--serif);font-style:italic;font-size:1.25rem;margin-bottom:22px}
+.hierarchy-note{font-size:.82rem;color:var(--ink-soft);margin:-14px 0 22px}
+.hierarchy-note:empty{display:none}
 .thanks .mark{font-size:2rem;color:var(--rose-ink)}
 .thanks h3{font-size:1.9rem;font-style:italic;margin:10px 0}
 .thanks p{color:var(--ink-soft);font-size:.95rem}
@@ -471,6 +473,7 @@ section{padding:120px 0;position:relative;z-index:2}
 .party-guest{margin-bottom:22px;text-align:left;padding-bottom:20px;border-bottom:1px solid var(--line)}
 .party-guest:last-child{border-bottom:none}
 .party-guest .pg-name{font-family:var(--serif);font-style:italic;font-size:1.1rem;margin-bottom:11px}
+.pg-status{display:inline-block;font-family:var(--sans);font-style:normal;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--sage-deep);background:rgba(126,139,109,.14);border-radius:20px;padding:3px 10px;margin-left:10px;vertical-align:middle}
 .party-guest .choice{margin-bottom:0}
 .party-guest .choice button{padding:13px;font-size:.92rem}
 
@@ -792,6 +795,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         <!-- Step 2: Respond -->
         <div class="rsvp-step" data-step="2" role="group" aria-label="Your response">
           <p class="found">We found your invitation, <span id="foundName"></span>.</p>
+          <p class="hierarchy-note" id="hierarchyNote"></p>
           <div class="field">
             <label>Will you be attending?</label>
             <div class="party-list" id="partyList"><!-- guest rows injected by JS --></div>
@@ -906,9 +910,11 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
   function normName(s){ return (s||'').trim().toLowerCase().replace(/\s+/g,' '); }
 
-  let currentParty = null;      // { id, names:[...], category }
+  let currentParty = null;      // { id, names:[...], category, primary:[...] } — full party record
+  let currentDisplayNames = []; // names actually shown/editable this session (order + hierarchy applied)
   let currentResponses = {};    // { name: 'yes' | 'no' }
   let currentEventResponses = {}; // { eventId: { name: true|false } }
+  let respondedNames = new Set(); // names that already had a saved answer when the form loaded
   let partiesCache = null;      // lazy-loaded list of all parties from Firestore
   let eventsCache = null;       // lazy-loaded list of custom RSVP events
 
@@ -965,21 +971,24 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         ${metaLine ? `<div class="rsvp-event-meta">${metaLine}</div>` : ''}
         ${ev.address ? `<div class="rsvp-event-meta"><a href="${eventMapsUrl(ev.address)}" target="_blank" rel="noopener">${ev.address} ↗</a></div>` : ''}
         ${ev.invite ? `<div class="rsvp-event-desc">${ev.invite}</div>` : ''}
-        ${currentParty.names.map((name, i) => `
+        ${currentDisplayNames.map((name, i) => {
+          const existingVal = (currentEventResponses[ev.id] || {})[name];
+          return `
           <div class="party-guest">
             <div class="pg-name">${name}</div>
             <div class="choice" role="group" aria-label="${name} attending ${ev.name}?">
-              <button type="button" data-event="${ev.id}" data-name="${i}" data-val="yes" role="radio" aria-checked="false">Joyfully accepts</button>
-              <button type="button" data-event="${ev.id}" data-name="${i}" data-val="no" role="radio" aria-checked="false">Regretfully declines</button>
+              <button type="button" data-event="${ev.id}" data-name="${i}" data-val="yes" role="radio" aria-checked="${existingVal==='yes'}" class="${existingVal==='yes'?'sel':''}">Joyfully accepts</button>
+              <button type="button" data-event="${ev.id}" data-name="${i}" data-val="no" role="radio" aria-checked="${existingVal==='no'}" class="${existingVal==='no'?'sel':''}">Regretfully declines</button>
             </div>
-          </div>`).join('')}
+          </div>`;
+        }).join('')}
       </div>`;
     }).join('');
 
     wrap.querySelectorAll('.rsvp-event .choice button').forEach(b => {
       b.addEventListener('click', () => {
         const eventId = b.dataset.event;
-        const name = currentParty.names[b.dataset.name];
+        const name = currentDisplayNames[b.dataset.name];
         const group = b.closest('.choice');
         group.querySelectorAll('button').forEach(x => {
           x.classList.remove('sel');
@@ -996,21 +1005,23 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   function renderPartyList(){
     const wrap = document.getElementById('partyList');
     wrap.innerHTML = '';
-    currentParty.names.forEach((name, i) => {
+    currentDisplayNames.forEach((name, i) => {
+      const existingVal = currentResponses[name];
+      const wasResponded = respondedNames.has(name);
       const row = document.createElement('div');
       row.className = 'party-guest';
       row.innerHTML = `
-        <div class="pg-name">${name}</div>
+        <div class="pg-name">${name}${wasResponded ? '<span class="pg-status">Already responded</span>' : ''}</div>
         <div class="choice" role="group" aria-label="${name} attending?">
-          <button type="button" data-name="${i}" data-val="yes" role="radio" aria-checked="false">Joyfully accepts</button>
-          <button type="button" data-name="${i}" data-val="no" role="radio" aria-checked="false">Regretfully declines</button>
+          <button type="button" data-name="${i}" data-val="yes" role="radio" aria-checked="${existingVal==='yes'}" class="${existingVal==='yes'?'sel':''}">Joyfully accepts</button>
+          <button type="button" data-name="${i}" data-val="no" role="radio" aria-checked="${existingVal==='no'}" class="${existingVal==='no'?'sel':''}">Regretfully declines</button>
         </div>`;
       wrap.appendChild(row);
     });
     wrap.querySelectorAll('.choice button').forEach(b => {
       b.addEventListener('click', () => {
         const idx = b.dataset.name;
-        const name = currentParty.names[idx];
+        const name = currentDisplayNames[idx];
         const group = b.closest('.choice');
         group.querySelectorAll('button').forEach(x => {
           x.classList.remove('sel');
@@ -1055,14 +1066,57 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       return;
     }
 
-    currentParty = { id: match.id, names: match.names, category: match.category || '' };
+    const matchedName = match.names.find(n => normName(n) === norm);
+    currentParty = { id: match.id, names: match.names, category: match.category || '', primary: match.primary || [] };
     currentResponses = {};
     currentEventResponses = {};
+    respondedNames = new Set();
+
+    // Hierarchy: if this party has designated primary contacts (e.g. parents) and the
+    // person who just typed their name isn't one of them, they can only respond for
+    // themselves — not the rest of the family. No primaries set = everyone can manage
+    // everyone (the original, simpler behavior).
+    const hasPrimaries = currentParty.primary.length > 0;
+    const isPrimary = !hasPrimaries || currentParty.primary.includes(matchedName);
+
+    const noteEl = document.getElementById('hierarchyNote');
+    if(isPrimary){
+      // Matched guest first, then the rest of the party in their existing order
+      currentDisplayNames = [matchedName, ...currentParty.names.filter(n => n !== matchedName)];
+      if(noteEl) noteEl.textContent = '';
+    } else {
+      currentDisplayNames = [matchedName];
+      const others = currentParty.primary.filter(n => n !== matchedName);
+      if(noteEl){
+        noteEl.textContent = others.length
+          ? `Responding just for yourself — ${others.join(' or ')} can respond for the rest of your party.`
+          : '';
+      }
+    }
+
+    // Prefill with whatever's already been submitted for this party — by this person
+    // earlier, or by a parent/primary contact on their behalf — instead of starting blank.
+    const existing = await window._firestoreGetRSVP(currentParty.id);
+    if(existing){
+      (existing.responses || []).forEach(r => {
+        if(currentDisplayNames.includes(r.name) && (r.attending === 'yes' || r.attending === 'no')){
+          currentResponses[r.name] = r.attending;
+          respondedNames.add(r.name);
+        }
+        Object.keys(r.events || {}).forEach(eventId => {
+          currentEventResponses[eventId] = currentEventResponses[eventId] || {};
+          currentEventResponses[eventId][r.name] = r.events[eventId];
+        });
+      });
+      if(existing.note) document.getElementById('note').value = existing.note;
+    } else {
+      document.getElementById('note').value = '';
+    }
 
     document.getElementById('foundName').textContent =
-      currentParty.names.length > 1
-        ? currentParty.names.slice(0, -1).join(', ') + ' & ' + currentParty.names.slice(-1)
-        : currentParty.names[0];
+      currentDisplayNames.length > 1
+        ? currentDisplayNames.slice(0, -1).join(', ') + ' & ' + currentDisplayNames.slice(-1)
+        : currentDisplayNames[0];
 
     renderPartyList();
     renderEventBlocks();
@@ -1073,7 +1127,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   document.getElementById('backBtn').addEventListener('click', () => go(1));
 
   document.getElementById('submitBtn').addEventListener('click', async () => {
-    if(!currentParty || Object.keys(currentResponses).length < currentParty.names.length){
+    if(!currentParty || Object.keys(currentResponses).length < currentDisplayNames.length){
       alert('Please respond for everyone in your party before submitting.');
       return;
     }
@@ -1083,7 +1137,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     btn.disabled = true;
 
     const note = document.getElementById('note').value.trim();
-    const responses = currentParty.names.map(name => {
+    const responses = currentDisplayNames.map(name => {
       const events = {};
       Object.keys(currentEventResponses).forEach(eventId => {
         const val = currentEventResponses[eventId][name];
@@ -1125,16 +1179,18 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   window._firestoreAddRSVP    = window._firestoreAddRSVP    || function(){ return Promise.resolve(); };
   window._firestoreGetParties = window._firestoreGetParties || function(){ return Promise.resolve([]); };
   window._firestoreGetEvents  = window._firestoreGetEvents  || function(){ return Promise.resolve([]); };
+  window._firestoreGetRSVP    = window._firestoreGetRSVP    || function(){ return Promise.resolve(null); };
   window._firestoreSaveParty  = window._firestoreSaveParty  || function(){ return Promise.reject(new Error('Firebase unavailable')); };
   window._firestoreDeleteParty= window._firestoreDeleteParty|| function(){ return Promise.reject(new Error('Firebase unavailable')); };
   window._firestoreSetPartyCategory = window._firestoreSetPartyCategory || function(){ return Promise.reject(new Error('Firebase unavailable')); };
+  window._firestoreSetPartyPrimary = window._firestoreSetPartyPrimary || function(){ return Promise.reject(new Error('Firebase unavailable')); };
   window._firestoreSaveEvent   = window._firestoreSaveEvent   || function(){ return Promise.reject(new Error('Firebase unavailable')); };
   window._firestoreDeleteEvent = window._firestoreDeleteEvent || function(){ return Promise.reject(new Error('Firebase unavailable')); };
 </script>
 <script type="module">
   try {
     const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
-    const { getFirestore, collection, addDoc, setDoc, query, where, getDocs, updateDoc, doc, deleteDoc }
+    const { getFirestore, collection, addDoc, setDoc, query, where, getDocs, updateDoc, doc, deleteDoc, getDoc }
       = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
     const firebaseConfig = {
@@ -1150,10 +1206,22 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
 
-    // Fetch every party in the guest list, e.g. { id, names:['Wes Avett','James Avett','Nancy Avett'], category }
+    // Fetch every party in the guest list, e.g. { id, names:['Wes Avett','James Avett','Nancy Avett'], category, primary }
     window._firestoreGetParties = async () => {
       const snap = await getDocs(collection(db, 'parties'));
-      return snap.docs.map(d => ({ id: d.id, names: d.data().names || [], category: d.data().category || '' }));
+      return snap.docs.map(d => ({ id: d.id, names: d.data().names || [], category: d.data().category || '', primary: d.data().primary || [] }));
+    };
+
+    // Fetch an already-submitted RSVP (if any) so the form can prefill previous
+    // answers instead of starting blank every time someone looks themselves up.
+    window._firestoreGetRSVP = async (partyId) => {
+      if(!partyId) return null;
+      try {
+        const snap = await getDoc(doc(db, 'rsvps', partyId));
+        return snap.exists() ? snap.data() : null;
+      } catch(e) {
+        return null;
+      }
     };
 
     // Fetch custom RSVP events (e.g. Bride's Lunch, Groom's Outing) so the guest flow
@@ -1166,15 +1234,25 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     // partyId is the matched Firestore doc id (or null for a walk-in / unregistered guest).
     // partyNames is used as a stable fallback key so repeat submissions from the same
     // unregistered guest update rather than duplicate.
+    // Responses are merged per-guest (not overwritten wholesale) so a restricted,
+    // self-only submission from a non-primary family member never erases responses
+    // already recorded for the rest of their party.
     window._firestoreAddRSVP = async (partyId, partyNames, data) => {
-      if(partyId){
-        await setDoc(doc(db, 'rsvps', partyId), { partyId, ...data }, { merge: true });
-        return;
-      }
-      // Unregistered / solo guest — key the rsvp doc off their normalized name so
-      // resubmitting updates the same record instead of creating duplicates.
-      const fallbackId = 'solo-' + partyNames[0].trim().toLowerCase().replace(/[^a-z0-9]+/g,'-');
-      await setDoc(doc(db, 'rsvps', fallbackId), { partyId: fallbackId, ...data }, { merge: true });
+      const targetId = partyId || ('solo-' + partyNames[0].trim().toLowerCase().replace(/[^a-z0-9]+/g,'-'));
+      const ref = doc(db, 'rsvps', targetId);
+      let existingResponses = [];
+      try {
+        const snap = await getDoc(ref);
+        if(snap.exists()) existingResponses = snap.data().responses || [];
+      } catch(e) { /* first submission for this party — nothing to merge */ }
+
+      const merged = [...existingResponses];
+      (data.responses || []).forEach(r => {
+        const idx = merged.findIndex(m => m.name === r.name);
+        if(idx >= 0) merged[idx] = r; else merged.push(r);
+      });
+
+      await setDoc(ref, { ...data, partyId: targetId, responses: merged }, { merge: true });
     };
   } catch(e) {
     console.warn('Firebase unavailable (likely local preview):', e.message);
@@ -1383,12 +1461,15 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   .ev-card-cat-tag{display:flex;align-items:center;gap:5px;font-size:.66rem;color:var(--ink-soft)}
   .ev-card-actions{display:flex;gap:8px;flex-shrink:0}
 
-  .gl-chip{display:flex;align-items:center;gap:5px;background:var(--shell);border:1px solid var(--line);border-radius:20px;padding:7px 8px 7px 13px;font-size:.82rem;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;margin-bottom:6px;transition:background .15s,border-color .15s,color .15s}
+  .gl-chip{display:flex;align-items:center;gap:5px;background:var(--shell);border:1px solid var(--line);border-radius:20px;padding:7px 8px;font-size:.82rem;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;margin-bottom:6px;transition:background .15s,border-color .15s,color .15s}
   .gl-chip.dragging{opacity:.3}
   .gl-chip.selected{background:var(--rose-ink);border-color:var(--rose-ink);color:#fff}
   .gl-chip.selected .gl-chip-x{color:rgba(255,255,255,.8)}
   .gl-chip .gl-chip-x{background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:.85rem;line-height:1;padding:3px 5px}
   .gl-chip .gl-chip-x:hover{color:var(--rose-ink)}
+  .gl-chip-star{background:none;border:none;cursor:pointer;font-size:.9rem;line-height:1;padding:2px 2px 2px 4px;color:var(--ink-soft);opacity:.55}
+  .gl-chip-star.active{color:var(--gold);opacity:1}
+  .gl-hierarchy-hint{width:100%;font-size:.7rem;color:var(--ink-soft);margin-bottom:10px;line-height:1.5}
   .gl-drag-ghost{position:fixed;z-index:9999;pointer-events:none;background:var(--rose-ink);color:#fff;border-radius:20px;padding:9px 16px;font-size:.85rem;box-shadow:0 8px 20px rgba(0,0,0,.28);transform:translate(-50%,-50%);white-space:nowrap}
 
   /* Links modal */
@@ -1617,7 +1698,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       '.img-placeholder',// placeholder labels
       '.gph',            // gallery placeholders
       'nav', '.navlinks', // navigation — excluded by request
-      '.rsvp-intro', '.found', // RSVP UI text
+      '.rsvp-intro', '.found', '.hierarchy-note', // RSVP UI text
       '#thanksTitle', '#thanksMsg',
       'script', 'style',
     ];
@@ -1884,6 +1965,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     await initFirestore();
     await fm.setDoc(fm.doc(db,'parties', partyId), { category }, { merge: true });
   };
+  window._firestoreSetPartyPrimary = async (partyId, primary) => {
+    await initFirestore();
+    await fm.setDoc(fm.doc(db,'parties', partyId), { primary }, { merge: true });
+  };
 
   // ---- Admin-only custom RSVP event management (Bride's Lunch, Groom's Outing, etc.) ----
   window._firestoreSaveEvent = async (eventId, data) => {
@@ -2118,7 +2203,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         fm.getDocs(fm.collection(db,'parties')),
         fm.getDocs(fm.collection(db,'events'))
       ]);
-      allParties = partySnap.docs.map(d => ({ id: d.id, names: d.data().names || [], label: d.data().label || '', category: d.data().category || '' }));
+      allParties = partySnap.docs.map(d => ({ id: d.id, names: d.data().names || [], label: d.data().label || '', category: d.data().category || '', primary: d.data().primary || [] }));
       allEvents  = eventSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       const rsvpRows = rsvpSnap.docs.map(d => d.data());
       renderResponsesPane(rsvpRows);
@@ -2235,6 +2320,13 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         await window._firestoreSaveParty(partyId, remaining, label);
         party.names = remaining;
         party.label = label || '';
+        if(party.primary && party.primary.length){
+          const trimmedPrimary = party.primary.filter(n => !removeSet.has(n));
+          if(trimmedPrimary.length !== party.primary.length){
+            await window._firestoreSetPartyPrimary(partyId, trimmedPrimary);
+            party.primary = trimmedPrimary;
+          }
+        }
       }
     }
   }
@@ -2297,10 +2389,13 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     }
     const sorted = [...allParties].sort((a,b) => (a.names[0]||'').localeCompare(b.names[0]||''));
     const CATS = PARTY_CATEGORIES;
-    wrap.innerHTML = sorted.map(p => `
+    wrap.innerHTML = sorted.map(p => {
+      const isMulti = p.names.length > 1;
+      const hasPrimarySet = isMulti && p.primary && p.primary.length > 0;
+      return `
       <div class="gl-card" data-party-id="${p.id}">
         <div class="gl-card-head">
-          ${p.names.length > 1 ? `<div class="gl-card-label">${p.label || computeGroupLabel(p.names)}</div>` : '<span></span>'}
+          ${isMulti ? `<div class="gl-card-label">${p.label || computeGroupLabel(p.names)}</div>` : '<span></span>'}
           <div class="gl-card-cat">
             <i class="gl-cat-dot" data-cat="${p.category || ''}"></i>
             <select class="gl-category-select" data-party-id="${p.id}">
@@ -2309,12 +2404,20 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
             </select>
           </div>
         </div>
-        ${p.names.map(name => `
+        ${isMulti ? `<div class="gl-hierarchy-hint">${hasPrimarySet
+            ? 'Only starred names can RSVP for the whole party — everyone else can only respond for themselves.'
+            : 'Star anyone (like a parent) who should be able to RSVP for the whole party. Leave none starred and anyone can RSVP for everyone.'}</div>` : ''}
+        ${p.names.map(name => {
+          const isPrimary = !hasPrimarySet || p.primary.includes(name);
+          return `
           <div class="gl-chip" data-name="${name.replace(/"/g,'&quot;')}">
+            ${isMulti ? `<button class="gl-chip-star ${isPrimary ? 'active' : ''}" title="${isPrimary ? 'Can RSVP for the whole party — tap to restrict to just themself' : 'Can only RSVP for themself — tap to let them RSVP for the whole party'}">${isPrimary ? '★' : '☆'}</button>` : ''}
             <span class="gl-chip-name">${name}</span>
             <button class="gl-chip-x" title="Remove from guest list">×</button>
-          </div>`).join('')}
-      </div>`).join('');
+          </div>`;
+        }).join('')}
+      </div>`;
+    }).join('');
 
     wrap.querySelectorAll('.gl-category-select').forEach(sel => {
       sel.addEventListener('change', async () => {
@@ -2330,6 +2433,29 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         } catch(err){
           alert('Could not update category: ' + err.message);
           sel.value = prev;
+        }
+      });
+    });
+
+    wrap.querySelectorAll('.gl-chip-star').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const chip = btn.closest('.gl-chip');
+        const partyId = chip.closest('.gl-card').dataset.partyId;
+        const name = chip.dataset.name;
+        const party = allParties.find(x => x.id === partyId);
+        if(!party) return;
+        // Materialize the "everyone is primary by default" state into an explicit
+        // list the first time anyone toggles a star on this party.
+        const current = (party.primary && party.primary.length) ? party.primary.slice() : party.names.slice();
+        const idx = current.indexOf(name);
+        if(idx >= 0) current.splice(idx, 1); else current.push(name);
+        try {
+          await window._firestoreSetPartyPrimary(partyId, current);
+          party.primary = current;
+          renderGuestListPane();
+        } catch(err){
+          alert('Could not update primary contact: ' + err.message);
         }
       });
     });
@@ -2385,7 +2511,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
   function attachChipDrag(chip){
     chip.addEventListener('pointerdown', (e) => {
-      if(e.target.closest('.gl-chip-x')) return;
+      if(e.target.closest('.gl-chip-x') || e.target.closest('.gl-chip-star')) return;
       if(e.button !== undefined && e.button !== 0) return;
       e.preventDefault();
       const startX = e.clientX, startY = e.clientY;

@@ -1211,16 +1211,26 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   .am2-pane.active{display:block}
 
   /* Guest list / party manager */
-  .gl-form{background:var(--shell);border-radius:8px;padding:16px;margin-bottom:20px}
+  .gl-form{background:var(--shell);border-radius:8px;padding:16px;margin-bottom:16px}
   .gl-form label{display:block;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--sage-deep);margin-bottom:7px}
   .gl-form textarea{width:100%;min-height:64px;padding:11px 14px;border:1px solid var(--line);border-radius:6px;font-family:var(--sans);font-size:.9rem;color:var(--ink);background:var(--ivory);resize:vertical}
   .gl-form textarea:focus{outline:2px solid var(--sage);border-color:var(--sage)}
-  .gl-hint{font-size:.72rem;color:var(--ink-soft);margin-top:6px}
+  .gl-hint{font-size:.72rem;color:var(--ink-soft);margin-top:6px;line-height:1.5}
   .gl-form-row{display:flex;gap:10px;margin-top:12px;align-items:center}
   .gl-cancel{background:none;border:none;color:var(--ink-soft);cursor:pointer;font-family:var(--sans);font-size:.78rem;text-decoration:underline}
-  .gl-party-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
-  .gl-party-row:last-child{border-bottom:none}
-  .gl-party-names{font-size:.88rem;line-height:1.5}
+
+  .gl-toolbar{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--rose-ink);color:#fff;padding:10px 14px;border-radius:8px;margin-bottom:8px;font-size:.78rem}
+  .gl-toolbar-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .gl-toolbar-btn{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:5px;padding:7px 12px;font-family:var(--sans);font-size:.68rem;letter-spacing:.08em;cursor:pointer}
+  .gl-toolbar-btn:hover{background:rgba(255,255,255,.28)}
+  .gl-toolbar-danger{border-color:rgba(255,255,255,.6)}
+
+  .gl-guest-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .gl-guest-row:last-child{border-bottom:none}
+  .gl-guest-row input[type="checkbox"]{margin-top:3px;width:16px;height:16px;flex-shrink:0}
+  .gl-guest-main{flex:1;min-width:0}
+  .gl-guest-name{font-size:.9rem}
+  .gl-guest-with{font-size:.74rem;color:var(--ink-soft);margin-top:2px}
   .gl-party-actions{display:flex;gap:8px;flex-shrink:0}
   .gl-icon-btn{background:none;border:none;cursor:pointer;font-size:.95rem;padding:2px 4px;opacity:.7}
   .gl-icon-btn:hover{opacity:1}
@@ -1264,12 +1274,19 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       <!-- Guest list / parties pane -->
       <div class="am2-pane" id="pane-guestlist">
         <div class="gl-form">
-          <label for="gl-names">Party names (one per line, or comma-separated)</label>
+          <label for="gl-names">Add guests (one per line, or comma-separated)</label>
           <textarea id="gl-names" placeholder="Wes Avett&#10;James Avett&#10;Nancy Avett"></textarea>
-          <p class="gl-hint">Group a family or couple together so when one person RSVPs, everyone in the party can respond for themselves. A single name on its own is a party of one.</p>
+          <p class="gl-hint">Add everyone individually first. Then check off two or more names below and tap <em>Group Selected</em> to bundle a family or couple into one party — when one of them RSVPs, the rest can respond too.</p>
           <div class="gl-form-row">
-            <button class="btn" id="gl-save-btn" style="font-size:.68rem;padding:11px 20px">Add Party</button>
-            <button class="gl-cancel" id="gl-cancel-edit" style="display:none">Cancel edit</button>
+            <button class="btn" id="gl-save-btn" style="font-size:.68rem;padding:11px 20px">Add to Guest List</button>
+          </div>
+        </div>
+        <div class="gl-toolbar" id="gl-toolbar" style="display:none">
+          <span id="gl-selected-count">0 selected</span>
+          <div class="gl-toolbar-actions">
+            <button class="gl-toolbar-btn" id="gl-group-btn">Group Selected</button>
+            <button class="gl-toolbar-btn" id="gl-ungroup-btn">Ungroup Selected</button>
+            <button class="gl-toolbar-btn gl-toolbar-danger" id="gl-remove-btn">Remove Selected</button>
           </div>
         </div>
         <div id="gl-table-wrap">
@@ -1938,62 +1955,114 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   }
 
   // ---- Guest list / parties pane ----
-  let editingPartyId = null;
+  let selectedGuestKeys = new Set(); // key = `${partyId}::${name}`
 
   function parseNamesInput(raw){
     return raw.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
   }
 
-  function renderGuestListPane(){
-    const wrap = document.getElementById('gl-table-wrap');
-    if(!allParties.length){
-      wrap.innerHTML = '<div class="am2-empty">No parties added yet. Add one above.</div>';
-      return;
-    }
-    const sorted = [...allParties].sort((a,b) => (a.names[0]||'').localeCompare(b.names[0]||''));
-    wrap.innerHTML = sorted.map(p => `
-      <div class="gl-party-row" data-party-id="${p.id}">
-        <div class="gl-party-names">${p.names.join(', ')}</div>
-        <div class="gl-party-actions">
-          <button class="gl-icon-btn gl-edit" title="Edit">✎</button>
-          <button class="gl-icon-btn gl-delete" title="Delete">🗑</button>
-        </div>
-      </div>`).join('');
-
-    wrap.querySelectorAll('.gl-edit').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.closest('.gl-party-row').dataset.partyId;
-        const party = allParties.find(p => p.id === id);
-        if(!party) return;
-        editingPartyId = id;
-        document.getElementById('gl-names').value = party.names.join('\n');
-        document.getElementById('gl-save-btn').textContent = 'Update Party';
-        document.getElementById('gl-cancel-edit').style.display = 'inline';
-        document.getElementById('gl-names').focus();
+  // Flatten every party into individual guest rows for display/selection
+  function flattenGuests(){
+    const rows = [];
+    allParties.forEach(p => {
+      p.names.forEach(name => {
+        rows.push({ name, partyId: p.id, partyNames: p.names });
       });
     });
-    wrap.querySelectorAll('.gl-delete').forEach(btn => {
+    return rows.sort((a,b) => a.name.localeCompare(b.name));
+  }
+
+  function guestKey(g){ return `${g.partyId}::${g.name}`; }
+
+  // Remove a set of {name, partyId} guests from whatever party they currently belong to.
+  // Splits or deletes the source party as needed. Mutates allParties + Firestore.
+  async function removeGuestsFromParties(guests){
+    const byParty = {};
+    guests.forEach(g => { (byParty[g.partyId] = byParty[g.partyId] || []).push(g.name); });
+    for(const partyId of Object.keys(byParty)){
+      const party = allParties.find(p => p.id === partyId);
+      if(!party) continue;
+      const removeSet = new Set(byParty[partyId]);
+      const remaining = party.names.filter(n => !removeSet.has(n));
+      if(remaining.length === 0){
+        await window._firestoreDeleteParty(partyId);
+        allParties = allParties.filter(p => p.id !== partyId);
+      } else if(remaining.length !== party.names.length){
+        await window._firestoreSaveParty(partyId, remaining);
+        party.names = remaining;
+      }
+    }
+  }
+
+  function updateGlToolbar(){
+    const n = selectedGuestKeys.size;
+    document.getElementById('gl-toolbar').style.display = n ? 'flex' : 'none';
+    document.getElementById('gl-selected-count').textContent = n + ' selected';
+  }
+
+  function renderGuestListPane(){
+    const wrap = document.getElementById('gl-table-wrap');
+    selectedGuestKeys.clear();
+    updateGlToolbar();
+    const guests = flattenGuests();
+    if(!guests.length){
+      wrap.innerHTML = '<div class="am2-empty">No guests added yet. Add some above.</div>';
+      return;
+    }
+    wrap.innerHTML = guests.map(g => {
+      const key = guestKey(g);
+      const withOthers = g.partyNames.filter(n => n !== g.name);
+      return `
+      <div class="gl-guest-row" data-key="${key}">
+        <input type="checkbox" class="gl-check" data-key="${key}">
+        <div class="gl-guest-main">
+          <div class="gl-guest-name">${g.name}</div>
+          ${withOthers.length ? `<div class="gl-guest-with">with ${withOthers.join(', ')}</div>` : ''}
+        </div>
+        <div class="gl-party-actions">
+          ${withOthers.length ? `<button class="gl-icon-btn gl-ungroup-one" title="Remove from party">⤺</button>` : ''}
+          <button class="gl-icon-btn gl-delete-one" title="Delete">🗑</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    wrap.querySelectorAll('.gl-check').forEach(cb => {
+      cb.addEventListener('change', () => {
+        if(cb.checked) selectedGuestKeys.add(cb.dataset.key);
+        else selectedGuestKeys.delete(cb.dataset.key);
+        updateGlToolbar();
+      });
+    });
+
+    wrap.querySelectorAll('.gl-ungroup-one').forEach(btn => {
       btn.addEventListener('click', async () => {
-        const id = btn.closest('.gl-party-row').dataset.partyId;
-        const party = allParties.find(p => p.id === id);
-        if(!party || !confirm(`Remove "${party.names.join(', ')}" from the guest list?`)) return;
+        const row = btn.closest('.gl-guest-row');
+        const [partyId, name] = row.dataset.key.split('::');
         try {
-          await window._firestoreDeleteParty(id);
-          allParties = allParties.filter(p => p.id !== id);
+          await removeGuestsFromParties([{ partyId, name }]);
+          const newId = await window._firestoreSaveParty(null, [name]);
+          allParties.push({ id: newId, names: [name] });
           renderGuestListPane();
         } catch(e){
-          alert('Could not delete party: ' + e.message);
+          alert('Could not update guest list: ' + e.message);
+        }
+      });
+    });
+
+    wrap.querySelectorAll('.gl-delete-one').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const row = btn.closest('.gl-guest-row');
+        const [partyId, name] = row.dataset.key.split('::');
+        if(!confirm(`Remove "${name}" from the guest list?`)) return;
+        try {
+          await removeGuestsFromParties([{ partyId, name }]);
+          renderGuestListPane();
+        } catch(e){
+          alert('Could not delete guest: ' + e.message);
         }
       });
     });
   }
-
-  document.getElementById('gl-cancel-edit').addEventListener('click', () => {
-    editingPartyId = null;
-    document.getElementById('gl-names').value = '';
-    document.getElementById('gl-save-btn').textContent = 'Add Party';
-    document.getElementById('gl-cancel-edit').style.display = 'none';
-  });
 
   document.getElementById('gl-save-btn').addEventListener('click', async () => {
     const names = parseNamesInput(document.getElementById('gl-names').value);
@@ -2003,21 +2072,69 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const prevLabel = btn.textContent;
     btn.textContent = 'Saving…';
     try {
-      const savedId = await window._firestoreSaveParty(editingPartyId, names);
-      if(editingPartyId){
-        const p = allParties.find(x => x.id === editingPartyId);
-        if(p) p.names = names;
-      } else {
-        allParties.push({ id: savedId, names });
+      const existing = new Set(flattenGuests().map(g => g.name.trim().toLowerCase()));
+      const toAdd = names.filter(n => !existing.has(n.trim().toLowerCase()));
+      const skipped = names.length - toAdd.length;
+      for(const name of toAdd){
+        const newId = await window._firestoreSaveParty(null, [name]);
+        allParties.push({ id: newId, names: [name] });
       }
-      editingPartyId = null;
       document.getElementById('gl-names').value = '';
-      document.getElementById('gl-save-btn').textContent = 'Add Party';
-      document.getElementById('gl-cancel-edit').style.display = 'none';
+      renderGuestListPane();
+      if(skipped) console.log(`Skipped ${skipped} name(s) already on the guest list.`);
+    } catch(e){
+      alert('Could not save guest list: ' + e.message);
+    }
+    btn.textContent = prevLabel;
+    btn.disabled = false;
+  });
+
+  document.getElementById('gl-group-btn').addEventListener('click', async () => {
+    const guests = flattenGuests().filter(g => selectedGuestKeys.has(guestKey(g)));
+    if(guests.length < 2){ alert('Select at least two people to group together.'); return; }
+    const btn = document.getElementById('gl-group-btn');
+    btn.disabled = true;
+    try {
+      const names = guests.map(g => g.name);
+      await removeGuestsFromParties(guests.map(g => ({ partyId: g.partyId, name: g.name })));
+      const newId = await window._firestoreSaveParty(null, names);
+      allParties.push({ id: newId, names });
       renderGuestListPane();
     } catch(e){
-      alert('Could not save party: ' + e.message);
-      btn.textContent = prevLabel;
+      alert('Could not group guests: ' + e.message);
+    }
+    btn.disabled = false;
+  });
+
+  document.getElementById('gl-ungroup-btn').addEventListener('click', async () => {
+    const guests = flattenGuests().filter(g => selectedGuestKeys.has(guestKey(g)));
+    if(!guests.length){ return; }
+    const btn = document.getElementById('gl-ungroup-btn');
+    btn.disabled = true;
+    try {
+      await removeGuestsFromParties(guests.map(g => ({ partyId: g.partyId, name: g.name })));
+      for(const g of guests){
+        const newId = await window._firestoreSaveParty(null, [g.name]);
+        allParties.push({ id: newId, names: [g.name] });
+      }
+      renderGuestListPane();
+    } catch(e){
+      alert('Could not ungroup guests: ' + e.message);
+    }
+    btn.disabled = false;
+  });
+
+  document.getElementById('gl-remove-btn').addEventListener('click', async () => {
+    const guests = flattenGuests().filter(g => selectedGuestKeys.has(guestKey(g)));
+    if(!guests.length){ return; }
+    if(!confirm(`Remove ${guests.length} guest(s) from the guest list entirely?`)) return;
+    const btn = document.getElementById('gl-remove-btn');
+    btn.disabled = true;
+    try {
+      await removeGuestsFromParties(guests.map(g => ({ partyId: g.partyId, name: g.name })));
+      renderGuestListPane();
+    } catch(e){
+      alert('Could not remove guests: ' + e.message);
     }
     btn.disabled = false;
   });

@@ -444,6 +444,7 @@ section{padding:120px 0;position:relative;z-index:2}
 .rsvp-shell{max-width:540px;margin:0 auto;text-align:center}
 .rsvp-intro{color:var(--ink-soft);margin-bottom:34px}
 .field{margin-bottom:20px;text-align:left}
+.rsvp-err{font-size:.85rem;color:var(--rose-ink);margin:-8px 0 18px;min-height:1.3em;text-align:left}
 .field label{display:block;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--sage-deep);margin-bottom:9px}
 .field input,.field select,.field textarea{width:100%;padding:15px 17px;border:1px solid var(--rose-deep);border-radius:6px;background:rgba(247,242,234,.72);font-family:var(--sans);font-size:1rem;color:var(--ink)}
 .field textarea{resize:vertical;min-height:88px}
@@ -782,6 +783,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
             <label for="guestName">Your Name</label>
             <input type="text" id="guestName" placeholder="First and last name" autocomplete="name">
           </div>
+          <div class="rsvp-err" id="rsvpErr" aria-live="polite"></div>
           <button class="btn btn-rose" id="findBtn" style="width:100%">Find My Invitation</button>
         </div>
         <!-- Step 2: Respond -->
@@ -1022,9 +1024,14 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   document.getElementById('guestName').addEventListener('keydown', e => {
     if(e.key === 'Enter') document.getElementById('findBtn').click();
   });
+  document.getElementById('guestName').addEventListener('input', () => {
+    document.getElementById('rsvpErr').textContent = '';
+  });
 
   document.getElementById('findBtn').addEventListener('click', async () => {
     const v = document.getElementById('guestName').value.trim();
+    const errEl = document.getElementById('rsvpErr');
+    errEl.textContent = '';
     if(!v){ document.getElementById('guestName').focus(); return; }
 
     const findBtn = document.getElementById('findBtn');
@@ -1036,10 +1043,16 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const norm = normName(v);
     const match = parties.find(p => (p.names||[]).some(n => normName(n) === norm));
 
-    currentParty = match
-      ? { id: match.id, names: match.names, category: match.category || '' }
-      : { id: null, names: [v], category: '' }; // fallback: unregistered guest RSVPs solo
+    findBtn.textContent = 'Find My Invitation';
+    findBtn.disabled = false;
 
+    if(!match){
+      errEl.textContent = "We couldn't find that name on our guest list. Please check the spelling, or reach out to us directly.";
+      document.getElementById('guestName').focus();
+      return;
+    }
+
+    currentParty = { id: match.id, names: match.names, category: match.category || '' };
     currentResponses = {};
     currentEventResponses = {};
 
@@ -1051,8 +1064,6 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     renderPartyList();
     renderEventBlocks();
 
-    findBtn.textContent = 'Find My Invitation';
-    findBtn.disabled = false;
     go(2);
   });
 

@@ -1306,7 +1306,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 <div id="admin-modal" role="dialog" aria-modal="true" aria-label="Admin login">
   <div class="am-box">
     <h3>Admin</h3>
-    <p>Enter the admin password to edit site content.</p>
+    <p>Sign in to edit site content.</p>
+    <input type="email" id="admin-email" placeholder="Email" autocomplete="username" autocapitalize="off" autocorrect="off">
     <input type="password" id="admin-pw" placeholder="Password" autocomplete="current-password">
     <div class="am-err" id="admin-err" aria-live="polite"></div>
     <button class="btn" id="admin-login-btn">Enter</button>
@@ -1337,8 +1338,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 (function(){
   // Admin sign-in now uses real Firebase Authentication (Email/Password) instead of a
   // hardcoded string, so Firestore security rules can verify writes server-side.
-  // Set this account up once in the Firebase console (Authentication → Users).
-  const ADMIN_EMAIL = 'weltonwedding1@gmail.com';
+  // The admin types their own email + password — set up matching accounts once in the
+  // Firebase console (Authentication → Users → enable Email/Password, then Add user).
 
   // ---- Image slot definitions ----
   // key → how to apply the image to the DOM element
@@ -1446,6 +1447,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
   const modal      = document.getElementById('admin-modal');
   const bar        = document.getElementById('admin-bar');
+  const emailInput = document.getElementById('admin-email');
   const pwInput    = document.getElementById('admin-pw');
   const errEl      = document.getElementById('admin-err');
   const saveBtn    = document.getElementById('ab-save');
@@ -1454,31 +1456,33 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
   if(location.search.includes('admin')){
     modal.classList.add('visible');
-    setTimeout(() => pwInput.focus(), 100);
+    setTimeout(() => emailInput.focus(), 100);
   }
 
   async function tryLogin(){
     const loginBtn = document.getElementById('admin-login-btn');
+    const typedEmail    = emailInput.value.trim();
     const typedPassword = pwInput.value;
-    if(!typedPassword) return;
+    if(!typedEmail || !typedPassword) return;
     loginBtn.disabled = true;
     loginBtn.textContent = 'Checking…';
     errEl.textContent = '';
     try {
       await initFirestore();
-      await authModule.signInWithEmailAndPassword(auth, ADMIN_EMAIL, typedPassword);
+      await authModule.signInWithEmailAndPassword(auth, typedEmail, typedPassword);
       modal.classList.remove('visible');
       pwInput.value = '';
       await activateAdmin();
     } catch(e){
       console.warn('Admin sign-in failed:', e.code || e.message);
-      errEl.textContent = 'Incorrect password.';
+      errEl.textContent = 'Incorrect email or password.';
       pwInput.value = ''; pwInput.focus();
     }
     loginBtn.disabled = false;
     loginBtn.textContent = 'Enter';
   }
   document.getElementById('admin-login-btn').addEventListener('click', tryLogin);
+  emailInput.addEventListener('keydown', e => { if(e.key==='Enter') pwInput.focus(); });
   pwInput.addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
 
   const FIRESTORE_LIMIT = 850 * 1024; // 850KB — safe margin under Firestore's 1MB doc limit

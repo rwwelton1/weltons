@@ -1015,6 +1015,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   window._firestoreGetParties = window._firestoreGetParties || function(){ return Promise.resolve([]); };
   window._firestoreSaveParty  = window._firestoreSaveParty  || function(){ return Promise.reject(new Error('Firebase unavailable')); };
   window._firestoreDeleteParty= window._firestoreDeleteParty|| function(){ return Promise.reject(new Error('Firebase unavailable')); };
+  window._firestoreSetPartyCategory = window._firestoreSetPartyCategory || function(){ return Promise.reject(new Error('Firebase unavailable')); };
 </script>
 <script type="module">
   try {
@@ -1230,7 +1231,20 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   .gl-cards{display:flex;flex-direction:column;gap:8px}
   .gl-card{border:1px solid var(--line);border-radius:10px;padding:10px 10px 4px;background:var(--ivory);display:flex;flex-wrap:wrap;gap:8px 6px;align-items:center;transition:border-color .15s,background .15s}
   .gl-card.drag-over{border-color:var(--rose-ink);background:rgba(168,84,84,.06)}
-  .gl-card-label{width:100%;font-family:var(--serif);font-style:italic;font-size:.88rem;color:var(--rose-ink);margin-bottom:6px}
+  .gl-card-head{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+  .gl-card-label{font-family:var(--serif);font-style:italic;font-size:.88rem;color:var(--rose-ink)}
+  .gl-card-cat{display:flex;align-items:center;gap:6px;margin-left:auto}
+
+  .gl-legend{display:flex;flex-wrap:wrap;gap:9px 14px;font-size:.66rem;color:var(--ink-soft);margin-bottom:14px}
+  .gl-legend span{display:flex;align-items:center;gap:5px}
+
+  .gl-cat-dot{width:9px;height:9px;min-width:9px;border-radius:50%;display:inline-block;background:var(--line)}
+  .gl-cat-dot[data-cat="Wedding Party"]{background:var(--gold)}
+  .gl-cat-dot[data-cat="Bridal Party"]{background:var(--rose-ink)}
+  .gl-cat-dot[data-cat="Groom's Party"]{background:var(--sage-deep)}
+  .gl-cat-dot[data-cat="Bride's Family"]{background:var(--sage)}
+  .gl-cat-dot[data-cat="Groom's Family"]{background:var(--ink-soft)}
+  .gl-category-select{border:1px solid var(--line);border-radius:5px;padding:5px 8px;font-family:var(--sans);font-size:.68rem;color:var(--ink-soft);background:var(--shell)}
 
   .gl-chip{display:flex;align-items:center;gap:5px;background:var(--shell);border:1px solid var(--line);border-radius:20px;padding:7px 8px 7px 13px;font-size:.82rem;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;margin-bottom:6px;transition:background .15s,border-color .15s,color .15s}
   .gl-chip.dragging{opacity:.3}
@@ -1294,6 +1308,13 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
           </div>
         </div>
         <div class="gl-newgroup" id="gl-newgroup">Drag here to split someone into their own group</div>
+        <div class="gl-legend">
+          <span><i class="gl-cat-dot" data-cat="Wedding Party"></i>Wedding Party</span>
+          <span><i class="gl-cat-dot" data-cat="Bridal Party"></i>Bridal Party</span>
+          <span><i class="gl-cat-dot" data-cat="Groom's Party"></i>Groom's Party</span>
+          <span><i class="gl-cat-dot" data-cat="Bride's Family"></i>Bride's Family</span>
+          <span><i class="gl-cat-dot" data-cat="Groom's Family"></i>Groom's Family</span>
+        </div>
         <div id="gl-table-wrap" class="gl-cards">
           <div class="am2-empty">Loading guest list…</div>
         </div>
@@ -1694,6 +1715,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     await initFirestore();
     await fm.deleteDoc(fm.doc(db,'parties', partyId));
   };
+  window._firestoreSetPartyCategory = async (partyId, category) => {
+    await initFirestore();
+    await fm.setDoc(fm.doc(db,'parties', partyId), { category }, { merge: true });
+  };
 
   // ---- Save image to Firestore (base64) ----
   async function saveImage(key, dataUrl){
@@ -1904,7 +1929,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         fm.getDocs(fm.collection(db,'rsvps')),
         fm.getDocs(fm.collection(db,'parties'))
       ]);
-      allParties = partySnap.docs.map(d => ({ id: d.id, names: d.data().names || [], label: d.data().label || '' }));
+      allParties = partySnap.docs.map(d => ({ id: d.id, names: d.data().names || [], label: d.data().label || '', category: d.data().category || '' }));
       const rsvpRows = rsvpSnap.docs.map(d => d.data());
       renderResponsesPane(rsvpRows);
       renderGuestListPane();
@@ -2061,15 +2086,43 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       return;
     }
     const sorted = [...allParties].sort((a,b) => (a.names[0]||'').localeCompare(b.names[0]||''));
+    const CATS = ['Wedding Party','Bridal Party',"Groom's Party","Bride's Family","Groom's Family"];
     wrap.innerHTML = sorted.map(p => `
       <div class="gl-card" data-party-id="${p.id}">
-        ${p.names.length > 1 ? `<div class="gl-card-label">${p.label || computeGroupLabel(p.names)}</div>` : ''}
+        <div class="gl-card-head">
+          ${p.names.length > 1 ? `<div class="gl-card-label">${p.label || computeGroupLabel(p.names)}</div>` : '<span></span>'}
+          <div class="gl-card-cat">
+            <i class="gl-cat-dot" data-cat="${p.category || ''}"></i>
+            <select class="gl-category-select" data-party-id="${p.id}">
+              <option value="">No category</option>
+              ${CATS.map(c => `<option value="${c}" ${p.category===c?'selected':''}>${c}</option>`).join('')}
+            </select>
+          </div>
+        </div>
         ${p.names.map(name => `
           <div class="gl-chip" data-name="${name.replace(/"/g,'&quot;')}">
             <span class="gl-chip-name">${name}</span>
             <button class="gl-chip-x" title="Remove from guest list">×</button>
           </div>`).join('')}
       </div>`).join('');
+
+    wrap.querySelectorAll('.gl-category-select').forEach(sel => {
+      sel.addEventListener('change', async () => {
+        const partyId = sel.dataset.partyId;
+        const category = sel.value;
+        const dot = sel.closest('.gl-card-cat').querySelector('.gl-cat-dot');
+        const prev = (allParties.find(x => x.id === partyId) || {}).category || '';
+        try {
+          await window._firestoreSetPartyCategory(partyId, category);
+          const p = allParties.find(x => x.id === partyId);
+          if(p) p.category = category;
+          if(dot) dot.dataset.cat = category;
+        } catch(err){
+          alert('Could not update category: ' + err.message);
+          sel.value = prev;
+        }
+      });
+    });
 
     wrap.querySelectorAll('.gl-chip').forEach(chip => attachChipDrag(chip));
     wrap.querySelectorAll('.gl-chip-x').forEach(btn => {

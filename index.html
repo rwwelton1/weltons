@@ -1222,12 +1222,20 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   .gl-newgroup{position:sticky;top:0;z-index:2;border:2px dashed var(--line);border-radius:8px;padding:12px;text-align:center;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);background:var(--ivory);margin-bottom:12px;transition:border-color .15s,color .15s,background .15s}
   .gl-newgroup.drag-over{border-color:var(--rose-ink);color:var(--rose-ink);background:rgba(168,84,84,.08)}
 
+  .gl-toolbar{position:sticky;top:0;z-index:3;display:none;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--rose-ink);color:#fff;padding:10px 14px;border-radius:8px;margin-bottom:10px;font-size:.78rem}
+  .gl-toolbar-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .gl-toolbar-btn{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:5px;padding:7px 12px;font-family:var(--sans);font-size:.68rem;letter-spacing:.08em;cursor:pointer}
+  .gl-toolbar-btn:hover{background:rgba(255,255,255,.28)}
+
   .gl-cards{display:flex;flex-direction:column;gap:8px}
   .gl-card{border:1px solid var(--line);border-radius:10px;padding:10px 10px 4px;background:var(--ivory);display:flex;flex-wrap:wrap;gap:8px 6px;align-items:center;transition:border-color .15s,background .15s}
   .gl-card.drag-over{border-color:var(--rose-ink);background:rgba(168,84,84,.06)}
+  .gl-card-label{width:100%;font-family:var(--serif);font-style:italic;font-size:.88rem;color:var(--rose-ink);margin-bottom:6px}
 
-  .gl-chip{display:flex;align-items:center;gap:5px;background:var(--shell);border:1px solid var(--line);border-radius:20px;padding:7px 8px 7px 13px;font-size:.82rem;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;margin-bottom:6px}
+  .gl-chip{display:flex;align-items:center;gap:5px;background:var(--shell);border:1px solid var(--line);border-radius:20px;padding:7px 8px 7px 13px;font-size:.82rem;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;margin-bottom:6px;transition:background .15s,border-color .15s,color .15s}
   .gl-chip.dragging{opacity:.3}
+  .gl-chip.selected{background:var(--rose-ink);border-color:var(--rose-ink);color:#fff}
+  .gl-chip.selected .gl-chip-x{color:rgba(255,255,255,.8)}
   .gl-chip .gl-chip-x{background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:.85rem;line-height:1;padding:3px 5px}
   .gl-chip .gl-chip-x:hover{color:var(--rose-ink)}
   .gl-drag-ghost{position:fixed;z-index:9999;pointer-events:none;background:var(--rose-ink);color:#fff;border-radius:20px;padding:9px 16px;font-size:.85rem;box-shadow:0 8px 20px rgba(0,0,0,.28);transform:translate(-50%,-50%);white-space:nowrap}
@@ -1273,9 +1281,16 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         <div class="gl-form">
           <label for="gl-names">Add guests (one per line, or comma-separated — paste your whole list at once)</label>
           <textarea id="gl-names" placeholder="Wes Avett&#10;James Avett&#10;Nancy Avett"></textarea>
-          <p class="gl-hint">Paste in everyone at once — each name is added as its own entry below. Then press and drag a name onto another name to group them into a family or couple; the rest of the party can RSVP once any one of them responds.</p>
+          <p class="gl-hint">Paste in everyone at once — each name is added as its own entry below. Then either drag one name onto another to group them, or tap two or more names to select them and hit <em>Group Selected</em> — the group gets auto-named from their last name(s).</p>
           <div class="gl-form-row">
             <button class="btn" id="gl-save-btn" style="font-size:.68rem;padding:11px 20px">Add to Guest List</button>
+          </div>
+        </div>
+        <div class="gl-toolbar" id="gl-toolbar">
+          <span id="gl-selected-count">0 selected</span>
+          <div class="gl-toolbar-actions">
+            <button class="gl-toolbar-btn" id="gl-group-btn">Group Selected</button>
+            <button class="gl-toolbar-btn" id="gl-clear-btn">Clear</button>
           </div>
         </div>
         <div class="gl-newgroup" id="gl-newgroup">Drag here to split someone into their own group</div>
@@ -1664,13 +1679,15 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   const initFirestore = initFirebase;
 
   // ---- Admin-only party/guest-list management (requires Firebase Auth) ----
-  window._firestoreSaveParty = async (partyId, names) => {
+  window._firestoreSaveParty = async (partyId, names, label) => {
     await initFirestore();
+    const data = { names };
+    if(label !== undefined) data.label = label;
     if(partyId){
-      await fm.setDoc(fm.doc(db,'parties', partyId), { names }, { merge: true });
+      await fm.setDoc(fm.doc(db,'parties', partyId), data, { merge: true });
       return partyId;
     }
-    const ref = await fm.addDoc(fm.collection(db,'parties'), { names });
+    const ref = await fm.addDoc(fm.collection(db,'parties'), data);
     return ref.id;
   };
   window._firestoreDeleteParty = async (partyId) => {
@@ -1887,7 +1904,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         fm.getDocs(fm.collection(db,'rsvps')),
         fm.getDocs(fm.collection(db,'parties'))
       ]);
-      allParties = partySnap.docs.map(d => ({ id: d.id, names: d.data().names || [] }));
+      allParties = partySnap.docs.map(d => ({ id: d.id, names: d.data().names || [], label: d.data().label || '' }));
       const rsvpRows = rsvpSnap.docs.map(d => d.data());
       renderResponsesPane(rsvpRows);
       renderGuestListPane();
@@ -1949,6 +1966,22 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     return raw.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
   }
 
+  // Best-effort last name: last whitespace-separated token that's alphabetic
+  // (skips things like a trailing "+1").
+  function lastNameOf(fullName){
+    const parts = fullName.trim().split(/\s+/);
+    for(let i = parts.length - 1; i >= 0; i--){
+      if(/^[A-Za-z''-]+$/.test(parts[i])) return parts[i];
+    }
+    return parts[parts.length - 1] || fullName;
+  }
+
+  function computeGroupLabel(names){
+    const lastNames = [...new Set(names.map(lastNameOf))];
+    if(lastNames.length === 1) return `${lastNames[0]} Family`;
+    return lastNames.join(' & ') + ' Family';
+  }
+
   // Remove a set of {name, partyId} guests from whatever party they currently belong to.
   // Splits or deletes the source party as needed. Mutates allParties + Firestore.
   async function removeGuestsFromParties(guests){
@@ -1963,8 +1996,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         await window._firestoreDeleteParty(partyId);
         allParties = allParties.filter(p => p.id !== partyId);
       } else if(remaining.length !== party.names.length){
-        await window._firestoreSaveParty(partyId, remaining);
+        const label = remaining.length > 1 ? computeGroupLabel(remaining) : undefined;
+        await window._firestoreSaveParty(partyId, remaining, label);
         party.names = remaining;
+        party.label = label || '';
       }
     }
   }
@@ -1975,8 +2010,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const target = allParties.find(p => p.id === targetPartyId);
     if(!target) return;
     const newNames = [...target.names, guest.name];
-    await window._firestoreSaveParty(targetPartyId, newNames);
+    const label = computeGroupLabel(newNames);
+    await window._firestoreSaveParty(targetPartyId, newNames, label);
     target.names = newNames;
+    target.label = label;
   }
 
   async function splitGuestIntoNewGroup(guest){
@@ -1985,8 +2022,40 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     allParties.push({ id: newId, names: [guest.name] });
   }
 
+  async function groupGuests(guests){
+    const names = guests.map(g => g.name);
+    await removeGuestsFromParties(guests.map(g => ({ partyId: g.partyId, name: g.name })));
+    const label = computeGroupLabel(names);
+    const newId = await window._firestoreSaveParty(null, names, label);
+    allParties.push({ id: newId, names, label });
+  }
+
+  // ---- Multi-select (tap) state ----
+  let selectedGuestKeys = new Set(); // key = `${partyId}::${name}`
+
+  function updateGlToolbar(){
+    const n = selectedGuestKeys.size;
+    document.getElementById('gl-toolbar').style.display = n ? 'flex' : 'none';
+    document.getElementById('gl-selected-count').textContent = n + ' selected';
+  }
+
+  function toggleChipSelect(chip){
+    const partyId = chip.closest('.gl-card').dataset.partyId;
+    const key = `${partyId}::${chip.dataset.name}`;
+    if(selectedGuestKeys.has(key)){
+      selectedGuestKeys.delete(key);
+      chip.classList.remove('selected');
+    } else {
+      selectedGuestKeys.add(key);
+      chip.classList.add('selected');
+    }
+    updateGlToolbar();
+  }
+
   function renderGuestListPane(){
     const wrap = document.getElementById('gl-table-wrap');
+    selectedGuestKeys.clear();
+    updateGlToolbar();
     if(!allParties.length){
       wrap.innerHTML = '<div class="am2-empty">No guests added yet. Add some above.</div>';
       return;
@@ -1994,6 +2063,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const sorted = [...allParties].sort((a,b) => (a.names[0]||'').localeCompare(b.names[0]||''));
     wrap.innerHTML = sorted.map(p => `
       <div class="gl-card" data-party-id="${p.id}">
+        ${p.names.length > 1 ? `<div class="gl-card-label">${p.label || computeGroupLabel(p.names)}</div>` : ''}
         ${p.names.map(name => `
           <div class="gl-chip" data-name="${name.replace(/"/g,'&quot;')}">
             <span class="gl-chip-name">${name}</span>
@@ -2019,16 +2089,61 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     });
   }
 
+  document.getElementById('gl-clear-btn').addEventListener('click', () => {
+    selectedGuestKeys.clear();
+    document.querySelectorAll('.gl-chip.selected').forEach(c => c.classList.remove('selected'));
+    updateGlToolbar();
+  });
+
+  document.getElementById('gl-group-btn').addEventListener('click', async () => {
+    if(selectedGuestKeys.size < 2){ alert('Select at least two people to group together.'); return; }
+    const guests = [...selectedGuestKeys].map(k => {
+      const idx = k.indexOf('::');
+      return { partyId: k.slice(0, idx), name: k.slice(idx + 2) };
+    });
+    const btn = document.getElementById('gl-group-btn');
+    btn.disabled = true;
+    try {
+      await groupGuests(guests);
+      selectedGuestKeys.clear();
+      renderGuestListPane();
+    } catch(e){
+      alert('Could not group guests: ' + e.message);
+    }
+    btn.disabled = false;
+  });
+
   // ---- Drag-and-drop grouping (pointer events — works for touch and mouse) ----
+  // A short tap (no meaningful movement) toggles selection; moving past the
+  // threshold starts an actual drag.
   let dragState = null;
   let dragOverEl = null;
+  const DRAG_THRESHOLD = 8;
 
   function attachChipDrag(chip){
     chip.addEventListener('pointerdown', (e) => {
       if(e.target.closest('.gl-chip-x')) return;
       if(e.button !== undefined && e.button !== 0) return;
       e.preventDefault();
-      beginDrag(chip, e.clientX, e.clientY);
+      const startX = e.clientX, startY = e.clientY;
+      let dragStarted = false;
+
+      function onMove(ev){
+        if(dragStarted) return;
+        if(Math.hypot(ev.clientX - startX, ev.clientY - startY) > DRAG_THRESHOLD){
+          dragStarted = true;
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          beginDrag(chip, ev.clientX, ev.clientY);
+        }
+      }
+      function onUp(){
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+        if(!dragStarted) toggleChipSelect(chip);
+      }
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
     });
   }
 

@@ -231,7 +231,7 @@ nav.menu-open{backdrop-filter:none;background:#F7F2EA}
 /* ---- SECTIONS — solid panels over the fixed background ---- */
 section{padding:120px 0;position:relative;z-index:2}
 
-#story        { background: var(--ivory); }
+#story        { background: var(--shell); }
 #schedule     { background: var(--ivory); }
 #wedding-party{ background: var(--shell); }
 #venue        { background: var(--shell); }
@@ -312,24 +312,23 @@ section{padding:120px 0;position:relative;z-index:2}
 .story-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;max-width:var(--max);align-items:start}
 .story-img{border-radius:4px;overflow:hidden;position:relative}
 .story-img.tall{grid-row:span 1}
-.story-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.story-img:nth-child(1){min-height:440px}
+.story-img:nth-child(2){min-height:280px}
+.story-img:nth-child(3){min-height:380px}
+.story-img img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
 .story-img:hover img{transform:scale(1.03)}
+/* scrim so the overlaid caption stays legible over any photo */
+.story-img::after{content:"";position:absolute;left:0;right:0;bottom:0;height:50%;background:linear-gradient(to top, rgba(20,17,14,.55), transparent);pointer-events:none;z-index:1}
+.story-photo-caption{position:absolute;left:0;right:0;bottom:0;z-index:2;font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;color:#fff;padding:18px 20px}
 
 /* placeholder shown when image not yet added */
-.story-img .img-placeholder{width:100%;height:100%;min-height:340px;background:linear-gradient(135deg,var(--rose) 0%,var(--rose-deep) 60%,var(--sage-deep) 130%);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:20px}
-.story-img:nth-child(1) .img-placeholder{min-height:440px}
-.story-img:nth-child(2) .img-placeholder{min-height:280px}
-.story-img:nth-child(3) .img-placeholder{min-height:380px}
-.img-placeholder span{font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,242,234,.75)}
-.story-caption{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:4px}
-.story-caption p{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--sage-deep)}
+.story-img .img-placeholder{width:100%;height:100%;position:absolute;inset:0;background:linear-gradient(135deg,var(--rose) 0%,var(--rose-deep) 60%,var(--sage-deep) 130%);z-index:0}
+.img-placeholder span{position:absolute;top:16px;left:20px;font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,242,234,.75)}
 @media(max-width:760px){
   .story-grid{grid-template-columns:1fr 1fr}
   .story-img:nth-child(3){display:none}
-  .story-caption{grid-template-columns:1fr 1fr}
-  .story-caption p:nth-child(3){display:none}
 }
-@media(max-width:480px){.story-grid{grid-template-columns:1fr}.story-img:nth-child(2){display:none}.story-caption{grid-template-columns:1fr}.story-caption p:nth-child(2){display:none}}
+@media(max-width:480px){.story-grid{grid-template-columns:1fr}.story-img:nth-child(2){display:none}}
 
 /* ---- SCHEDULE ---- */
 
@@ -367,8 +366,9 @@ section{padding:120px 0;position:relative;z-index:2}
   background-color:var(--rose-deep);
   display:flex;align-items:flex-end;
 }
-/* dim overlay only shows when image is missing (the gradient placeholder) */
-.venue-photo .venue-caption{position:relative;font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,242,234,.78);padding:20px 24px}
+/* scrim so the caption stays legible over any photo */
+.venue-photo::after{content:"";position:absolute;left:0;right:0;bottom:0;height:40%;background:linear-gradient(to top, rgba(20,17,14,.5), transparent);pointer-events:none;z-index:0}
+.venue-photo .venue-caption{position:relative;z-index:1;font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;color:var(--sage);padding:20px 24px}
 .venue-copy .place{font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--sage-deep);margin-bottom:8px}
 .venue-copy h3{font-size:clamp(2rem,4vw,2.8rem);font-style:italic;margin-bottom:6px}
 .venue-copy .addr{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:26px}
@@ -564,22 +564,20 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         <img src="images/story-keeneland.jpg" alt="Grayson and Ryan at Keeneland Race Track" loading="lazy"
              onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
         <div class="img-placeholder" style="display:none"><span>Story Image 1 · Keeneland</span></div>
+        <span class="story-photo-caption">Keeneland, Kentucky</span>
       </div>
       <div class="story-img" data-img-key="img-story-2">
         <img src="images/story-engagement.jpg" alt="Grayson and Ryan engagement photo" loading="lazy"
              onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
         <div class="img-placeholder" style="display:none"><span>Story Image 2 · Engagement</span></div>
+        <span class="story-photo-caption">Smyrna, Georgia</span>
       </div>
       <div class="story-img" data-img-key="img-story-3">
         <img src="images/story-together.jpg" alt="Grayson and Ryan together" loading="lazy"
              onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
         <div class="img-placeholder" style="display:none"><span>Story Image 3 · Together</span></div>
+        <span class="story-photo-caption">North Georgia</span>
       </div>
-    </div>
-    <div class="story-caption reveal" aria-hidden="true">
-      <p>Keeneland, Kentucky</p>
-      <p>Smyrna, Georgia</p>
-      <p>North Georgia</p>
     </div>
   </div>
 </section>

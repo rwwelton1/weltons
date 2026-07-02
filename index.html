@@ -1011,8 +1011,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 <!-- Firebase -->
 <script>
   // Fallback: if Firebase module fails to load (e.g. local file preview), RSVP still works visually
-  window._firestoreAddRSVP  = window._firestoreAddRSVP  || function(){ return Promise.resolve(); };
+  window._firestoreAddRSVP    = window._firestoreAddRSVP    || function(){ return Promise.resolve(); };
   window._firestoreGetParties = window._firestoreGetParties || function(){ return Promise.resolve([]); };
+  window._firestoreSaveParty  = window._firestoreSaveParty  || function(){ return Promise.reject(new Error('Firebase unavailable')); };
+  window._firestoreDeleteParty= window._firestoreDeleteParty|| function(){ return Promise.reject(new Error('Firebase unavailable')); };
 </script>
 <script type="module">
   try {
@@ -1051,19 +1053,6 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       // resubmitting updates the same record instead of creating duplicates.
       const fallbackId = 'solo-' + partyNames[0].trim().toLowerCase().replace(/[^a-z0-9]+/g,'-');
       await setDoc(doc(db, 'rsvps', fallbackId), { partyId: fallbackId, ...data }, { merge: true });
-    };
-
-    // ---- Admin-only party management ----
-    window._firestoreSaveParty = async (partyId, names) => {
-      if(partyId){
-        await setDoc(doc(db, 'parties', partyId), { names }, { merge: true });
-        return partyId;
-      }
-      const ref = await addDoc(collection(db, 'parties'), { names });
-      return ref.id;
-    };
-    window._firestoreDeleteParty = async (partyId) => {
-      await deleteDoc(doc(db, 'parties', partyId));
     };
   } catch(e) {
     console.warn('Firebase unavailable (likely local preview):', e.message);
@@ -1346,7 +1335,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
 <script type="module">
 (function(){
-  const ADMIN_PASSWORD = 'welton2027';
+  // Admin sign-in now uses real Firebase Authentication (Email/Password) instead of a
+  // hardcoded string, so Firestore security rules can verify writes server-side.
+  // Set this account up once in the Firebase console (Authentication → Users).
+  const ADMIN_EMAIL = 'weltonwedding1@gmail.com';
 
   // ---- Image slot definitions ----
   // key → how to apply the image to the DOM element
@@ -1450,7 +1442,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   // ---- State ----
   let adminActive = false;
   let dirty = {}, savedContent = {};
-  let db, fm;
+  let db, fm, auth, authModule;
 
   const modal      = document.getElementById('admin-modal');
   const bar        = document.getElementById('admin-bar');
@@ -1465,15 +1457,26 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     setTimeout(() => pwInput.focus(), 100);
   }
 
-  function tryLogin(){
-    if(pwInput.value === ADMIN_PASSWORD){
+  async function tryLogin(){
+    const loginBtn = document.getElementById('admin-login-btn');
+    const typedPassword = pwInput.value;
+    if(!typedPassword) return;
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Checking…';
+    errEl.textContent = '';
+    try {
+      await initFirestore();
+      await authModule.signInWithEmailAndPassword(auth, ADMIN_EMAIL, typedPassword);
       modal.classList.remove('visible');
-      errEl.textContent = '';
-      activateAdmin();
-    } else {
+      pwInput.value = '';
+      await activateAdmin();
+    } catch(e){
+      console.warn('Admin sign-in failed:', e.code || e.message);
       errEl.textContent = 'Incorrect password.';
       pwInput.value = ''; pwInput.focus();
     }
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Enter';
   }
   document.getElementById('admin-login-btn').addEventListener('click', tryLogin);
   pwInput.addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
@@ -1626,13 +1629,14 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     if(el) slot.apply(el, dataUrl);
   }
 
-  // ---- Init Firebase (Firestore + Storage) ----
+  // ---- Init Firebase (Auth + Firestore + Storage) ----
   let storage, sm; // sm = storage module
   async function initFirebase(){
     if(db) return;
     const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
     fm = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
     sm = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js');
+    authModule = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
     const app = initializeApp({
       apiKey:"AIzaSyAnoerW4ZRNT-g5J4WIotApJEFYobkTRpk",
       authDomain:"theweltons.firebaseapp.com",
@@ -1643,9 +1647,25 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     }, 'admin-app-v3');
     db      = fm.getFirestore(app);
     storage = sm.getStorage(app);
+    auth    = authModule.getAuth(app);
   }
   // Keep initFirestore as alias so existing calls work
   const initFirestore = initFirebase;
+
+  // ---- Admin-only party/guest-list management (requires Firebase Auth) ----
+  window._firestoreSaveParty = async (partyId, names) => {
+    await initFirestore();
+    if(partyId){
+      await fm.setDoc(fm.doc(db,'parties', partyId), { names }, { merge: true });
+      return partyId;
+    }
+    const ref = await fm.addDoc(fm.collection(db,'parties'), { names });
+    return ref.id;
+  };
+  window._firestoreDeleteParty = async (partyId) => {
+    await initFirestore();
+    await fm.deleteDoc(fm.doc(db,'parties', partyId));
+  };
 
   // ---- Save image to Firestore (base64) ----
   async function saveImage(key, dataUrl){
@@ -2063,6 +2083,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     adminActive = false;
     document.body.classList.remove('admin-mode');
     bar.classList.remove('visible');
+    if(auth && authModule) authModule.signOut(auth).catch(()=>{});
     document.querySelectorAll('.img-upload-btn,.img-file-input').forEach(el=>el.remove());
     buildEditableMap().forEach(({el}) => {
       el.removeAttribute('contenteditable');

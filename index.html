@@ -463,6 +463,17 @@ section{padding:120px 0;position:relative;z-index:2}
 .party-guest .choice{margin-bottom:0}
 .party-guest .choice button{padding:13px;font-size:.92rem}
 
+/* ---- Extra custom events (Bride's Lunch, Groom's Outing, etc.) ---- */
+.rsvp-event{background:var(--shell);border-radius:8px;padding:18px;margin-bottom:18px}
+.rsvp-event-name{font-family:var(--serif);font-style:italic;font-size:1.15rem;margin-bottom:3px}
+.rsvp-event-meta{font-size:.78rem;color:var(--ink-soft);margin-bottom:10px}
+.rsvp-event-desc{font-size:.88rem;line-height:1.55;margin-bottom:16px}
+.rsvp-event-guest{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.rsvp-event-guest:first-of-type{border-top:none}
+.rsvp-event-guest .peg-name{font-size:.9rem}
+.rsvp-event-guest label{display:flex;align-items:center;gap:7px;font-size:.82rem;color:var(--ink-soft);cursor:pointer}
+.rsvp-event-guest input[type="checkbox"]{width:17px;height:17px}
+
 /* ---- FOOTER ---- */
 footer{background:var(--ink);color:var(--ivory);text-align:center;padding:70px 32px;position:relative;z-index:2}
 footer .fm{font-family:var(--serif);font-style:italic;font-size:2.2rem}
@@ -779,6 +790,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
             <label>Will you be attending?</label>
             <div class="party-list" id="partyList"><!-- guest rows injected by JS --></div>
           </div>
+          <div id="eventBlocks"><!-- extra event questions injected by JS, only when eligible --></div>
           <div class="field">
             <label for="note">Dietary needs or a note for us (optional)</label>
             <textarea id="note" placeholder="Anything we should know"></textarea>
@@ -887,9 +899,11 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
   function normName(s){ return (s||'').trim().toLowerCase().replace(/\s+/g,' '); }
 
-  let currentParty = null;      // { id, names:[...] }
+  let currentParty = null;      // { id, names:[...], category }
   let currentResponses = {};    // { name: 'yes' | 'no' }
+  let currentEventResponses = {}; // { eventId: { name: true|false } }
   let partiesCache = null;      // lazy-loaded list of all parties from Firestore
+  let eventsCache = null;       // lazy-loaded list of custom RSVP events
 
   async function getParties(){
     if(partiesCache) return partiesCache;
@@ -899,6 +913,53 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       partiesCache = [];
     }
     return partiesCache;
+  }
+
+  async function getEvents(){
+    if(eventsCache) return eventsCache;
+    try {
+      eventsCache = await window._firestoreGetEvents();
+    } catch(e) {
+      eventsCache = [];
+    }
+    return eventsCache;
+  }
+
+  function eligibleEvents(){
+    if(!eventsCache || !currentParty) return [];
+    return eventsCache.filter(ev =>
+      !ev.categories || !ev.categories.length || ev.categories.includes(currentParty.category)
+    );
+  }
+
+  function renderEventBlocks(){
+    const wrap = document.getElementById('eventBlocks');
+    const events = eligibleEvents();
+    if(!events.length){ wrap.innerHTML = ''; return; }
+
+    wrap.innerHTML = events.map(ev => `
+      <div class="rsvp-event" data-event-id="${ev.id}">
+        <div class="rsvp-event-name">${ev.name}</div>
+        ${ev.details ? `<div class="rsvp-event-meta">${ev.details}</div>` : ''}
+        ${ev.invite ? `<div class="rsvp-event-desc">${ev.invite}</div>` : ''}
+        ${currentParty.names.map((name, i) => `
+          <div class="rsvp-event-guest">
+            <span class="peg-name">${name}</span>
+            <label>
+              <input type="checkbox" data-event="${ev.id}" data-name="${i}">
+              Will attend
+            </label>
+          </div>`).join('')}
+      </div>`).join('');
+
+    wrap.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const eventId = cb.dataset.event;
+        const name = currentParty.names[cb.dataset.name];
+        currentEventResponses[eventId] = currentEventResponses[eventId] || {};
+        currentEventResponses[eventId][name] = cb.checked;
+      });
+    });
   }
 
   function renderPartyList(){
@@ -945,14 +1006,16 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     findBtn.disabled = true;
 
     const parties = await getParties();
+    await getEvents();
     const norm = normName(v);
     const match = parties.find(p => (p.names||[]).some(n => normName(n) === norm));
 
     currentParty = match
-      ? { id: match.id, names: match.names }
-      : { id: null, names: [v] }; // fallback: unregistered guest RSVPs solo
+      ? { id: match.id, names: match.names, category: match.category || '' }
+      : { id: null, names: [v], category: '' }; // fallback: unregistered guest RSVPs solo
 
     currentResponses = {};
+    currentEventResponses = {};
 
     document.getElementById('foundName').textContent =
       currentParty.names.length > 1
@@ -960,6 +1023,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         : currentParty.names[0];
 
     renderPartyList();
+    renderEventBlocks();
 
     findBtn.textContent = 'Find My Invitation';
     findBtn.disabled = false;
@@ -979,7 +1043,13 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     btn.disabled = true;
 
     const note = document.getElementById('note').value.trim();
-    const responses = currentParty.names.map(name => ({ name, attending: currentResponses[name] }));
+    const responses = currentParty.names.map(name => {
+      const events = {};
+      Object.keys(currentEventResponses).forEach(eventId => {
+        if(currentEventResponses[eventId][name]) events[eventId] = 'yes';
+      });
+      return { name, attending: currentResponses[name], events };
+    });
     const anyYes = responses.some(r => r.attending === 'yes');
     const allNo  = responses.every(r => r.attending === 'no');
 
@@ -1013,9 +1083,12 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   // Fallback: if Firebase module fails to load (e.g. local file preview), RSVP still works visually
   window._firestoreAddRSVP    = window._firestoreAddRSVP    || function(){ return Promise.resolve(); };
   window._firestoreGetParties = window._firestoreGetParties || function(){ return Promise.resolve([]); };
+  window._firestoreGetEvents  = window._firestoreGetEvents  || function(){ return Promise.resolve([]); };
   window._firestoreSaveParty  = window._firestoreSaveParty  || function(){ return Promise.reject(new Error('Firebase unavailable')); };
   window._firestoreDeleteParty= window._firestoreDeleteParty|| function(){ return Promise.reject(new Error('Firebase unavailable')); };
   window._firestoreSetPartyCategory = window._firestoreSetPartyCategory || function(){ return Promise.reject(new Error('Firebase unavailable')); };
+  window._firestoreSaveEvent   = window._firestoreSaveEvent   || function(){ return Promise.reject(new Error('Firebase unavailable')); };
+  window._firestoreDeleteEvent = window._firestoreDeleteEvent || function(){ return Promise.reject(new Error('Firebase unavailable')); };
 </script>
 <script type="module">
   try {
@@ -1036,10 +1109,17 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
 
-    // Fetch every party in the guest list, e.g. { id, names:['Wes Avett','James Avett','Nancy Avett'] }
+    // Fetch every party in the guest list, e.g. { id, names:['Wes Avett','James Avett','Nancy Avett'], category }
     window._firestoreGetParties = async () => {
       const snap = await getDocs(collection(db, 'parties'));
-      return snap.docs.map(d => ({ id: d.id, names: d.data().names || [] }));
+      return snap.docs.map(d => ({ id: d.id, names: d.data().names || [], category: d.data().category || '' }));
+    };
+
+    // Fetch custom RSVP events (e.g. Bride's Lunch, Groom's Outing) so the guest flow
+    // can show extra questions to eligible categories.
+    window._firestoreGetEvents = async () => {
+      const snap = await getDocs(collection(db, 'events'));
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
     };
 
     // partyId is the matched Firestore doc id (or null for a walk-in / unregistered guest).
@@ -1246,6 +1326,19 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   .gl-cat-dot[data-cat="Groom's Family"]{background:var(--ink-soft)}
   .gl-category-select{border:1px solid var(--line);border-radius:5px;padding:5px 8px;font-family:var(--sans);font-size:.68rem;color:var(--ink-soft);background:var(--shell)}
 
+  /* RSVP Details / custom events */
+  .ev-cat-checks{display:flex;flex-wrap:wrap;gap:8px}
+  .ev-cat-check{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:20px;padding:6px 12px 6px 10px;font-size:.76rem;color:var(--ink-soft);cursor:pointer;background:var(--ivory)}
+  .ev-cat-check input{margin:0}
+  .ev-card{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:10px;background:var(--ivory)}
+  .ev-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .ev-card-name{font-family:var(--serif);font-style:italic;font-size:1.05rem;color:var(--rose-ink)}
+  .ev-card-meta{font-size:.74rem;color:var(--ink-soft);margin-top:3px}
+  .ev-card-desc{font-size:.82rem;margin-top:10px;line-height:1.55}
+  .ev-card-cats{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:12px}
+  .ev-card-cat-tag{display:flex;align-items:center;gap:5px;font-size:.66rem;color:var(--ink-soft)}
+  .ev-card-actions{display:flex;gap:8px;flex-shrink:0}
+
   .gl-chip{display:flex;align-items:center;gap:5px;background:var(--shell);border:1px solid var(--line);border-radius:20px;padding:7px 8px 7px 13px;font-size:.82rem;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;margin-bottom:6px;transition:background .15s,border-color .15s,color .15s}
   .gl-chip.dragging{opacity:.3}
   .gl-chip.selected{background:var(--rose-ink);border-color:var(--rose-ink);color:#fff}
@@ -1273,6 +1366,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       <div class="am2-tabs" role="tablist">
         <button class="am2-tab active" id="tab-responses" role="tab" aria-selected="true">Responses</button>
         <button class="am2-tab" id="tab-guestlist" role="tab" aria-selected="false">Guest List</button>
+        <button class="am2-tab" id="tab-events" role="tab" aria-selected="false">RSVP Details</button>
       </div>
 
       <!-- Responses pane -->
@@ -1317,6 +1411,28 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         </div>
         <div id="gl-table-wrap" class="gl-cards">
           <div class="am2-empty">Loading guest list…</div>
+        </div>
+      </div>
+
+      <!-- RSVP Details / custom events pane -->
+      <div class="am2-pane" id="pane-events">
+        <div class="gl-form">
+          <label for="ev-name">Event name</label>
+          <input type="text" id="ev-name" placeholder="Bride's Lunch">
+          <label for="ev-details" style="margin-top:12px">Date, time, location (optional)</label>
+          <input type="text" id="ev-details" placeholder="Sat, April 2 · 12pm · The Everleigh, Atlanta">
+          <label for="ev-invite" style="margin-top:12px">Custom invite wording (optional)</label>
+          <textarea id="ev-invite" placeholder="Grace would love for you to join her for a celebratory lunch the day before the wedding."></textarea>
+          <label style="margin-top:12px">Who's invited?</label>
+          <div class="ev-cat-checks" id="ev-cat-checks"></div>
+          <p class="gl-hint">Leave everyone unchecked to invite your whole guest list. Only guests whose party is tagged with a checked category will see this on their RSVP.</p>
+          <div class="gl-form-row">
+            <button class="btn" id="ev-save-btn" style="font-size:.68rem;padding:11px 20px">Add Event</button>
+            <button class="gl-cancel" id="ev-cancel-edit" style="display:none">Cancel edit</button>
+          </div>
+        </div>
+        <div id="ev-table-wrap">
+          <div class="am2-empty">Loading events…</div>
         </div>
       </div>
     </div>
@@ -1720,6 +1836,21 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     await fm.setDoc(fm.doc(db,'parties', partyId), { category }, { merge: true });
   };
 
+  // ---- Admin-only custom RSVP event management (Bride's Lunch, Groom's Outing, etc.) ----
+  window._firestoreSaveEvent = async (eventId, data) => {
+    await initFirestore();
+    if(eventId){
+      await fm.setDoc(fm.doc(db,'events', eventId), data, { merge: true });
+      return eventId;
+    }
+    const ref = await fm.addDoc(fm.collection(db,'events'), data);
+    return ref.id;
+  };
+  window._firestoreDeleteEvent = async (eventId) => {
+    await initFirestore();
+    await fm.deleteDoc(fm.doc(db,'events', eventId));
+  };
+
   // ---- Save image to Firestore (base64) ----
   async function saveImage(key, dataUrl){
     await initFirestore();
@@ -1905,37 +2036,49 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   });
 
   // ---- Dashboard tabs ----
-  document.getElementById('tab-responses').addEventListener('click', () => switchDashTab('responses'));
-  document.getElementById('tab-guestlist').addEventListener('click', () => switchDashTab('guestlist'));
+  const DASH_TAB_NAMES = ['responses','guestlist','events'];
+  DASH_TAB_NAMES.forEach(name => {
+    document.getElementById('tab-'+name).addEventListener('click', () => switchDashTab(name));
+  });
   function switchDashTab(which){
-    document.getElementById('tab-responses').classList.toggle('active', which==='responses');
-    document.getElementById('tab-guestlist').classList.toggle('active', which==='guestlist');
-    document.getElementById('tab-responses').setAttribute('aria-selected', which==='responses');
-    document.getElementById('tab-guestlist').setAttribute('aria-selected', which==='guestlist');
-    document.getElementById('pane-responses').classList.toggle('active', which==='responses');
-    document.getElementById('pane-guestlist').classList.toggle('active', which==='guestlist');
+    DASH_TAB_NAMES.forEach(name => {
+      const active = name === which;
+      document.getElementById('tab-'+name).classList.toggle('active', active);
+      document.getElementById('tab-'+name).setAttribute('aria-selected', active);
+      document.getElementById('pane-'+name).classList.toggle('active', active);
+    });
   }
 
   let allParties = []; // cached for both panes while the modal is open
+  let allEvents  = []; // cached custom RSVP events (Bride's Lunch, Groom's Outing, etc.)
+  let editingEventId = null;
+
+  // Shared category list — used for both party tagging and event targeting
+  const PARTY_CATEGORIES = ['Wedding Party','Bridal Party',"Groom's Party","Bride's Family","Groom's Family"];
 
   document.getElementById('ab-dashboard').addEventListener('click', async () => {
     document.getElementById('dashboard-modal').classList.add('visible');
     switchDashTab('responses');
     document.getElementById('dash-table-wrap').innerHTML = '<div class="am2-empty">Loading…</div>';
     document.getElementById('gl-table-wrap').innerHTML = '<div class="am2-empty">Loading…</div>';
+    document.getElementById('ev-table-wrap').innerHTML = '<div class="am2-empty">Loading…</div>';
     try {
       await initFirestore();
-      const [rsvpSnap, partySnap] = await Promise.all([
+      const [rsvpSnap, partySnap, eventSnap] = await Promise.all([
         fm.getDocs(fm.collection(db,'rsvps')),
-        fm.getDocs(fm.collection(db,'parties'))
+        fm.getDocs(fm.collection(db,'parties')),
+        fm.getDocs(fm.collection(db,'events'))
       ]);
       allParties = partySnap.docs.map(d => ({ id: d.id, names: d.data().names || [], label: d.data().label || '', category: d.data().category || '' }));
+      allEvents  = eventSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       const rsvpRows = rsvpSnap.docs.map(d => d.data());
       renderResponsesPane(rsvpRows);
       renderGuestListPane();
+      renderEventsPane();
     } catch(e){
       document.getElementById('dash-table-wrap').innerHTML = '<div class="am2-empty">Could not load — check Firestore rules.</div>';
       document.getElementById('gl-table-wrap').innerHTML = '<div class="am2-empty">Could not load — check Firestore rules.</div>';
+      document.getElementById('ev-table-wrap').innerHTML = '<div class="am2-empty">Could not load — check Firestore rules.</div>';
     }
   });
   document.getElementById('dashboard-close').addEventListener('click', () =>
@@ -1958,7 +2101,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
     rows.sort((a,b) => (a.responses?.[0]?.name||'').localeCompare(b.responses?.[0]?.name||''));
 
-    let html = `<table class="am2-table"><thead><tr><th>Party</th><th>Guests</th><th>Attending</th><th>Note</th><th>Submitted</th></tr></thead><tbody>`;
+    const hasEvents = allEvents.length > 0;
+    let html = `<table class="am2-table"><thead><tr><th>Party</th><th>Guests</th><th>Attending</th>${hasEvents?'<th>Extra Events</th>':''}<th>Note</th><th>Submitted</th></tr></thead><tbody>`;
     rows.forEach(r => {
       const responses = r.responses || [];
       const nameList = `<ul class="am2-name-list">` + responses.map(g =>
@@ -1966,17 +2110,34 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       ).join('') + `</ul>`;
       const yesCount = responses.filter(g=>g.attending==='yes').length;
       const date = r.submittedAt ? new Date(r.submittedAt).toLocaleDateString() : '—';
-      html += `<tr><td>${nameList}</td><td>${responses.length}</td><td>${yesCount}</td><td>${r.note||''}</td><td>${date}</td></tr>`;
+      let eventsCell = '';
+      if(hasEvents){
+        const lines = [];
+        responses.forEach(g => {
+          Object.keys(g.events || {}).forEach(eventId => {
+            if(g.events[eventId] === 'yes'){
+              const ev = allEvents.find(e => e.id === eventId);
+              lines.push(`${g.name} — ${ev ? ev.name : 'Unknown event'}`);
+            }
+          });
+        });
+        eventsCell = `<td>${lines.length ? lines.join('<br>') : '—'}</td>`;
+      }
+      html += `<tr><td>${nameList}</td><td>${responses.length}</td><td>${yesCount}</td>${eventsCell}<td>${r.note||''}</td><td>${date}</td></tr>`;
     });
     html += '</tbody></table>';
     document.getElementById('dash-table-wrap').innerHTML = html;
 
-    // CSV export — one row per guest
+    // CSV export — one row per guest, with one column per custom event
     document.getElementById('dash-export').onclick = () => {
-      const lines = ['Party ID,Guest Name,Attending,Note,Submitted'];
+      const eventCols = allEvents.map(ev => ev.name || 'Event');
+      const header = ['Party ID','Guest Name','Attending', ...eventCols, 'Note','Submitted'];
+      const lines = [header.map(h => `"${h.replace(/"/g,'""')}"`).join(',')];
       rows.forEach(r => {
         (r.responses||[]).forEach(g => {
-          lines.push(`"${r.partyId||''}","${g.name||''}","${g.attending||''}","${(r.note||'').replace(/"/g,'""')}","${r.submittedAt||''}"`);
+          const eventVals = allEvents.map(ev => (g.events && g.events[ev.id] === 'yes') ? 'Yes' : '');
+          const cells = [r.partyId||'', g.name||'', g.attending||'', ...eventVals, (r.note||''), (r.submittedAt||'')];
+          lines.push(cells.map(c => `"${String(c).replace(/"/g,'""')}"`).join(','));
         });
       });
       const a = document.createElement('a');
@@ -2086,7 +2247,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       return;
     }
     const sorted = [...allParties].sort((a,b) => (a.names[0]||'').localeCompare(b.names[0]||''));
-    const CATS = ['Wedding Party','Bridal Party',"Groom's Party","Bride's Family","Groom's Family"];
+    const CATS = PARTY_CATEGORIES;
     wrap.innerHTML = sorted.map(p => `
       <div class="gl-card" data-party-id="${p.id}">
         <div class="gl-card-head">
@@ -2290,6 +2451,118 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       alert('Could not save guest list: ' + e.message);
     }
     btn.textContent = prevLabel;
+    btn.disabled = false;
+  });
+
+  // ---- RSVP Details / custom events pane ----
+  function renderEventsPane(){
+    const catWrap = document.getElementById('ev-cat-checks');
+    if(!catWrap.dataset.built){
+      catWrap.innerHTML = PARTY_CATEGORIES.map(c => `
+        <label class="ev-cat-check">
+          <input type="checkbox" value="${c}">
+          <i class="gl-cat-dot" data-cat="${c}"></i>${c}
+        </label>`).join('');
+      catWrap.dataset.built = '1';
+    }
+
+    const wrap = document.getElementById('ev-table-wrap');
+    if(!allEvents.length){
+      wrap.innerHTML = '<div class="am2-empty">No custom events yet. Add one above.</div>';
+      return;
+    }
+    const sorted = [...allEvents].sort((a,b) => (a.name||'').localeCompare(b.name||''));
+    wrap.innerHTML = sorted.map(ev => `
+      <div class="ev-card" data-event-id="${ev.id}">
+        <div class="ev-card-head">
+          <div>
+            <div class="ev-card-name">${ev.name || 'Untitled event'}</div>
+            ${ev.details ? `<div class="ev-card-meta">${ev.details}</div>` : ''}
+          </div>
+          <div class="ev-card-actions">
+            <button class="gl-icon-btn ev-edit" title="Edit">✎</button>
+            <button class="gl-icon-btn ev-delete" title="Delete">🗑</button>
+          </div>
+        </div>
+        ${ev.invite ? `<div class="ev-card-desc">${ev.invite}</div>` : ''}
+        <div class="ev-card-cats">
+          ${(ev.categories && ev.categories.length)
+            ? ev.categories.map(c => `<span class="ev-card-cat-tag"><i class="gl-cat-dot" data-cat="${c}"></i>${c}</span>`).join('')
+            : '<span class="ev-card-cat-tag">Everyone</span>'}
+        </div>
+      </div>`).join('');
+
+    wrap.querySelectorAll('.ev-edit').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.closest('.ev-card').dataset.eventId;
+        const ev = allEvents.find(x => x.id === id);
+        if(!ev) return;
+        editingEventId = id;
+        document.getElementById('ev-name').value = ev.name || '';
+        document.getElementById('ev-details').value = ev.details || '';
+        document.getElementById('ev-invite').value = ev.invite || '';
+        catWrap.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+          cb.checked = (ev.categories || []).includes(cb.value);
+        });
+        document.getElementById('ev-save-btn').textContent = 'Update Event';
+        document.getElementById('ev-cancel-edit').style.display = 'inline';
+        document.getElementById('ev-name').scrollIntoView({ behavior:'smooth', block:'center' });
+      });
+    });
+    wrap.querySelectorAll('.ev-delete').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.closest('.ev-card').dataset.eventId;
+        const ev = allEvents.find(x => x.id === id);
+        if(!ev || !confirm(`Delete "${ev.name}"? This can't be undone.`)) return;
+        try {
+          await window._firestoreDeleteEvent(id);
+          allEvents = allEvents.filter(x => x.id !== id);
+          renderEventsPane();
+        } catch(e){
+          alert('Could not delete event: ' + e.message);
+        }
+      });
+    });
+  }
+
+  function resetEventForm(){
+    editingEventId = null;
+    document.getElementById('ev-name').value = '';
+    document.getElementById('ev-details').value = '';
+    document.getElementById('ev-invite').value = '';
+    document.querySelectorAll('#ev-cat-checks input').forEach(cb => cb.checked = false);
+    document.getElementById('ev-save-btn').textContent = 'Add Event';
+    document.getElementById('ev-cancel-edit').style.display = 'none';
+  }
+
+  document.getElementById('ev-cancel-edit').addEventListener('click', resetEventForm);
+
+  document.getElementById('ev-save-btn').addEventListener('click', async () => {
+    const name = document.getElementById('ev-name').value.trim();
+    if(!name){ alert('Enter an event name.'); return; }
+    const details    = document.getElementById('ev-details').value.trim();
+    const invite     = document.getElementById('ev-invite').value.trim();
+    const categories = [...document.querySelectorAll('#ev-cat-checks input:checked')].map(cb => cb.value);
+
+    const btn = document.getElementById('ev-save-btn');
+    btn.disabled = true;
+    const prevLabel = btn.textContent;
+    btn.textContent = 'Saving…';
+    try {
+      const data = { name, details, invite, categories };
+      const savedId = await window._firestoreSaveEvent(editingEventId, data);
+      if(editingEventId){
+        const ev = allEvents.find(x => x.id === editingEventId);
+        if(ev) Object.assign(ev, data);
+      } else {
+        allEvents.push({ id: savedId, ...data });
+      }
+      resetEventForm();
+      renderEventsPane();
+    } catch(e){
+      alert('Could not save event: ' + e.message);
+      btn.textContent = prevLabel;
+    }
     btn.disabled = false;
   });
 

@@ -90,13 +90,18 @@ nav.scrolled{background:rgba(247,242,234,.88);backdrop-filter:blur(14px);box-sha
    the page is scrolled (it gets sized to nav's own box instead of the viewport).
    Suspending the blur while the menu is open avoids that entirely. */
 nav.menu-open{backdrop-filter:none;background:#F7F2EA}
-.monogram{font-family:var(--serif);font-style:italic;font-size:1.4rem;letter-spacing:.03em;text-decoration:none}
+.monogram{font-family:var(--serif);font-style:italic;font-size:1.4rem;letter-spacing:.03em;text-decoration:none;transition:color .3s}
+/* While the nav is transparent and floating over the hero photo, the monogram needs
+   the same light-text + glow treatment as the hero title, or it gets lost over busy
+   or dark photos. Once nav.scrolled kicks in (opaque bg), it reverts to normal ink. */
+body.hero-has-images nav:not(.scrolled) .monogram{color:var(--ivory);text-shadow:0 2px 14px rgba(20,17,14,.75)}
 .navlinks{display:flex;gap:28px;list-style:none}
 .navlinks a{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;color:var(--ink-soft);position:relative;transition:color .25s}
 .navlinks a::after{content:"";position:absolute;left:0;bottom:-5px;width:0;height:1px;background:var(--rose-deep);transition:width .3s}
 .navlinks a:hover{color:var(--ink)}.navlinks a:hover::after{width:100%}
 .menu-btn{display:none;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;z-index:201;padding:4px}
 .menu-btn span{width:24px;height:1.5px;background:var(--ink);display:block;transition:.3s}
+body.hero-has-images nav:not(.scrolled):not(.menu-open) .menu-btn span{background:var(--ivory);box-shadow:0 1px 6px rgba(20,17,14,.6)}
 @media(max-width:880px){
   .navlinks{
     position:fixed;inset:0;
@@ -238,7 +243,7 @@ section{padding:120px 0;position:relative;z-index:2}
 #gallery      { background: transparent; padding: 40px 0; }
 #travel       { background: var(--shell); }
 #faq          { background: var(--ivory); }
-#registry     { background: var(--ivory); }
+#registry     { background: var(--shell); }
 #rsvp         { background: var(--rose);  }
 .sec-num{font-family:var(--serif);font-style:italic;font-size:.92rem;color:var(--rose-deep)}
 .sec-head{margin-bottom:64px}
@@ -1789,6 +1794,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
     slides.classList.add('has-images');
     document.getElementById('hero').classList.add('has-images');
+    document.body.classList.add('hero-has-images');
 
     // Dots
     if(urls.length > 1){

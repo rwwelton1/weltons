@@ -454,8 +454,14 @@ section{padding:120px 0;position:relative;z-index:2}
 .thanks .mark{font-size:2rem;color:var(--rose-ink)}
 .thanks h3{font-size:1.9rem;font-style:italic;margin:10px 0}
 .thanks p{color:var(--ink-soft);font-size:.95rem}
-/* guest count hidden by default — shown only when attending=yes */
-#guestCountField{display:none}
+
+/* ---- Party / group RSVP rows ---- */
+.party-list{margin-bottom:8px}
+.party-guest{margin-bottom:22px;text-align:left;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.party-guest:last-child{border-bottom:none}
+.party-guest .pg-name{font-family:var(--serif);font-style:italic;font-size:1.1rem;margin-bottom:11px}
+.party-guest .choice{margin-bottom:0}
+.party-guest .choice button{padding:13px;font-size:.92rem}
 
 /* ---- FOOTER ---- */
 footer{background:var(--ink);color:var(--ivory);text-align:center;padding:70px 32px;position:relative;z-index:2}
@@ -770,15 +776,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         <div class="rsvp-step" data-step="2" role="group" aria-label="Your response">
           <p class="found">We found your invitation, <span id="foundName"></span>.</p>
           <div class="field">
-            <label id="attendLabel">Will you be attending?</label>
-            <div class="choice" id="attendChoice" role="group" aria-labelledby="attendLabel">
-              <button type="button" data-val="yes" role="radio" aria-checked="false">Joyfully accepts</button>
-              <button type="button" data-val="no" role="radio" aria-checked="false">Regretfully declines</button>
-            </div>
-          </div>
-          <div class="field" id="guestCountField">
-            <label for="guestCount">Number of guests attending</label>
-            <select id="guestCount"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+            <label>Will you be attending?</label>
+            <div class="party-list" id="partyList"><!-- guest rows injected by JS --></div>
           </div>
           <div class="field">
             <label for="note">Dietary needs or a note for us (optional)</label>
@@ -882,64 +881,111 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     });
   });
 
-  // ---- RSVP flow ----
+  // ---- RSVP flow (party / group aware) ----
   const steps = document.querySelectorAll('.rsvp-step');
   function go(n){ steps.forEach(s => s.classList.toggle('active', s.dataset.step == n)); }
 
-  let attending = null;
+  function normName(s){ return (s||'').trim().toLowerCase().replace(/\s+/g,' '); }
+
+  let currentParty = null;      // { id, names:[...] }
+  let currentResponses = {};    // { name: 'yes' | 'no' }
+  let partiesCache = null;      // lazy-loaded list of all parties from Firestore
+
+  async function getParties(){
+    if(partiesCache) return partiesCache;
+    try {
+      partiesCache = await window._firestoreGetParties();
+    } catch(e) {
+      partiesCache = [];
+    }
+    return partiesCache;
+  }
+
+  function renderPartyList(){
+    const wrap = document.getElementById('partyList');
+    wrap.innerHTML = '';
+    currentParty.names.forEach((name, i) => {
+      const row = document.createElement('div');
+      row.className = 'party-guest';
+      row.innerHTML = `
+        <div class="pg-name">${name}</div>
+        <div class="choice" role="group" aria-label="${name} attending?">
+          <button type="button" data-name="${i}" data-val="yes" role="radio" aria-checked="false">Joyfully accepts</button>
+          <button type="button" data-name="${i}" data-val="no" role="radio" aria-checked="false">Regretfully declines</button>
+        </div>`;
+      wrap.appendChild(row);
+    });
+    wrap.querySelectorAll('.choice button').forEach(b => {
+      b.addEventListener('click', () => {
+        const idx = b.dataset.name;
+        const name = currentParty.names[idx];
+        const group = b.closest('.choice');
+        group.querySelectorAll('button').forEach(x => {
+          x.classList.remove('sel');
+          x.setAttribute('aria-checked','false');
+        });
+        b.classList.add('sel');
+        b.setAttribute('aria-checked','true');
+        currentResponses[name] = b.dataset.val;
+      });
+    });
+  }
 
   // Allow Enter key on name field
   document.getElementById('guestName').addEventListener('keydown', e => {
     if(e.key === 'Enter') document.getElementById('findBtn').click();
   });
 
-  document.getElementById('findBtn').addEventListener('click', () => {
+  document.getElementById('findBtn').addEventListener('click', async () => {
     const v = document.getElementById('guestName').value.trim();
     if(!v){ document.getElementById('guestName').focus(); return; }
-    document.getElementById('foundName').textContent = v.split(' ')[0];
-    attending = null;
-    // reset choice buttons
-    document.querySelectorAll('#attendChoice button').forEach(x => {
-      x.classList.remove('sel');
-      x.setAttribute('aria-checked','false');
-    });
-    document.getElementById('guestCountField').style.display = 'none';
+
+    const findBtn = document.getElementById('findBtn');
+    findBtn.textContent = 'Searching…';
+    findBtn.disabled = true;
+
+    const parties = await getParties();
+    const norm = normName(v);
+    const match = parties.find(p => (p.names||[]).some(n => normName(n) === norm));
+
+    currentParty = match
+      ? { id: match.id, names: match.names }
+      : { id: null, names: [v] }; // fallback: unregistered guest RSVPs solo
+
+    currentResponses = {};
+
+    document.getElementById('foundName').textContent =
+      currentParty.names.length > 1
+        ? currentParty.names.slice(0, -1).join(', ') + ' & ' + currentParty.names.slice(-1)
+        : currentParty.names[0];
+
+    renderPartyList();
+
+    findBtn.textContent = 'Find My Invitation';
+    findBtn.disabled = false;
     go(2);
   });
 
   document.getElementById('backBtn').addEventListener('click', () => go(1));
 
-  document.querySelectorAll('#attendChoice button').forEach(b => {
-    b.addEventListener('click', () => {
-      document.querySelectorAll('#attendChoice button').forEach(x => {
-        x.classList.remove('sel');
-        x.setAttribute('aria-checked','false');
-      });
-      b.classList.add('sel');
-      b.setAttribute('aria-checked','true');
-      attending = b.dataset.val;
-      document.getElementById('guestCountField').style.display = attending === 'yes' ? 'block' : 'none';
-    });
-  });
-
   document.getElementById('submitBtn').addEventListener('click', async () => {
-    if(!attending){ return; }
+    if(!currentParty || Object.keys(currentResponses).length < currentParty.names.length){
+      alert('Please respond for everyone in your party before submitting.');
+      return;
+    }
 
     const btn = document.getElementById('submitBtn');
     btn.textContent = 'Saving…';
     btn.disabled = true;
 
-    const name      = document.getElementById('guestName').value.trim();
-    const guestCount = attending === 'yes'
-      ? parseInt(document.getElementById('guestCount').value, 10)
-      : 0;
     const note = document.getElementById('note').value.trim();
+    const responses = currentParty.names.map(name => ({ name, attending: currentResponses[name] }));
+    const anyYes = responses.some(r => r.attending === 'yes');
+    const allNo  = responses.every(r => r.attending === 'no');
 
     try {
-      await window._firestoreAddRSVP({
-        name,
-        attending,
-        guestCount,
+      await window._firestoreAddRSVP(currentParty.id, currentParty.names, {
+        responses,
         note,
         submittedAt: new Date().toISOString()
       });
@@ -948,13 +994,15 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       // Still show thank-you — don't leave guest on a broken screen
     }
 
-    if(attending === 'no'){
+    if(allNo){
       document.getElementById('thanksTitle').textContent = 'We\u2019ll miss you.';
       document.getElementById('thanksMsg').textContent   = 'Thank you for letting us know. We\u2019ll be thinking of you on the day.';
-    } else {
+    } else if(anyYes){
       document.getElementById('thanksTitle').textContent = 'Thank you!';
       document.getElementById('thanksMsg').textContent   = 'We can\u2019t wait to celebrate with you. Need to make a change? Just enter your name again before the deadline.';
     }
+    btn.textContent = 'Submit RSVP';
+    btn.disabled = false;
     go(3);
   });
 })();
@@ -963,12 +1011,13 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 <!-- Firebase -->
 <script>
   // Fallback: if Firebase module fails to load (e.g. local file preview), RSVP still works visually
-  window._firestoreAddRSVP = window._firestoreAddRSVP || function(){ return Promise.resolve(); };
+  window._firestoreAddRSVP  = window._firestoreAddRSVP  || function(){ return Promise.resolve(); };
+  window._firestoreGetParties = window._firestoreGetParties || function(){ return Promise.resolve([]); };
 </script>
 <script type="module">
   try {
     const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
-    const { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, doc }
+    const { getFirestore, collection, addDoc, setDoc, query, where, getDocs, updateDoc, doc, deleteDoc }
       = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
     const firebaseConfig = {
@@ -984,14 +1033,37 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
 
-    window._firestoreAddRSVP = async (data) => {
-      const q = query(collection(db, 'rsvps'), where('name', '==', data.name));
-      const existing = await getDocs(q);
-      if(!existing.empty){
-        await updateDoc(doc(db, 'rsvps', existing.docs[0].id), data);
-      } else {
-        await addDoc(collection(db, 'rsvps'), data);
+    // Fetch every party in the guest list, e.g. { id, names:['Wes Avett','James Avett','Nancy Avett'] }
+    window._firestoreGetParties = async () => {
+      const snap = await getDocs(collection(db, 'parties'));
+      return snap.docs.map(d => ({ id: d.id, names: d.data().names || [] }));
+    };
+
+    // partyId is the matched Firestore doc id (or null for a walk-in / unregistered guest).
+    // partyNames is used as a stable fallback key so repeat submissions from the same
+    // unregistered guest update rather than duplicate.
+    window._firestoreAddRSVP = async (partyId, partyNames, data) => {
+      if(partyId){
+        await setDoc(doc(db, 'rsvps', partyId), { partyId, ...data }, { merge: true });
+        return;
       }
+      // Unregistered / solo guest — key the rsvp doc off their normalized name so
+      // resubmitting updates the same record instead of creating duplicates.
+      const fallbackId = 'solo-' + partyNames[0].trim().toLowerCase().replace(/[^a-z0-9]+/g,'-');
+      await setDoc(doc(db, 'rsvps', fallbackId), { partyId: fallbackId, ...data }, { merge: true });
+    };
+
+    // ---- Admin-only party management ----
+    window._firestoreSaveParty = async (partyId, names) => {
+      if(partyId){
+        await setDoc(doc(db, 'parties', partyId), { names }, { merge: true });
+        return partyId;
+      }
+      const ref = await addDoc(collection(db, 'parties'), { names });
+      return ref.id;
+    };
+    window._firestoreDeleteParty = async (partyId) => {
+      await deleteDoc(doc(db, 'parties', partyId));
     };
   } catch(e) {
     console.warn('Firebase unavailable (likely local preview):', e.message);
@@ -1135,6 +1207,34 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   .am2-no{color:var(--rose-ink)}
   .am2-empty{text-align:center;padding:30px;color:var(--ink-soft);font-style:italic;font-family:var(--serif)}
   .am2-export{margin-top:16px;text-align:right}
+  .am2-name-list{margin:0;padding:0;list-style:none}
+  .am2-name-list li{display:flex;align-items:center;gap:6px;padding:2px 0}
+  .am2-yn{display:inline-block;width:16px;text-align:center;font-weight:600}
+  .am2-yn.y{color:var(--sage-deep)}
+  .am2-yn.n{color:var(--rose-ink)}
+  .am2-yn.pending{color:var(--ink-soft)}
+
+  /* Dashboard tabs */
+  .am2-tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--line)}
+  .am2-tab{background:none;border:none;cursor:pointer;padding:9px 4px 12px;margin-right:14px;font-family:var(--sans);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);border-bottom:2px solid transparent}
+  .am2-tab.active{color:var(--rose-ink);border-bottom-color:var(--rose-ink)}
+  .am2-pane{display:none}
+  .am2-pane.active{display:block}
+
+  /* Guest list / party manager */
+  .gl-form{background:var(--shell);border-radius:8px;padding:16px;margin-bottom:20px}
+  .gl-form label{display:block;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--sage-deep);margin-bottom:7px}
+  .gl-form textarea{width:100%;min-height:64px;padding:11px 14px;border:1px solid var(--line);border-radius:6px;font-family:var(--sans);font-size:.9rem;color:var(--ink);background:var(--ivory);resize:vertical}
+  .gl-form textarea:focus{outline:2px solid var(--sage);border-color:var(--sage)}
+  .gl-hint{font-size:.72rem;color:var(--ink-soft);margin-top:6px}
+  .gl-form-row{display:flex;gap:10px;margin-top:12px;align-items:center}
+  .gl-cancel{background:none;border:none;color:var(--ink-soft);cursor:pointer;font-family:var(--sans);font-size:.78rem;text-decoration:underline}
+  .gl-party-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .gl-party-row:last-child{border-bottom:none}
+  .gl-party-names{font-size:.88rem;line-height:1.5}
+  .gl-party-actions{display:flex;gap:8px;flex-shrink:0}
+  .gl-icon-btn{background:none;border:none;cursor:pointer;font-size:.95rem;padding:2px 4px;opacity:.7}
+  .gl-icon-btn:hover{opacity:1}
 
   /* Links modal */
   .lf-row{display:grid;grid-template-columns:1fr 2fr;gap:10px;align-items:center;margin-bottom:14px}
@@ -1152,16 +1252,40 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       <button class="am2-close" id="dashboard-close">✕</button>
     </div>
     <div class="am2-body">
-      <div class="am2-stats">
-        <div class="am2-stat"><div class="n" id="dash-total">—</div><div class="l">Responses</div></div>
-        <div class="am2-stat"><div class="n" id="dash-attending">—</div><div class="l">Attending</div></div>
-        <div class="am2-stat"><div class="n" id="dash-guests">—</div><div class="l">Total Guests</div></div>
+      <div class="am2-tabs" role="tablist">
+        <button class="am2-tab active" id="tab-responses" role="tab" aria-selected="true">Responses</button>
+        <button class="am2-tab" id="tab-guestlist" role="tab" aria-selected="false">Guest List</button>
       </div>
-      <div id="dash-table-wrap">
-        <div class="am2-empty">Loading responses…</div>
+
+      <!-- Responses pane -->
+      <div class="am2-pane active" id="pane-responses">
+        <div class="am2-stats">
+          <div class="am2-stat"><div class="n" id="dash-total">—</div><div class="l">Parties Responded</div></div>
+          <div class="am2-stat"><div class="n" id="dash-attending">—</div><div class="l">Guests Attending</div></div>
+          <div class="am2-stat"><div class="n" id="dash-guests">—</div><div class="l">Total Invited</div></div>
+        </div>
+        <div id="dash-table-wrap">
+          <div class="am2-empty">Loading responses…</div>
+        </div>
+        <div class="am2-export">
+          <button class="btn" id="dash-export" style="font-size:.68rem;padding:10px 22px">Export CSV</button>
+        </div>
       </div>
-      <div class="am2-export">
-        <button class="btn" id="dash-export" style="font-size:.68rem;padding:10px 22px">Export CSV</button>
+
+      <!-- Guest list / parties pane -->
+      <div class="am2-pane" id="pane-guestlist">
+        <div class="gl-form">
+          <label for="gl-names">Party names (one per line, or comma-separated)</label>
+          <textarea id="gl-names" placeholder="Wes Avett&#10;James Avett&#10;Nancy Avett"></textarea>
+          <p class="gl-hint">Group a family or couple together so when one person RSVPs, everyone in the party can respond for themselves. A single name on its own is a party of one.</p>
+          <div class="gl-form-row">
+            <button class="btn" id="gl-save-btn" style="font-size:.68rem;padding:11px 20px">Add Party</button>
+            <button class="gl-cancel" id="gl-cancel-edit" style="display:none">Cancel edit</button>
+          </div>
+        </div>
+        <div id="gl-table-wrap">
+          <div class="am2-empty">Loading guest list…</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1707,46 +1831,172 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     bgInput.value = '';
   });
 
+  // ---- Dashboard tabs ----
+  document.getElementById('tab-responses').addEventListener('click', () => switchDashTab('responses'));
+  document.getElementById('tab-guestlist').addEventListener('click', () => switchDashTab('guestlist'));
+  function switchDashTab(which){
+    document.getElementById('tab-responses').classList.toggle('active', which==='responses');
+    document.getElementById('tab-guestlist').classList.toggle('active', which==='guestlist');
+    document.getElementById('tab-responses').setAttribute('aria-selected', which==='responses');
+    document.getElementById('tab-guestlist').setAttribute('aria-selected', which==='guestlist');
+    document.getElementById('pane-responses').classList.toggle('active', which==='responses');
+    document.getElementById('pane-guestlist').classList.toggle('active', which==='guestlist');
+  }
+
+  let allParties = []; // cached for both panes while the modal is open
+
   document.getElementById('ab-dashboard').addEventListener('click', async () => {
     document.getElementById('dashboard-modal').classList.add('visible');
+    switchDashTab('responses');
     document.getElementById('dash-table-wrap').innerHTML = '<div class="am2-empty">Loading…</div>';
+    document.getElementById('gl-table-wrap').innerHTML = '<div class="am2-empty">Loading…</div>';
     try {
       await initFirestore();
-      const snap = await fm.getDocs(fm.collection(db,'rsvps'));
-      const rows = snap.docs.map(d => d.data());
-      const attending = rows.filter(r => r.attending === 'yes');
-      const totalGuests = attending.reduce((s,r) => s + (r.guestCount||1), 0);
-      document.getElementById('dash-total').textContent    = rows.length;
-      document.getElementById('dash-attending').textContent = attending.length;
-      document.getElementById('dash-guests').textContent   = totalGuests;
-      if(!rows.length){
-        document.getElementById('dash-table-wrap').innerHTML = '<div class="am2-empty">No responses yet.</div>';
-        return;
-      }
-      let html = `<table class="am2-table"><thead><tr><th>Name</th><th>Attending</th><th>Guests</th><th>Note</th><th>Submitted</th></tr></thead><tbody>`;
-      rows.sort((a,b)=>a.name?.localeCompare(b.name)).forEach(r => {
-        const att = r.attending==='yes' ? '<span class="am2-yes">Yes</span>' : '<span class="am2-no">No</span>';
-        const date = r.submittedAt ? new Date(r.submittedAt).toLocaleDateString() : '—';
-        html += `<tr><td>${r.name||'—'}</td><td>${att}</td><td>${r.guestCount||'—'}</td><td>${r.note||''}</td><td>${date}</td></tr>`;
-      });
-      html += '</tbody></table>';
-      document.getElementById('dash-table-wrap').innerHTML = html;
-      // CSV export
-      document.getElementById('dash-export').onclick = () => {
-        const csv = ['Name,Attending,Guests,Note,Submitted',
-          ...rows.map(r => `"${r.name||''}","${r.attending||''}","${r.guestCount||''}","${(r.note||'').replace(/"/g,'""')}","${r.submittedAt||''}"`)
-        ].join('\n');
-        const a = document.createElement('a');
-        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-        a.download = 'welton-rsvps.csv';
-        a.click();
-      };
+      const [rsvpSnap, partySnap] = await Promise.all([
+        fm.getDocs(fm.collection(db,'rsvps')),
+        fm.getDocs(fm.collection(db,'parties'))
+      ]);
+      allParties = partySnap.docs.map(d => ({ id: d.id, names: d.data().names || [] }));
+      const rsvpRows = rsvpSnap.docs.map(d => d.data());
+      renderResponsesPane(rsvpRows);
+      renderGuestListPane();
     } catch(e){
       document.getElementById('dash-table-wrap').innerHTML = '<div class="am2-empty">Could not load — check Firestore rules.</div>';
+      document.getElementById('gl-table-wrap').innerHTML = '<div class="am2-empty">Could not load — check Firestore rules.</div>';
     }
   });
   document.getElementById('dashboard-close').addEventListener('click', () =>
     document.getElementById('dashboard-modal').classList.remove('visible'));
+
+  // ---- Responses pane ----
+  function renderResponsesPane(rows){
+    const totalInvited = allParties.reduce((s,p) => s + p.names.length, 0)
+      + rows.filter(r => !allParties.some(p => p.id === r.partyId)).reduce((s,r) => s + (r.responses?.length||0), 0);
+    const attendingCount = rows.reduce((s,r) => s + (r.responses||[]).filter(x=>x.attending==='yes').length, 0);
+    document.getElementById('dash-total').textContent     = rows.length;
+    document.getElementById('dash-attending').textContent = attendingCount;
+    document.getElementById('dash-guests').textContent    = totalInvited;
+
+    if(!rows.length){
+      document.getElementById('dash-table-wrap').innerHTML = '<div class="am2-empty">No responses yet.</div>';
+      document.getElementById('dash-export').onclick = null;
+      return;
+    }
+
+    rows.sort((a,b) => (a.responses?.[0]?.name||'').localeCompare(b.responses?.[0]?.name||''));
+
+    let html = `<table class="am2-table"><thead><tr><th>Party</th><th>Guests</th><th>Attending</th><th>Note</th><th>Submitted</th></tr></thead><tbody>`;
+    rows.forEach(r => {
+      const responses = r.responses || [];
+      const nameList = `<ul class="am2-name-list">` + responses.map(g =>
+        `<li><span class="am2-yn ${g.attending==='yes'?'y':(g.attending==='no'?'n':'pending')}">${g.attending==='yes'?'✓':(g.attending==='no'?'✕':'?')}</span>${g.name}</li>`
+      ).join('') + `</ul>`;
+      const yesCount = responses.filter(g=>g.attending==='yes').length;
+      const date = r.submittedAt ? new Date(r.submittedAt).toLocaleDateString() : '—';
+      html += `<tr><td>${nameList}</td><td>${responses.length}</td><td>${yesCount}</td><td>${r.note||''}</td><td>${date}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('dash-table-wrap').innerHTML = html;
+
+    // CSV export — one row per guest
+    document.getElementById('dash-export').onclick = () => {
+      const lines = ['Party ID,Guest Name,Attending,Note,Submitted'];
+      rows.forEach(r => {
+        (r.responses||[]).forEach(g => {
+          lines.push(`"${r.partyId||''}","${g.name||''}","${g.attending||''}","${(r.note||'').replace(/"/g,'""')}","${r.submittedAt||''}"`);
+        });
+      });
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(lines.join('\n'));
+      a.download = 'welton-rsvps.csv';
+      a.click();
+    };
+  }
+
+  // ---- Guest list / parties pane ----
+  let editingPartyId = null;
+
+  function parseNamesInput(raw){
+    return raw.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
+  }
+
+  function renderGuestListPane(){
+    const wrap = document.getElementById('gl-table-wrap');
+    if(!allParties.length){
+      wrap.innerHTML = '<div class="am2-empty">No parties added yet. Add one above.</div>';
+      return;
+    }
+    const sorted = [...allParties].sort((a,b) => (a.names[0]||'').localeCompare(b.names[0]||''));
+    wrap.innerHTML = sorted.map(p => `
+      <div class="gl-party-row" data-party-id="${p.id}">
+        <div class="gl-party-names">${p.names.join(', ')}</div>
+        <div class="gl-party-actions">
+          <button class="gl-icon-btn gl-edit" title="Edit">✎</button>
+          <button class="gl-icon-btn gl-delete" title="Delete">🗑</button>
+        </div>
+      </div>`).join('');
+
+    wrap.querySelectorAll('.gl-edit').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.closest('.gl-party-row').dataset.partyId;
+        const party = allParties.find(p => p.id === id);
+        if(!party) return;
+        editingPartyId = id;
+        document.getElementById('gl-names').value = party.names.join('\n');
+        document.getElementById('gl-save-btn').textContent = 'Update Party';
+        document.getElementById('gl-cancel-edit').style.display = 'inline';
+        document.getElementById('gl-names').focus();
+      });
+    });
+    wrap.querySelectorAll('.gl-delete').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.closest('.gl-party-row').dataset.partyId;
+        const party = allParties.find(p => p.id === id);
+        if(!party || !confirm(`Remove "${party.names.join(', ')}" from the guest list?`)) return;
+        try {
+          await window._firestoreDeleteParty(id);
+          allParties = allParties.filter(p => p.id !== id);
+          renderGuestListPane();
+        } catch(e){
+          alert('Could not delete party: ' + e.message);
+        }
+      });
+    });
+  }
+
+  document.getElementById('gl-cancel-edit').addEventListener('click', () => {
+    editingPartyId = null;
+    document.getElementById('gl-names').value = '';
+    document.getElementById('gl-save-btn').textContent = 'Add Party';
+    document.getElementById('gl-cancel-edit').style.display = 'none';
+  });
+
+  document.getElementById('gl-save-btn').addEventListener('click', async () => {
+    const names = parseNamesInput(document.getElementById('gl-names').value);
+    if(!names.length){ alert('Enter at least one name.'); return; }
+    const btn = document.getElementById('gl-save-btn');
+    btn.disabled = true;
+    const prevLabel = btn.textContent;
+    btn.textContent = 'Saving…';
+    try {
+      const savedId = await window._firestoreSaveParty(editingPartyId, names);
+      if(editingPartyId){
+        const p = allParties.find(x => x.id === editingPartyId);
+        if(p) p.names = names;
+      } else {
+        allParties.push({ id: savedId, names });
+      }
+      editingPartyId = null;
+      document.getElementById('gl-names').value = '';
+      document.getElementById('gl-save-btn').textContent = 'Add Party';
+      document.getElementById('gl-cancel-edit').style.display = 'none';
+      renderGuestListPane();
+    } catch(e){
+      alert('Could not save party: ' + e.message);
+      btn.textContent = prevLabel;
+    }
+    btn.disabled = false;
+  });
 
   // ---- Links editor ----
   let savedLinks = {};

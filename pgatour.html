@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<link rel="apple-touch-icon" sizes="512x512" href="/poolplay-icon.png">
+<link rel="icon" type="image/png" href="/poolplay-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Scorecery – PGA Tour Salary Pool</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f0e8;--card:#ffffff;--card2:#fdf8ee;--border:#111111;--border2:#dddddd;
+  --text:#111111;--muted:#777777;--dim:#aaaaaa;
+  --gold:#e8c840;--gold-bg:#fffbe8;--gold-dark:#b89a00;
+  --green:#5dba4a;--green-bg:#edfae8;
+  --blue:#5590e8;--blue-bg:#e8f0ff;
+  --red:#c0392b;--red2:#e85555;--red-bg:#ffe8e8;
+  --purple:#9955e8;--purple-bg:#f5e8ff;
+  --cream:#fdf8ee
+}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;font-size:13px;min-height:100vh;-webkit-font-smoothing:antialiased}
+button,input,select{font-family:'Nunito',sans-serif;touch-action:manipulation}
+button{cursor:pointer;border:none;outline:none}
+a{color:inherit;text-decoration:none;touch-action:manipulation}
+
+/* ── TOPBAR ── */
+.topbar{background:#ffffff;border-bottom:3px solid var(--border);padding:8px 12px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:50;box-shadow:0 3px 0 var(--border)}
+.topbar-left{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.topbar-center{flex:1;min-width:0;overflow:hidden;text-align:center}
+.app-name{font-size:15px;font-weight:900;color:var(--text);white-space:nowrap;letter-spacing:-.02em}
+.app-sub{font-size:7px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase;letter-spacing:.06em;margin-top:3px;display:block}
+.topbar-right{display:flex;gap:5px;align-items:center;flex-shrink:0}
+.tag{background:var(--cream);border:2px solid var(--border);border-radius:20px;padding:3px 9px;font-size:9px;font-weight:800;color:var(--text);box-shadow:2px 2px 0 var(--border)}
+.btn{border-radius:8px;padding:4px 10px;font-size:9px;font-weight:800;border:2px solid var(--border);box-shadow:2px 2px 0 var(--border);font-family:'Nunito',sans-serif;transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translate(2px,2px);box-shadow:none}
+.btn-ghost{background:#ffffff;color:var(--text)}
+.btn-gold{background:var(--gold-bg);color:var(--gold-dark)}
+.btn-red{background:var(--red-bg);color:var(--red2)}
+.btn-green{background:var(--green-bg);color:var(--green)}
+.btn-blue{background:var(--blue-bg);color:var(--blue)}
+
+/* ── SCORECERY logo ── */
+.scorecery-logo{font-family:'Nunito',sans-serif;font-weight:900;font-size:inherit;color:#ffffff;text-transform:uppercase;letter-spacing:.05em;-webkit-text-stroke:3px #111111;text-shadow:1px 1px 0 #111111,2px 2px 0 #111111,3px 3px 0 #111111,5px 5px 0 #4c1d95,7px 7px 0 #2e1158,8px 8px 0 #1a0a33;paint-order:stroke fill}
+
+/* ── PAGE TABS ── */
+.page-bar{background:#ffffff;border-bottom:2px solid var(--border);display:flex;padding:0;gap:0;overflow-x:auto;flex-shrink:0}
+.page-bar::-webkit-scrollbar{display:none}
+.ptab{padding:9px 12px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:3px solid transparent;background:none;white-space:nowrap;flex-shrink:0;font-family:'Nunito',sans-serif;flex:1;text-align:center}
+.ptab.active{color:var(--text);border-bottom-color:var(--border);background:var(--gold-bg)}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(40px);background:#ffffff;border:2px solid var(--border);color:var(--text);border-radius:10px;padding:7px 16px;font-size:10px;font-weight:800;z-index:999;opacity:0;transition:all .2s;pointer-events:none;white-space:nowrap;box-shadow:3px 3px 0 var(--border)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── USER SELECT ── */
+.user-screen{display:flex;flex-direction:column;align-items:center;padding:40px 20px;gap:16px}
+.user-screen h2{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.user-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.user-btn{padding:12px 22px;border-radius:12px;background:#ffffff;border:2px solid var(--border);font-size:14px;font-weight:800;color:var(--text);text-align:left;min-width:150px;box-shadow:3px 3px 0 var(--border)}
+.user-btn:active{transform:translate(3px,3px);box-shadow:none}
+.user-btn-sub{font-size:8px;font-weight:700;color:var(--muted);margin-top:3px}
+
+/* ── ROSTER PAGE ── */
+.roster-cap-header{background:#ffffff;border-bottom:3px solid var(--border);padding:14px 14px 10px}
+.rch-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.rch-left{}
+.rch-label{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:3px}
+.rch-used{font-size:22px;font-weight:900;line-height:1}
+.rch-used.ok{color:var(--green)}
+.rch-used.over{color:var(--red2)}
+.rch-used.neutral{color:var(--text)}
+.rch-denom{font-size:14px;font-weight:800;color:var(--muted)}
+.rch-right{text-align:right}
+.rch-left-label{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:3px}
+.rch-remaining{font-size:22px;font-weight:900;line-height:1}
+.rch-remaining.ok{color:var(--green)}
+.rch-remaining.over{color:var(--red2)}
+.rch-count{font-size:11px;font-weight:900;color:var(--muted);margin-top:3px}
+.rch-bar-track{height:6px;background:var(--border2);border-radius:3px;overflow:hidden;margin-bottom:0}
+.rch-bar-fill{height:100%;border-radius:3px;background:var(--green);transition:width .3s}
+.rch-bar-fill.over{background:var(--red2)}
+
+/* ── SLOT GRID ── */
+.slot-grid-wrap{background:#ffffff;padding:12px 14px 14px;border-bottom:3px solid var(--border)}
+.slot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.slot-card{background:var(--cream);border:2px solid var(--border2);border-radius:14px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;cursor:pointer;transition:border-color .1s,background .1s;position:relative;min-height:70px}
+.slot-card:active{background:var(--gold-bg);border-color:var(--border)}
+.slot-card.active-slot{border-color:var(--blue);background:var(--blue-bg);box-shadow:0 0 0 2px var(--blue)}
+.slot-card.filled{background:var(--green-bg);border-color:var(--green);box-shadow:2px 2px 0 var(--border)}
+.slot-card.filled:active{background:var(--green-bg)}
+.slot-card.over{border-color:var(--red2);background:var(--red-bg)}
+.slot-label{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:4px}
+.slot-label.filled{color:var(--green)}
+.slot-name{font-size:10px;font-weight:900;color:var(--text);text-align:center;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.slot-salary{font-size:9px;font-weight:800;color:var(--muted);margin-top:3px}
+.slot-tier-label{font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.slot-empty{font-size:10px;font-weight:700;color:var(--dim);font-style:italic}
+.slot-remove{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:var(--red2);border:none;color:#ffffff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;line-height:1}
+.slot-remove:active{transform:scale(.9)}
+
+/* ── ACTION STRIP ── */
+.action-strip{background:#ffffff;border-bottom:2px solid var(--border2);padding:8px 14px;display:flex;align-items:center;justify-content:space-between}
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;border:2px solid var(--border);font-size:10px;font-weight:800;background:#ffffff;color:var(--text);box-shadow:2px 2px 0 var(--border)}
+.status-pill.open{background:var(--green-bg);color:var(--green);border-color:var(--border)}
+.status-pill.locked{background:var(--red-bg);color:var(--red2);border-color:var(--border)}
+.odds-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:20px;border:2px solid var(--border);font-size:10px;font-weight:800;background:#ffffff;color:var(--text);box-shadow:2px 2px 0 var(--border)}
+.odds-btn:active{transform:translate(2px,2px);box-shadow:none}
+.odds-btn.active{background:var(--gold-bg);color:var(--gold-dark);border-color:var(--border)}
+
+/* ── ROSTER BODY ── */
+.roster-body{background:var(--bg);padding:0 0 120px}
+.roster-section-label{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:12px 14px 6px}
+.roster-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:6px;text-align:center}
+.roster-empty-main{font-size:15px;font-weight:900;color:var(--text)}
+.roster-empty-sub{font-size:11px;font-weight:700;color:var(--muted)}
+.roster-footer-note{padding:20px 14px 0;text-align:center;font-size:10px;font-weight:700;color:var(--dim);line-height:1.6}
+
+/* ── GOLFER PICKER (shown when a slot is active) ── */
+.picker-wrap{background:#ffffff;border-top:2px solid var(--border)}
+.picker-header{padding:8px 12px 6px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px}
+.picker-title{font-size:11px;font-weight:900;color:var(--text);flex:1}
+.picker-close{width:26px;height:26px;border-radius:7px;background:var(--cream);border:2px solid var(--border2);color:var(--muted);font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.picker-search-bar{padding:7px 12px;border-bottom:1px solid var(--border2);display:flex;gap:6px;align-items:center}
+.picker-search{flex:1;background:var(--cream);border:2px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;color:var(--text);outline:none;font-family:'Nunito',sans-serif;box-shadow:2px 2px 0 var(--border)}
+.picker-search::placeholder{color:var(--dim)}
+.picker-clear{width:26px;height:26px;border-radius:6px;background:var(--border2);border:none;color:var(--text);font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+.picker-clear:active{background:var(--border)}
+.filter-btn{padding:5px 10px;border-radius:8px;font-size:9px;font-weight:800;border:2px solid var(--border2);background:#ffffff;color:var(--muted);font-family:'Nunito',sans-serif;box-shadow:2px 2px 0 var(--border2)}
+.filter-btn.active{background:var(--gold-bg);border-color:var(--border);color:var(--gold-dark)}
+.golfer-list{background:#ffffff}
+.golfer-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border2);cursor:pointer}
+.golfer-row:last-child{border-bottom:none}
+.golfer-row.selected{background:var(--green-bg)}
+.golfer-row.over-cap{opacity:.4;pointer-events:none}
+.golfer-row:active{background:var(--cream)}
+.golfer-row.selected:active{background:var(--green-bg)}
+.rank-badge{min-width:34px;height:28px;padding:0 4px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;flex-shrink:0;border:2px solid var(--border2)}
+.rank-badge.top5{background:var(--gold-bg);border-color:var(--border);color:var(--gold-dark)}
+.rank-badge.top10{background:#fff5e8;border-color:var(--border2);color:#b45309}
+.rank-badge.top25{background:var(--blue-bg);border-color:var(--border2);color:var(--blue)}
+.rank-badge.other{background:var(--cream);color:var(--muted)}
+.golfer-info{flex:1;min-width:0}
+.golfer-name{font-size:13px;font-weight:900;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.golfer-meta{font-size:9px;font-weight:700;color:var(--muted);margin-top:1px}
+.golfer-salary{font-size:13px;font-weight:900;color:var(--text);flex-shrink:0}
+.golfer-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;background:#ffffff;color:var(--dim)}
+.golfer-row.selected .golfer-check{background:var(--green);border-color:var(--green);color:#ffffff}
+
+/* ── SUBMIT BAR ── */
+.submit-bar{position:fixed;bottom:0;left:0;right:0;padding:10px 14px;border-top:2px solid var(--border);background:#ffffff;z-index:40;max-width:600px;margin:0 auto}
+.submit-btn{width:100%;padding:12px;border-radius:10px;font-size:14px;font-weight:900;border:2px solid var(--border);cursor:pointer;background:var(--gold);color:var(--text);font-family:'Nunito',sans-serif;box-shadow:3px 3px 0 var(--border)}
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:flex;align-items:flex-end;justify-content:center}
+.confirm-sheet{background:#fff;border:3px solid var(--border);border-radius:14px 14px 0 0;width:100%;max-width:480px;padding:20px 20px 44px;box-shadow:0 -4px 0 var(--border)}
+.confirm-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px}
+.confirm-title{font-size:17px;font-weight:900;color:var(--text);margin-bottom:4px;text-align:center}
+.confirm-sub{font-size:11px;font-weight:700;color:var(--muted);text-align:center;margin-bottom:16px}
+.confirm-picks{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.confirm-pick-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--cream);border-radius:8px;border:1.5px solid var(--border2)}
+.confirm-pick-name{font-size:12px;font-weight:800;color:var(--text)}
+.confirm-pick-salary{font-size:11px;font-weight:700;color:var(--muted)}
+.confirm-cap-row{display:flex;justify-content:space-between;padding:10px 12px;background:var(--gold-bg);border-radius:8px;border:2px solid var(--border2);margin-bottom:16px}
+.confirm-cap-label{font-size:11px;font-weight:800;color:var(--muted)}
+.confirm-cap-val{font-size:13px;font-weight:900;color:var(--gold-dark)}
+.confirm-btns{display:flex;gap:10px}
+.confirm-btn-cancel{flex:1;padding:12px;border-radius:10px;border:2px solid var(--border);background:var(--cream);font-size:13px;font-weight:800;color:var(--muted);cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:2px 2px 0 var(--border)}
+.confirm-btn-submit{flex:2;padding:12px;border-radius:10px;border:2px solid var(--border);background:var(--gold);font-size:13px;font-weight:900;color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:3px 3px 0 var(--border)}
+.confirm-btn-submit:active,.confirm-btn-cancel:active{transform:translate(2px,2px);box-shadow:none}
+.submit-btn:active{transform:translate(3px,3px);box-shadow:none}
+.submit-btn:disabled{background:var(--border2);color:var(--dim);box-shadow:none;cursor:default}
+.submit-btn:disabled:active{transform:none}
+
+/* ── LEADERBOARD ── */
+.lb-wrap{padding:14px 12px 80px;max-width:600px;margin:0 auto}
+.lb-card{background:#ffffff;border:2px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:12px;box-shadow:4px 4px 0 var(--border)}
+.lb-head{padding:10px 14px;background:var(--cream);border-bottom:2px solid var(--border2);display:flex;justify-content:space-between;align-items:center}
+.lb-title{font-size:13px;font-weight:900;color:var(--text)}
+.lb-sub{font-size:9px;font-weight:800;color:var(--muted)}
+.lb-row{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border2)}
+.lb-row:last-child{border-bottom:none}
+.lb-row.me{background:var(--gold-bg)}
+.lb-rank{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;border:2px solid var(--border2)}
+.lb-rank.r1{background:var(--gold-bg);border-color:var(--border);color:var(--gold-dark)}
+.lb-rank.r2{background:#f5f5f5;border-color:var(--border2);color:var(--muted)}
+.lb-rank.r3{background:#fff5e8;border-color:var(--border2);color:#b45309}
+.lb-rank.rn{background:#ffffff;border-color:var(--border2);color:var(--dim)}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-size:13px;font-weight:900;color:var(--text)}
+.lb-team{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.lb-chip{font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;border:1px solid var(--border2);background:var(--cream);color:var(--muted)}
+.lb-chip.cut{text-decoration:line-through;opacity:.45}
+.lb-chip.scored{background:var(--green-bg);color:var(--green);border-color:var(--green)}
+.lb-chip.over{background:var(--red-bg);color:var(--red2);border-color:var(--red2)}
+.lb-right{text-align:right;flex-shrink:0}
+.lb-score{font-size:20px;font-weight:900;color:var(--text);line-height:1}
+.lb-score.under{color:var(--green)}
+.lb-score.over{color:var(--red2)}
+.lb-score.even{color:var(--blue)}
+.lb-score-label{font-size:8px;font-weight:800;color:var(--muted)}
+.lb-cap{font-size:9px;font-weight:700;color:var(--dim);margin-top:3px}
+
+/* ── ADMIN ── */
+.adm-wrap{padding:14px 12px 80px;max-width:600px;margin:0 auto}
+.adm-card{background:#ffffff;border:2px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:4px 4px 0 var(--border)}
+.adm-title{font-size:12px;font-weight:900;color:var(--text);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border2)}
+.adm-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border2)}
+.adm-row:last-child{border-bottom:none}
+.adm-name{font-size:12px;font-weight:800;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-rank{font-size:9px;font-weight:800;color:var(--muted);width:22px;flex-shrink:0}
+.score-inp{width:68px;padding:5px 8px;font-size:12px;font-weight:800;border:2px solid var(--border);border-radius:7px;background:var(--cream);color:var(--text);font-family:'Nunito',sans-serif;text-align:center}
+.score-inp:focus{border-color:var(--blue);outline:none}
+.cut-btn{padding:4px 10px;border-radius:7px;font-size:9px;font-weight:800;border:2px solid var(--border2);background:#ffffff;color:var(--muted);font-family:'Nunito',sans-serif}
+.cut-btn.cut{background:var(--red-bg);border-color:var(--border);color:var(--red2)}
+.lock-note{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--red-bg);border-bottom:2px solid var(--border);font-size:10px;font-weight:800;color:var(--red2);flex-shrink:0}
+.section-label{font-size:9px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;margin-top:16px}
+.section-label:first-child{margin-top:0}
+/* ── LIVE TAB ── */
+.live-wrap{padding:0 0 80px}
+.live-header{background:#ffffff;border-bottom:2px solid var(--border2);padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.live-title{font-size:13px;font-weight:900;color:var(--text)}
+.live-meta{font-size:9px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:8px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--red2);display:inline-block;animation:livepulse 1.4s ease-in-out infinite}
+@keyframes livepulse{0%,100%{opacity:1}50%{opacity:.25}}
+.live-round{font-size:9px;font-weight:800;color:var(--muted);padding:3px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--cream)}
+.live-refresh{padding:4px 10px;border-radius:7px;font-size:9px;font-weight:800;border:2px solid var(--border2);background:#ffffff;color:var(--muted);font-family:'Nunito',sans-serif;box-shadow:2px 2px 0 var(--border2)}
+.live-refresh:active{transform:translate(1px,1px);box-shadow:none}
+.live-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border2);background:#ffffff}
+.live-row:last-child{border-bottom:none}
+.live-row.mypick{background:var(--gold-bg)}
+.live-row.cut{opacity:.45}
+.live-pos{width:28px;text-align:center;font-size:11px;font-weight:900;color:var(--muted);flex-shrink:0}
+.live-pos.top5{color:var(--gold-dark)}
+.live-name{font-size:13px;font-weight:900;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.live-thru{font-size:9px;font-weight:700;color:var(--muted);flex-shrink:0;min-width:32px;text-align:right}
+.live-score{font-size:15px;font-weight:900;flex-shrink:0;min-width:34px;text-align:right}
+.live-score.under{color:var(--green)}
+.live-score.over{color:var(--red2)}
+.live-score.even{color:var(--blue)}
+.live-score.cut-score{color:var(--dim);font-size:11px}
+.live-empty{padding:60px 20px;text-align:center;color:var(--dim);font-size:12px;font-weight:800;line-height:2}
+/* Pull to refresh */
+.ptr-indicator{display:none;text-align:center;padding:10px;font-size:11px;font-weight:800;color:var(--muted);background:var(--cream)}
+.ptr-indicator.visible{display:block}
+.live-footer{text-align:center;font-size:8px;font-weight:700;color:var(--dim);padding:10px 0 4px}
+.my-team-ribbon{background:var(--gold-bg);border-bottom:2px solid var(--border);padding:10px 14px 12px;margin-bottom:0}
+.my-team-title{font-size:9px;font-weight:900;color:var(--gold-dark);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.my-team-total{font-size:16px;font-weight:900}
+.my-team-picks{display:flex;flex-wrap:wrap;gap:5px}
+.my-team-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;border:2px solid var(--border2);background:#ffffff;font-size:10px;font-weight:800;color:var(--text);box-shadow:1px 1px 0 var(--border2)}
+.my-team-chip.under{border-color:#86efac;background:#f0fdf4;color:var(--green)}
+.my-team-chip.over{border-color:#fca5a5;background:#fef2f2;color:var(--red2)}
+.my-team-chip.cut{border-color:var(--border2);background:var(--cream);color:var(--dim);text-decoration:line-through}
+.my-team-chip .chip-score{font-size:9px;font-weight:900}
+
+</style>
+</head>
+<body>
+<div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;color:var(--muted);font-size:13px;font-weight:800">Loading…</div></div>
+<div id="toast"></div>
+
+<script>
+
+// =====================================================
+// US OPEN GOLF — SALARY CAP POOL
+// =====================================================
+var GROUP_ID=(function(){var m=location.search.match(/[?&]group=([^&]+)/);return m?decodeURIComponent(m[1]):null;})();
+var URL_USER=(function(){var m=location.search.match(/[?&]user=([^&]+)/);return m?decodeURIComponent(m[1]):null;})();
+var BASE=GROUP_ID?"groups/"+GROUP_ID+"/data/pgatour":"pgatour";
+var MASTER_PW="Sloop";
+
+// ── TOURNAMENT CONFIG (loaded from Firebase globalSettings/pgatour) ───────
+var TOURNAMENT = {
+  name:    "PGA Tour",
+  course:  "",
+  cap:     50000,
+  year:    new Date().getFullYear(),
+  espnUrl: "",
+  type:    "salary"  // salary | tier | confidence | daily
+};
+
+// Tier definitions (based on salary thresholds)
+var TIERS = [
+  {id:"elite",      label:"Elite",      min:14000, max:Infinity, icon:"🔵", pick:1},
+  {id:"contender",  label:"Contender",  min:8000,  max:14000,   icon:"🟢", pick:1},
+  {id:"mid",        label:"Mid",        min:3500,  max:8000,    icon:"🟡", pick:1},
+  {id:"value",      label:"Value",      min:0,     max:3500,    icon:"⚪", pick:1}
+];
+
+// Daily round labels — 2 golfers per round = 8 slots total
+var ROUNDS = ["R1","R1","R2","R2","R3","R3","R4","R4"];
+var ROUND_LABELS = ["Round 1 (Pick 1)","Round 1 (Pick 2)","Round 2 (Pick 1)","Round 2 (Pick 2)",
+                    "Round 3 (Pick 1)","Round 3 (Pick 2)","Round 4 (Pick 1)","Round 4 (Pick 2)"];
+var ROUND_DISPLAY = ["R1","R1","R2","R2","R3","R3","R4","R4"];
+
+function loadTournamentConfig(cb) {
+  if(!DB){ cb(); return; }
+  DB.ref("globalSettings/pgatour").once("value", function(sn){
+    var cfg = sn.val()||{};
+    if(cfg.name)    TOURNAMENT.name    = cfg.name;
+    if(cfg.course)  TOURNAMENT.course  = cfg.course;
+    if(cfg.cap)     TOURNAMENT.cap     = Number(cfg.cap);
+    CAP_LIMIT          = TOURNAMENT.cap;
+    if(cfg.year)    TOURNAMENT.year    = cfg.year;
+    if(cfg.espnUrl) TOURNAMENT.espnUrl = cfg.espnUrl;
+    if(cfg.type)    TOURNAMENT.type    = cfg.type;
+    // Group-level type override (set at group creation, takes priority)
+    if(GROUP_ID){
+      DB.ref("groups/"+GROUP_ID+"/data/pgatour/type").once("value", function(tsn){
+        if(tsn.val()) TOURNAMENT.type = tsn.val();
+        MAX_PICKS = getMaxPicks();
+        var sub2 = document.getElementById("tour-subtitle");
+        if(sub2){
+          var _tl3=TOURNAMENT.type==="tier"?"Tier Draft":TOURNAMENT.type==="confidence"?"Confidence":TOURNAMENT.type==="daily"?"Daily Lineup":"Salary Pool";
+          sub2.textContent = TOURNAMENT.name + " • " + _tl3;
+        }
+        cb();
+      }, function(){ cb(); }); // also call cb on error
+      return;
+    }
+    // Update subtitle
+    var sub = document.getElementById("tour-subtitle");
+    if(sub){
+      var _tl=TOURNAMENT.type==="tier"?"Tier Draft":TOURNAMENT.type==="confidence"?"Confidence":TOURNAMENT.type==="daily"?"Daily Lineup":"Salary Pool";
+      sub.textContent = TOURNAMENT.name + " • " + _tl;
+    }
+    // Update confirm dialog text
+    if(typeof updateConfirmText==="function") updateConfirmText();
+    cb();
+  });
+}
+
+var CAP=50000;
+var MAX_PICKS=6; // overridden by getMaxPicks()
+function getMaxPicks(){
+  if(TOURNAMENT.type==="tier")  return 4;
+  if(TOURNAMENT.type==="daily") return 8; // 2 per round × 4 rounds
+  return 6; // salary, confidence
+}
+
+var PARTS=[];
+
+var DB=null;
+try{
+  firebase.initializeApp({apiKey:"AIzaSyAL0ansyAjP9A0oh35lhUV7EcxE7iYSc5Y",authDomain:"rwc-picks.firebaseapp.com",databaseURL:"https://rwc-picks-default-rtdb.firebaseio.com",projectId:"rwc-picks",appId:"1:965978379243:web:35f9db9a664f9170e27fae"});
+  DB=firebase.database();
+}catch(e){}
+
+// ── Golfer data: PGA World Rankings + salary ──────────
+// Salary anchored at Scottie Scheffler (#1) = $15,000
+// Decay formula: 15000 / (1 + 0.18*(rank-1)), floor $1,000
+var GOLFERS=[]; // loaded from Firebase globalSettings/pgatour/field
+
+function loadGolferField(cb){
+  // Restore from localStorage instantly — keyed by group
+  var _cacheKey = "sc_pga_field"+(GROUP_ID?"_"+GROUP_ID:"");
+  try{
+    var _cached = localStorage.getItem(_cacheKey);
+    if(_cached){
+      var _cf = JSON.parse(_cached);
+      if(_cf && _cf.length > 0) GOLFERS = _cf;
+    }
+  }catch(e){}
+
+  if(!DB){ if(cb) cb(); return; }
+
+  function _applyField(field){
+    var parsed = null;
+    if(field && Array.isArray(field) && field.length > 0){
+      parsed = field;
+    } else if(field && typeof field === "object" && Object.keys(field).length > 0){
+      parsed = Object.values(field).filter(Boolean);
+    }
+    if(parsed && parsed.length > 0){
+      GOLFERS = parsed;
+      // Always overwrite cache with fresh Firebase data
+      try{
+        localStorage.removeItem("sc_pga_field");
+        localStorage.setItem(_cacheKey, JSON.stringify(parsed));
+      }catch(e){}
+    }
+  }
+
+  if(GROUP_ID){
+    // Try group-level field first, fall back to global
+    DB.ref("groups/"+GROUP_ID+"/data/pgatour/field").once("value", function(sn){
+      if(sn.val()){
+        _applyField(sn.val());
+        if(cb) cb();
+      } else {
+        // No group field — use global
+        DB.ref("globalSettings/pgatour/field").once("value", function(sn2){
+          _applyField(sn2.val());
+          if(cb) cb();
+        }, function(){ if(cb) cb(); });
+      }
+    }, function(){ if(cb) cb(); });
+  } else {
+    DB.ref("globalSettings/pgatour/field").once("value", function(sn){
+      _applyField(sn.val());
+      if(cb) cb();
+    }, function(){ if(cb) cb(); });
+  }
+}
+
+var ST={
+  page:"picks",
+  user:URL_USER||null,
+  admin:false,
+  locked:false,
+  picks:{},    // ukey -> {name, picks:[], cap}
+  scores:{},   // golfer name -> {score, cut}
+  search:"",
+  filterAffordable:false,
+  activeSlot:null,
+  showPicker:false
+};
+// ── Live ESPN data ─────────────────────────────────
+var _liveData=null,_liveLoading=false,_liveLastFetch=0,_liveTimer=null;
+var liveScores={};
+
+
+
+// ── Helpers ──────────────────────────────────────────
+function x(s){var t=String(s||"");t=t.replace(/&/g,"&amp;");t=t.replace(/</g,"&lt;");t=t.replace(/>/g,"&gt;");t=t.replace(/'/g,"&#39;");return t;}
+function ukey(n){return String(n||"").toLowerCase().replace(/\s+/g,"_").replace(/[&']/g,"");}
+function fmt(n){return "$"+Number(n).toLocaleString();}
+function fmtK(n){return n>=1000?"$"+(n/1000).toFixed(n%1000===0?0:1)+"K":"$"+n;}
+function fmtScore(n){if(n===0)return "E";if(n>0)return "+"+n;return ""+n;}
+function golferByName(n){for(var i=0;i<GOLFERS.length;i++)if(GOLFERS[i].name===n)return GOLFERS[i];return null;}
+
+// ── Toast ─────────────────────────────────────────────
+var _tt;
+function toast(m){var el=document.getElementById("toast");el.innerHTML=m;el.classList.add("show");clearTimeout(_tt);_tt=setTimeout(function(){el.classList.remove("show");},2500);}
+
+// ── Draft picks (in-progress, not yet saved) ─────────
+var draftPicks=[];
+
+function filledPickCount(){
+  var c=0;
+  for(var i=0;i<draftPicks.length;i++){ if(draftPicks[i]&&draftPicks[i].trim&&draftPicks[i].trim()) c++; }
+  return c;
+}
+
+function draftCapUsed(){
+  var t=0;
+  for(var i=0;i<draftPicks.length;i++){var g=golferByName(draftPicks[i]);if(g)t+=g.salary;}
+  return t;
+}
+
+function togglePick(name){
+  if(!ST.user){toast("Select your name first");return;}
+  var type=TOURNAMENT.type||"salary";
+  var maxP=getMaxPicks();
+  var idx=draftPicks.indexOf(name);
+
+  if(idx>=0){
+    if(type==="confidence"){
+      // Free-order list — safe to splice since there are no fixed slot indices
+      draftPicks.splice(idx,1);
+    } else {
+      // Fixed-slot types (daily/tier/salary) — clear in place so later
+      // rounds/slots don't shift down and get silently reassigned
+      draftPicks[idx]="";
+    }
+    ST.activeSlot=null;
+    draw();
+    return;
+  }
+
+  var slot=ST.activeSlot;
+  var g=golferByName(name); if(!g) return;
+
+  if(type==="tier"){
+    // Slot corresponds to tier index — enforce one per tier
+    if(slot===null){ toast("Tap a tier slot first"); return; }
+    var tier=TIERS[slot]; if(!tier) return;
+    // Validate golfer belongs to this tier (use explicit tier field if available)
+    var _gTier = g.tier || (g.salary>=14000?"elite":g.salary>=8000?"contender":g.salary>=3500?"mid":"value");
+    if(_gTier !== tier.id){
+      toast("Pick a "+tier.label+" golfer for this slot"); return;
+    }
+    while(draftPicks.length<=slot) draftPicks.push("");
+    draftPicks[slot]=name;
+    advanceToNextEmptySlot(maxP);
+
+  } else if(type==="daily"){
+    // Slot = 0-7 (2 per round), no repeats across entire lineup
+    if(slot===null){ toast("Tap a round slot first"); return; }
+    // Check no duplicate (excluding current slot)
+    for(var _di=0;_di<draftPicks.length;_di++){
+      if(_di!==slot && draftPicks[_di]===name){ toast("Already assigned "+name); return; }
+    }
+    while(draftPicks.length<=slot) draftPicks.push("");
+    draftPicks[slot]=name;
+    advanceToNextEmptySlot(maxP);
+
+  } else if(type==="confidence"){
+    // Free pick up to 6, order matters (drag-to-rank or sequential)
+    if(draftPicks.length>=maxP){ toast("Already have 6 golfers"); return; }
+    draftPicks.push(name);
+    if(draftPicks.length>=maxP){ ST.activeSlot=null; ST.showPicker=false; }
+    // else keep picker open for the next pick
+
+  } else {
+    // salary — cap check
+    if(slot===null) slot=draftPicks.length<maxP?draftPicks.length:null;
+    if(slot===null){ toast("Already have 6 golfers"); return; }
+    var usedWithout=draftCapUsed();
+    var slotOccupant=draftPicks[slot]||"";
+    if(slotOccupant){var og=golferByName(slotOccupant);if(og)usedWithout-=og.salary;}
+    if(usedWithout+g.salary>CAP){ toast("Over the cap!"); return; }
+    while(draftPicks.length<=slot) draftPicks.push("");
+    draftPicks[slot]=name;
+    advanceToNextEmptySlot(maxP);
+  }
+  draw();
+}
+
+// After filling a slot, jump to the next empty slot and keep the picker
+// open so the user can keep tapping picks without any extra button press.
+function advanceToNextEmptySlot(maxP){
+  for(var i=0;i<maxP;i++){
+    if(!draftPicks[i]||!draftPicks[i].trim||!draftPicks[i].trim()){
+      ST.activeSlot=i; ST.showPicker=true; ST.search="";
+      return;
+    }
+  }
+  // All slots filled — close the picker
+  ST.activeSlot=null; ST.showPicker=false;
+}
+
+function removePick(name){
+  var idx=draftPicks.indexOf(name);
+  if(idx>=0){draftPicks.splice(idx,1);draw();}
+}
+
+// ── Submit picks ───────────────────────────────────────
+function showPickConfirmation(){
+  if(!ST.user||filledPickCount()<MAX_PICKS)return;
+  var type=TOURNAMENT.type||"salary";
+  // Build sheet
+  var existing=document.getElementById("pick-confirm-overlay");
+  if(existing) existing.remove();
+  var overlay=document.createElement("div");
+  overlay.id="pick-confirm-overlay";
+  overlay.className="confirm-overlay";
+  var cap=draftCapUsed();
+  var remaining=50000-cap;
+  var rowsHtml="";
+  for(var i=0;i<draftPicks.length;i++){
+    var pname=draftPicks[i];
+    var g=golferByName(pname);
+    var sal=g?("$"+(g.salary/1000).toFixed(1)+"K"):"";
+    var lbl="",lblCol="var(--muted)";
+    if(type==="tier"){ lbl=TIERS[i]?TIERS[i].icon+" "+TIERS[i].label:""; }
+    else if(type==="daily"){ lbl=ROUNDS[i]||""; lblCol="#2563eb"; }
+    else if(type==="confidence"){ lbl="Rank "+(i+1)+(i===5?" 🎯":""); lblCol=i===5?"var(--gold-dark)":"var(--muted)"; }
+    else { lbl=g?(g.salary>=14000?"FAV":g.salary>=8000?"CONT":g.salary>=3500?"MID":"VAL"):""; }
+    rowsHtml+='<div class="confirm-pick-row">'
+      +'<span class="confirm-pick-name">'+x(pname)+'</span>'
+      +'<span class="confirm-pick-salary"><span style="color:'+lblCol+';font-weight:900;font-size:9px;margin-right:5px">'+lbl+'</span>'+(type==="salary"?sal:'')+'</span>'
+      +'</div>';
+  }
+  overlay.innerHTML='<div class="confirm-sheet">'
+    +'<div class="confirm-handle"></div>'
+    +'<div class="confirm-title">Confirm Your Picks</div>'
+    +'<div class="confirm-sub">'+TOURNAMENT.name+(type==="salary"?' · $'+(TOURNAMENT.cap/1000)+'K Cap':type==="tier"?' · Tier Draft':type==="confidence"?' · Confidence':'  · Daily Lineup')+' · '+draftPicks.length+' picks</div>'
+    +'<div class="confirm-picks">'+rowsHtml+'</div>'
+    +(type==="salary"?(
+    '<div class="confirm-cap-row">'
+      +'<span class="confirm-cap-label">Cap Used</span>'
+      +'<span class="confirm-cap-val">$'+cap.toLocaleString()+' <span style="font-size:9px;color:var(--muted);font-weight:700">($'+remaining.toLocaleString()+' remaining)</span></span>'
+    +'</div>'):'')
+    +'<div class="confirm-btns">'
+      +'<button class="confirm-btn-cancel" id="pc-cancel">Edit</button>'
+      +'<button class="confirm-btn-submit" id="pc-submit">Lock In Picks ✓</button>'
+    +'</div>'
+    +'</div>';
+  document.body.appendChild(overlay);
+  document.getElementById("pc-cancel").addEventListener("click",function(){ overlay.remove(); });
+  document.getElementById("pc-submit").addEventListener("click",function(){
+    overlay.remove();
+    submitPicks();
+  });
+  overlay.addEventListener("click",function(e){ if(e.target===overlay) overlay.remove(); });
+}
+
+function submitPicks(){
+  if(!ST.user||filledPickCount()<MAX_PICKS)return;
+  var uk=ukey(ST.user);
+  var obj={name:ST.user,picks:draftPicks.slice(),cap:draftCapUsed(),ts:Date.now()};
+  if(DB){
+    DB.ref(BASE+"/picks/"+uk).set(obj,function(err){
+      if(err){toast("Error saving");return;}
+      ST.picks[uk]=obj;
+      toast("&#10003; Picks saved!");
+    });
+  }
+}
+
+// ── Scoring ────────────────────────────────────────────
+// Get a golfer's overall score (live or admin-entered)
+function golferScore(pname){
+  var live=liveScores[normName(pname)];
+  if(live){ return {score:live.score,cut:live.cut,rounds:live.rounds||{}}; }
+  var sc=ST.scores[pname]||{};
+  return {score:sc.score,cut:sc.cut,rounds:sc.rounds||{}};
+}
+
+function entryTotal(picks, picksObj){
+  // picksObj = full saved pick object (needed for confidence/daily metadata)
+  var t=0;
+  var type = TOURNAMENT.type||"salary";
+
+  if(type==="confidence"){
+    // picks is array of names sorted by rank (index 0 = rank 1 = least confident)
+    // rank 6 = most confident = index 5
+    for(var i=0;i<picks.length;i++){
+      var pname=picks[i];
+      var gs=golferScore(pname);
+      if(gs.cut) continue;
+      if(gs.score===null||gs.score===undefined) continue;
+      var rank=i+1; // 1-based, 6=most confident
+      var multiplier=Math.sqrt(rank);
+      t+=Math.round(Number(gs.score)*multiplier*10)/10;
+    }
+    return t;
+  }
+
+  if(type==="daily"){
+    // picks = [R1a, R1b, R2a, R2b, R3a, R3b, R4a, R4b]
+    var roundKeys=["r1","r1","r2","r2","r3","r3","r4","r4"];
+    var penalties=[0,0,0,0,5,5,10,10]; // R3 miss=+5, R4 miss=+10 per golfer
+    for(var ri=0;ri<picks.length;ri++){
+      var pname=picks[ri];
+      if(!pname) continue;
+      var gs=golferScore(pname);
+      if(gs.cut){
+        t+=penalties[ri];
+        continue;
+      }
+      var roundKey=roundKeys[ri];
+      var rScore=gs.rounds&&gs.rounds[roundKey]!==undefined ? Number(gs.rounds[roundKey]) : null;
+      if(rScore!==null) t+=rScore;
+    }
+    return t;
+  }
+
+  // salary and tier: sum all picks (standard)
+  for(var i=0;i<picks.length;i++){
+    var pname=picks[i];
+    var gs=golferScore(pname);
+    if(gs.cut) continue;
+    if(gs.score===null||gs.score===undefined) continue;
+    t+=Number(gs.score);
+  }
+  return t;
+}
+// Normalize player name for fuzzy matching ESPN names to our GOLFERS list
+function normName(n){
+  return String(n||"").toLowerCase().replace(/[^a-z]/g,"");
+}
+
+function syncPlayerScoresToGroup(){
+  if(!DB||!GROUP_ID)return;
+  var scores={};
+  // For each player who has submitted picks, compute their entry total
+  for(var uk in ST.picks){
+    var p=ST.picks[uk];
+    if(!p||!p.name)continue;
+    var total=entryTotal(p.picks||[]);
+    scores[ukey(p.name)]=total;
+  }
+  if(Object.keys(scores).length>0){
+    DB.ref("groups/"+GROUP_ID+"/data/pgatour/playerscores").set(scores);
+  }
+}
+
+
+
+// ── Type-aware pick slot renderer ──────────────────────────────────────────
+function renderPickSlots(){
+  var type=TOURNAMENT.type||"salary";
+  var h2="";
+
+  if(type==="tier"){
+    TIERS.forEach(function(tier,i){
+      var filled=draftPicks[i]||"";
+      var isActive=ST.activeSlot===i;
+      h2+='<div class="slot-card'+(isActive?" active-slot":"")+(filled?" slot-filled":"")+'" data-slot="'+i+'">';
+      h2+='<div class="slot-tier-label">'+tier.icon+' '+tier.label+'</div>';
+      if(filled){
+        var g=golferByName(filled);
+        h2+='<div class="slot-name">'+filled+'</div>';
+        if(g&&TOURNAMENT.type==="salary") h2+='<div class="slot-salary">$'+(g.salary/1000).toFixed(1)+'K</div>';
+        h2+='<button class="slot-remove" data-slot-remove="'+i+'">✕</button>';
+      } else {
+        h2+='<div class="slot-empty">Tap to pick</div>';
+      }
+      h2+='</div>';
+    });
+    return h2;
+  }
+
+  if(type==="daily"){
+    var _dayLabels=["R1","R2","R3","R4"];
+    var _dayPenalty=["","","\u26a0\ufe0f +5 if cut","\u26a0\ufe0f +10 if cut"];
+    for(var di=0;di<4;di++){
+      h2+='<div style="font-size:9px;font-weight:900;color:var(--muted);text-transform:uppercase;padding:4px 0 2px'+(di>0?";border-top:1px solid var(--border2)":"")+'">'+_dayLabels[di]+(_dayPenalty[di]?' <span style="font-size:8px;color:var(--red2)">'+_dayPenalty[di]+'</span>':'')+"</div>";
+      h2+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px">';
+      for(var pi=0;pi<2;pi++){
+        var i=di*2+pi;
+        var filled=draftPicks[i]||"";
+        var isActive=ST.activeSlot===i;
+        h2+='<div class="slot-card'+(isActive?" active-slot":"")+(filled?" slot-filled":"")+'" data-slot="'+i+'">',
+        h2+='<div class="slot-tier-label">Pick '+(pi+1)+'</div>';
+        if(filled){
+          h2+='<div class="slot-name">'+filled+'</div>';
+          h2+='<button class="slot-remove" data-slot-remove="'+i+'">\u00d7</button>';
+        } else {
+          h2+='<div class="slot-empty">Tap to pick</div>';
+        }
+        h2+='</div>';
+      }
+      h2+='</div>';
+    }
+    return h2;
+  }
+
+  if(type==="confidence"){
+    var maxP=getMaxPicks();
+    for(var i=0;i<maxP;i++){
+      var filled=draftPicks[i]||"";
+      var rank=i+1;
+      var conf=rank===6?"Most confident":rank===1?"Least confident":"Rank "+rank;
+      var mult="×"+Math.sqrt(rank).toFixed(2);
+      h2+='<div class="slot-card'+(filled?" slot-filled":"")+'" data-slot="'+i+'" style="cursor:default">';
+      h2+='<div class="slot-tier-label">'+conf+' <span style="font-size:8px;color:var(--muted)">'+mult+'</span></div>';
+      if(filled){
+        h2+='<div class="slot-name">'+filled+'</div>';
+        h2+='<button class="slot-remove" data-slot-remove="'+i+'">✕</button>';
+      } else {
+        h2+='<div class="slot-empty">Pick golfer</div>';
+      }
+      h2+='</div>';
+    }
+    return h2;
+  }
+
+  // salary — original slot behavior (existing renderPicks handles this)
+  return null;
+}
+
+// ── Renderers ─────────────────────────────────────────
+function renderPicks(){
+  var type=TOURNAMENT.type||"salary";
+  var used=draftCapUsed();
+  var remaining=CAP-used;
+  var over=used>CAP;
+  var n=draftPicks.length;
+  var pct=Math.min(100,Math.round(used/CAP*100));
+  var h="";
+
+  if(ST.locked) h+='<div class="lock-note">&#128274; Picks are currently locked</div>';
+
+  if(type==="salary"){
+    // ── Cap header ──
+    h+='<div class="roster-cap-header">';
+    h+='<div class="rch-row">';
+    h+='<div class="rch-left">';
+    h+='<div class="rch-label">Salary Cap</div>';
+    h+='<div><span class="rch-used '+(over?"over":n>0?"ok":"neutral")+'">'+fmt(used)+'</span><span class="rch-denom"> / '+fmt(CAP)+'</span></div>';
+    h+='</div><div class="rch-right">';
+    h+='<div class="rch-left-label">'+(over?"Over Cap":remaining===CAP?"Cap Left":"Left")+'</div>';
+    h+='<div class="rch-remaining '+(over?"over":n>0?"ok":"neutral")+'">'+fmt(Math.abs(remaining))+'</div>';
+    h+='<div class="rch-count">'+n+' / '+MAX_PICKS+' golfers</div></div></div>';
+    h+='<div class="rch-bar-track"><div class="rch-bar-fill'+(over?" over":"")+'" style="width:'+pct+'%"></div></div></div>';
+    // ── Slot grid ──
+    h+='<div class="slot-grid-wrap"><div class="slot-grid">';
+    for(var i=0;i<MAX_PICKS;i++){
+      var name=draftPicks[i]||"",isActive=ST.activeSlot===i,g=name?golferByName(name):null;
+      var cls="slot-card"+(name?" filled":isActive?" active-slot":"")+(over&&name?" over":"");
+      h+='<div class="'+cls+'" data-slot="'+i+'">';
+      if(name){
+        if(!ST.locked)h+='<button class="slot-remove" data-slot-remove="'+i+'">×</button>';
+        h+='<div class="slot-label filled">Slot '+(i+1)+'</div><div class="slot-name">'+x(name)+'</div><div class="slot-salary">'+(g?fmt(g.salary):"")+'</div>';
+      } else { h+='<div class="slot-label">Slot '+(i+1)+'</div>'; }
+      h+='</div>';
+    }
+    h+='</div></div>';
+  } else {
+    // ── Tier / Daily / Confidence slot area ──
+    var _mx=getMaxPicks(), _filled=draftPicks.filter(function(p){return p&&p.trim();}).length;
+    h+='<div style="padding:10px 12px 4px;border-top:1px solid var(--border2)">';
+    h+='<span style="font-size:11px;font-weight:800;color:var(--muted)">'
+      +_filled+' / '+_mx+' picks';
+    if(type==="confidence") h+=' <span style="font-size:9px;color:var(--dim)">· rank 6 = most confident</span>';
+    if(type==="daily") h+=' <span style="font-size:9px;color:var(--dim)">· one golfer per round</span>';
+    h+='</span></div>';
+    h+='<div id="pick-slots-body" style="padding:0 12px 8px;display:grid;grid-template-columns:1fr 1fr;gap:6px">';
+    h+=renderPickSlots()||"";
+    h+='</div>';
+  }
+  // ── Action strip ──
+  h+='<div class="action-strip">';
+  h+='<div class="status-pill '+(ST.locked?"locked":"open")+'">';
+  h+=(ST.locked?"&#128274; Picks Locked":"&#128275; Picks Open");
+  h+='</div>';
+  h+='</div>';
+
+  // ── Roster body ──
+  h+='<div class="roster-body">';
+  h+='<div class="roster-section-label">My Roster</div>';
+
+  if(ST.showPicker||ST.activeSlot!==null){
+    // Picker panel
+    h+=renderPickerPanel();
+  } else {
+    // Empty / filled state
+    if(n===0){
+      h+='<div class="roster-empty">';
+      h+='<div class="roster-empty-main">Tap a slot above to start picking.</div>';
+      h+='<div class="roster-empty-sub">'+MAX_PICKS+' golfers \u00b7 '+fmt(CAP)+' cap</div>';
+      h+='</div>';
+    } else {
+      // Show current roster list (skip empty slots — golferByName("") is null)
+      for(var j=0;j<draftPicks.length;j++){
+        var rname=draftPicks[j];
+        if(!rname||!rname.trim||!rname.trim()) continue;
+        var rg=golferByName(rname);
+        if(!rg) continue;
+        var rsc=ST.scores[rname]||{};
+        h+='<div class="golfer-row" data-slot="'+j+'">';
+        var _rTierKey = rg.tier || (rg.salary>=14000?"elite":rg.salary>=8000?"contender":rg.salary>=3500?"mid":"value");
+        var rCls = _rTierKey==="elite"?"top5":_rTierKey==="contender"?"top10":_rTierKey==="mid"?"top25":"other";
+        var rTierLbl = _rTierKey==="elite"?"FAV":_rTierKey==="contender"?"CONT":_rTierKey==="mid"?"MID":"VAL";
+        h+='<div class="rank-badge '+rCls+'">'+rTierLbl+'</div>';
+        h+='<div class="golfer-info">';
+        h+='<div class="golfer-name">'+x(rname)+'</div>';
+        h+='<div class="golfer-meta">'+x(rg.odds)+(rg.odds!="NR"?' to win':'  Qualifier')+'</div>';
+        h+='</div>';
+        if(type==="salary") h+='<div class="golfer-salary">'+fmt(rg.salary)+'</div>';
+        h+='<div class="golfer-check" style="background:var(--green);border-color:var(--green);color:#fff">&#10003;</div>';
+        h+='</div>';
+      }
+    }
+    h+='<div class="roster-footer-note">Picks lock at the first tee time Thursday Jun 18 \u00b7 '+(type==="salary"?fmt(CAP)+' cap \u00b7 ':'')+MAX_PICKS+' golfers</div>';
+  }
+
+  h+='</div>';
+  h+=renderSubmitBar();
+  return h;
+}
+
+function renderPickerPanel(){
+  var used=draftCapUsed();
+  var activeSlot=ST.activeSlot;
+  var slotLabel=(activeSlot!==null&&activeSlot!==undefined&&!isNaN(activeSlot))?"Slot "+(activeSlot+1):"All Golfers";
+  var h='<div class="picker-wrap">';
+  h+='<div class="picker-header">';
+  h+='<span class="picker-title">'+slotLabel+'</span>';
+  h+='<button class="picker-close" id="b-picker-close">\u00d7</button>';
+  h+='</div>';
+  h+='<div class="picker-search-bar">';
+  h+='<input class="picker-search" id="search-inp" type="search" autocomplete="off" autocorrect="off" autocapitalize="none" placeholder="Search golfers\u2026" value="'+x(ST.search)+'">';
+  h+=(ST.search?'<button class="picker-clear" id="b-search-clear">\u00d7</button>':'');
+  h+='<button class="filter-btn'+(ST.filterAffordable?" active":"")+'" id="b-filter">Affordable</button>';
+  h+='</div>';
+  h+=renderGolferList(used);
+  h+='</div>';
+  return h;
+}
+
+function refreshGolferList(val){
+  ST.search=val||"";
+  var listEl=document.getElementById("golfer-list");
+  if(!listEl)return;
+  // Update innerHTML only — no DOM node swap, no scroll jump
+  var tmp=document.createElement("div");
+  tmp.innerHTML=renderGolferList();
+  var newList=tmp.firstChild;
+  if(newList) listEl.innerHTML=newList.innerHTML;
+  // Re-bind click on rows
+  var rows=listEl.querySelectorAll(".golfer-row[data-pick]");
+  for(var ri=0;ri<rows.length;ri++) rows[ri].addEventListener("click",function(){togglePick(this.getAttribute("data-pick"));});
+  // Show/hide clear button
+  var clr=document.getElementById("b-search-clear");
+  var inp=document.getElementById("search-inp");
+  if(val&&!clr&&inp){
+    var cb=document.createElement("button");
+    cb.id="b-search-clear";cb.className="picker-clear";cb.textContent="×";
+    cb.addEventListener("click",function(){
+      ST.search="";var i2=document.getElementById("search-inp");
+      if(i2){i2.value="";i2.focus();}
+      refreshGolferList("");
+    });
+    inp.parentNode.insertBefore(cb,inp.nextSibling);
+  } else if(!val&&clr){
+    clr.parentNode.removeChild(clr);
+  }
+}
+
+function renderGolferList(used){
+  if(used===undefined) used=draftCapUsed();
+  var _type=TOURNAMENT.type||"salary";
+  var h='<div class="golfer-list" id="golfer-list">';
+  var q=ST.search.toLowerCase();
+  var shown=0;
+  if(GOLFERS.length===0){
+    h+='<div style="padding:20px;text-align:center;color:var(--dim);font-size:12px;font-weight:700">No players loaded.<br>Admin must import the field first.</div>';
+    h+='</div>';
+    return h;
+  }
+  for(var i=0;i<GOLFERS.length;i++){
+    var g=GOLFERS[i];
+    if(q&&g.name.toLowerCase().indexOf(q)<0)continue;
+    // Tier: only show golfers from active slot's tier
+    if(_type==="tier" && ST.activeSlot!==null){
+      var _at=TIERS[ST.activeSlot];
+      if(_at){
+        var _gTier=g.tier||(g.salary>=14000?"elite":g.salary>=8000?"contender":g.salary>=3500?"mid":"value");
+        if(_gTier!==_at.id) continue;
+      }
+    }
+    // Daily: exclude already-assigned golfers (except current slot)
+    if(_type==="daily" && ST.activeSlot!==null){
+      var _alreadyPicked=false;
+      for(var _dfi=0;_dfi<draftPicks.length;_dfi++){
+        if(_dfi!==ST.activeSlot && draftPicks[_dfi]===g.name){ _alreadyPicked=true; break; }
+      }
+      if(_alreadyPicked) continue;
+    }
+    var isPicked=draftPicks.indexOf(g.name)>=0;
+    var isInActiveSlot=ST.activeSlot!==null&&draftPicks[ST.activeSlot]===g.name;
+    var wouldExceed=_type==="salary"&&!isPicked&&(used+g.salary>CAP);
+    if(_type==="salary"&&ST.filterAffordable&&wouldExceed&&!isPicked)continue;
+    var rankCls=g.salary>=14000?"top5":g.salary>=8000?"top10":g.salary>=3500?"top25":"other";
+    var rowCls="golfer-row"+(isPicked?" selected":wouldExceed?" over-cap":"");
+    h+='<div class="'+rowCls+'" data-pick="'+x(g.name)+'">';
+    var _gTierKey = g.tier || (g.salary>=14000?"elite":g.salary>=8000?"contender":g.salary>=3500?"mid":"value");
+    var tierLbl = _gTierKey==="elite"?"FAV":_gTierKey==="contender"?"CONT":_gTierKey==="mid"?"MID":"VAL";
+    h+='<div class="rank-badge '+rankCls+'">'+tierLbl+'</div>';
+    h+='<div class="golfer-info">';
+    h+='<div class="golfer-name">'+x(g.name)+'</div>';
+    h+='<div class="golfer-meta">'+x(g.odds)+(g.odds!="NR"?' to win':'  Qualifier')+'</div>';
+    h+='</div>';
+    if(_type==="salary") h+='<div class="golfer-salary">'+fmt(g.salary)+'</div>';
+    h+='<div class="golfer-check">'+(isPicked?"&#10003;":"")+'</div>';
+    h+='</div>';
+    shown++;
+  }
+  if(!shown) h+='<div style="padding:24px;text-align:center;color:var(--dim);font-size:12px;font-weight:800">No golfers found</div>';
+  h+='</div>';
+  return h;
+}
+
+function renderSubmitBar(){
+  var type=TOURNAMENT.type||"salary";
+  var used=draftCapUsed();
+  var n=filledPickCount();
+  var disabled=true;
+  var label="";
+  if(ST.locked){label="&#128274; Picks are locked";}
+  else if(!ST.user){label="Select your name to save picks";}
+  else if(n<MAX_PICKS){var need=MAX_PICKS-n;label="Pick "+(need)+" more golfer"+(need>1?"s":"");}
+  else if(type==="salary"&&used>CAP){label="Over cap by "+fmt(used-CAP);}
+  else{disabled=false;label=type==="salary"?("Save Picks \u2014 "+fmt(used)+" / "+fmt(CAP)):"Save Picks";}
+  return '<div class="submit-bar"><button class="submit-btn" id="b-submit"'+(disabled?' disabled':'')+'>'+label+'</button></div>';
+}
+
+function renderLeaderboard(){
+  var entries=[];
+  for(var uk in ST.picks){
+    var p=ST.picks[uk];
+    entries.push({name:p.name,picks:p.picks||[],cap:p.cap||0,uk:uk,total:entryTotal(p.picks||[])});
+  }
+  entries.sort(function(a,b){return a.total-b.total;});
+  var hasLive=Object.keys(liveScores).length>0;
+  var hasAdminScores=Object.keys(ST.scores).length>0;
+  var hasScores=hasLive||hasAdminScores;
+  // Always show score (E when no data yet — tournament hasn't started)
+  var showScore=ST.locked||hasScores||entries.length>0;
+  var h='<div class="lb-wrap">';
+  if(!entries.length){
+    h+='<div style="padding:60px 20px;text-align:center;color:var(--dim);font-size:12px;font-weight:800">No picks submitted yet</div>';
+    h+='</div>';
+    return h;
+  }
+  h+='<div class="lb-card">';
+  var liveLabel=hasLive?" \u00b7 Live":"";
+  var _capStr=TOURNAMENT.type==="salary"?" \u00b7 $"+(TOURNAMENT.cap/1000)+"K Cap":"";
+  h+='<div class="lb-head"><span class="lb-title">&#127954; Leaderboard</span><span class="lb-sub">'+entries.length+' entr'+(entries.length===1?"y":"ies")+liveLabel+_capStr+'</span></div>';
+  for(var i=0;i<entries.length;i++){
+    var e=entries[i];
+    var rn=i+1;
+    var rankCls=rn===1?"r1":rn===2?"r2":rn===3?"r3":"rn";
+    var isMe=ST.user&&ukey(ST.user)===e.uk;
+    // Show E when picks exist but no scores yet; show -- only before picks close
+    var scoreStr=showScore?fmtScore(e.total):"--";
+    var scoreCls=e.total<0?"under":e.total>0?"over":"even";
+    h+='<div class="lb-row'+(isMe?" me":"")+'">';
+    h+='<div class="lb-rank '+rankCls+'">'+rn+'</div>';
+    h+='<div class="lb-info">';
+    h+='<div class="lb-name">'+x(e.name)+'</div>';
+    h+='<div class="lb-team">';
+    var _isDailyLb = TOURNAMENT.type==="daily";
+    if(_isDailyLb){
+      // Group picks by round for daily pool
+      var _rdLabels=["R1","R2","R3","R4"];
+      var _rdKeys=["r1","r2","r3","r4"];
+      for(var rd=0;rd<4;rd++){
+        var _rdPicks=[e.picks[rd*2]||"",e.picks[rd*2+1]||""];
+        var _rdHasAny=_rdPicks.some(function(p){return p&&p.trim();});
+        if(!_rdHasAny) continue;
+        h+='<div style="font-size:8px;font-weight:900;color:var(--muted);text-transform:uppercase;margin-top:4px;margin-bottom:2px">'+_rdLabels[rd]+'</div>';
+        h+='<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:2px">';
+        _rdPicks.forEach(function(pname){
+          if(!pname||!pname.trim()) return;
+          var live=getLiveForGolfer(pname);
+          var psc=live||ST.scores[pname]||{};
+          // Get round-specific score
+          var _rk=_rdKeys[rd];
+          var _roundScore=psc.rounds&&psc.rounds[_rk]!==undefined ? Number(psc.rounds[_rk]) : null;
+          var chipCls="lb-chip"+(psc.cut?" cut":_roundScore!==null&&_roundScore<0?" scored":_roundScore!==null&&_roundScore>0?" over":"");
+          var pscore=psc.cut?"CUT":(_roundScore!==null?fmtScore(_roundScore):(showScore?"E":""));
+          h+='<span class="'+chipCls+'">'+x(pname)+(pscore?" ("+pscore+")":"")+"</span>";
+        });
+        h+='</div>';
+      }
+    } else {
+      for(var j=0;j<e.picks.length;j++){
+        var pname=e.picks[j];
+        if(!pname||!pname.trim()) continue;
+        var live=getLiveForGolfer(pname);
+        var psc=live||ST.scores[pname]||{};
+        var chipCls="lb-chip"+(psc.cut?" cut":psc.score!==null&&psc.score!==undefined&&Number(psc.score)<0?" scored":psc.score!==null&&psc.score!==undefined&&Number(psc.score)>0?" over":"");
+        var pscore=psc.cut?"CUT":(psc.score!==null&&psc.score!==undefined?fmtScore(Number(psc.score)):(showScore?"E":""));
+        h+='<span class="'+chipCls+'">'+x(pname)+(pscore?" ("+pscore+")":"")+"</span>";
+      }
+    }
+    h+='</div>';
+    if(TOURNAMENT.type==="salary") h+='<div class="lb-cap">Cap: '+fmt(e.cap)+'</div>';
+    h+='</div>';
+    h+='<div class="lb-right">';
+    h+='<div class="lb-score'+(hasScores?" "+scoreCls:"")+'">'+scoreStr+'</div>';
+    h+='<div class="lb-score-label">Total</div>';
+    h+='</div>';
+    h+='</div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+
+function renderAdmin(){
+  if(!ST.admin) return '<div style="padding:40px;text-align:center;color:var(--dim);font-weight:800">Admin only</div>';
+  var h='<div class="adm-wrap">';
+  h+='<div class="section-label">Pool Controls</div>';
+  h+='<div class="adm-card">';
+  h+='<div class="adm-title">Settings</div>';
+  h+='<div class="adm-row">';
+  h+='<span style="font-size:12px;font-weight:800;flex:1">Picks Status</span>';
+  h+='<button class="btn '+(ST.locked?"btn-red":"btn-green")+'" id="b-lock">'+(ST.locked?"&#128274; Locked":"&#9998; Open")+'</button>';
+  h+='</div>';
+  h+='<div class="adm-row" style="margin-top:8px">';
+  h+='<span style="font-size:12px;font-weight:800;flex:1">Tournament</span>';
+  h+='<button class="btn btn-blue" id="b-edit-tournament">&#9999; Edit</button>';
+  h+='</div>';
+  h+='<div class="adm-row" style="margin-top:8px">';
+  h+='<span style="font-size:12px;font-weight:800;flex:1">Finalize &amp; Record Result</span>';
+  h+='<button class="btn btn-gold" id="b-finalize">&#127942; Finalize</button>';
+  h+='</div>';
+  h+='</div>';
+  h+='<div class="section-label">Player Field</div>';
+  h+='<div class="adm-card">';
+  h+='<div class="adm-title">Import Players</div>';
+  h+='<div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:8px">Paste one player per line.<br>Formats: "Name +Odds" or "Name, Odds"<br>e.g. "Scottie Scheffler +460" or "Scottie Scheffler, +460"<br>Salaries &amp; tiers auto-calculated.</div>';
+  h+='<textarea id="field-import" rows="5" style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;font-size:11px;font-family:Nunito,sans-serif;resize:vertical" placeholder="Scottie Scheffler, +460, 20000&#10;Rory McIlroy, +950, 14950&#10;..."></textarea>';
+  h+='<div style="display:flex;gap:8px;margin-top:8px">';
+  h+='<button class="btn btn-primary" id="b-import-field" style="flex:2;padding:9px">Import Field</button>';
+  h+='<button class="btn btn-blue" id="b-recalc-field" style="flex:1;padding:9px">Recalc</button>';
+  h+='</div>';
+  h+='</div>';
+  h+='<div class="section-label">Enter Scores (to par)</div>';
+  h+='<div class="adm-card">';
+  h+='<div class="adm-title">Live Scoring';
+  if(TOURNAMENT.type==="daily") h+=' <span style="font-size:9px;font-weight:700;color:var(--blue)">· enter per-round scores for daily pool</span>';
+  h+='</div>';
+  var _isDailyPool = TOURNAMENT.type==="daily";
+  for(var i=0;i<GOLFERS.length;i++){
+    var g=GOLFERS[i];
+    var sc=ST.scores[g.name]||{};
+    var scVal=sc.score!==undefined&&sc.score!==null?sc.score:"";
+    var isCut=sc.cut||false;
+    h+='<div class="adm-row" style="flex-wrap:wrap">';
+    h+='<span class="adm-rank">#'+(i+1)+'</span>';
+    h+='<span class="adm-name">'+x(g.name)+'</span>';
+    h+='<input class="score-inp" data-golfer="'+x(g.name)+'" type="number" placeholder="Total" value="'+scVal+'">';
+    h+='<button class="cut-btn'+(isCut?" cut":"")+'" data-cut="'+x(g.name)+'">'+(isCut?"CUT":"in")+'</button>';
+    if(_isDailyPool){
+      h+='<div style="width:100%;display:flex;gap:4px;margin-top:4px;padding-left:30px">';
+      ["r1","r2","r3","r4"].forEach(function(rk,ri){
+        var rv=(sc.rounds&&sc.rounds[rk]!==undefined)?sc.rounds[rk]:"";
+        h+='<div style="flex:1;text-align:center">';
+        h+='<div style="font-size:7px;font-weight:800;color:var(--muted);margin-bottom:2px">R'+(ri+1)+'</div>';
+        h+='<input class="round-inp" data-golfer="'+x(g.name)+'" data-round="'+rk+'" type="number" placeholder="E" value="'+rv+'" style="width:100%;padding:4px;border:1.5px solid var(--border2);border-radius:5px;font-size:10px;text-align:center;font-family:Nunito,sans-serif">';
+        h+='</div>';
+      });
+      h+='</div>';
+    }
+    h+='</div>';
+  }
+  h+='</div>';
+  h+='</div>';
+  return h;
+}
+
+// ── Live ESPN scoring ─────────────────────────────────
+function fetchLiveScores(){
+  if(_liveLoading)return;
+  _liveLoading=true;
+  var url=TOURNAMENT.espnUrl||"https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard";
+  fetch(url)
+    .then(function(r){return r.json();})
+    .then(function(data){
+      _liveLoading=false;_liveLastFetch=Date.now();_liveData=data;
+      parseLiveScores(data);
+      // Persist live scores to Firebase so other users get them immediately
+      if(DB&&Object.keys(liveScores).length){
+        var _lsWrite={};
+        for(var _lk in liveScores){
+          var _ls=liveScores[_lk];
+          _lsWrite[_lk]={name:_ls.name,score:_ls.score,thru:_ls.thru||"",pos:_ls.pos||"",cut:_ls.cut||false};
+        }
+        DB.ref(BASE+"/livescores").set(_lsWrite);
+      }
+      syncPlayerScoresToGroup();
+      if(ST.page==="live")renderLiveInto();
+      if(ST.page==="leaderboard")draw();
+    })
+    .catch(function(){
+      _liveLoading=false;
+      var el=document.getElementById("live-list");
+      if(el)el.innerHTML='<div class="live-empty">Could not load live scores.<br><button style="margin-top:10px;padding:5px 14px;border:2px solid var(--border);border-radius:8px;background:#fff;font-family:Nunito,sans-serif;font-size:10px;font-weight:800;cursor:pointer" onclick="fetchLiveScores()">&#8635; Retry</button></div>';
+    });
+}
+
+function parseLiveScores(data){
+  var newScores={};
+  // Find current tournament — match configured name or fall back to first event
+  var events=(data&&data.events)||[];
+  var comp=null;
+  var _tname=(TOURNAMENT.name||"").toLowerCase();
+  for(var ei=0;ei<events.length;ei++){
+    var ev=events[ei];
+    var nm=(ev.name||ev.shortName||"").toLowerCase();
+    if(_tname&&nm.indexOf(_tname.split(" ")[0])>=0){comp=ev;break;}
+  }
+  // Fallback: just use first active event
+  if(!comp&&events.length) comp=events[0];
+  if(!comp){liveScores={};return;}
+
+  var comps=(comp.competitions&&comp.competitions[0])||comp;
+  var competitors=comps.competitors||[];
+
+  competitors.forEach(function(c){
+    var fullName=(c.athlete&&(c.athlete.fullName||c.athlete.displayName))||"";
+    if(!fullName)return;
+    var scoreRaw=String(c.score||"E").trim();
+    var scoreNum=0;
+    if(scoreRaw==="E"||scoreRaw==="--")scoreNum=0;
+    else if(scoreRaw.charAt(0)==="-")scoreNum=parseInt(scoreRaw)||0;
+    else if(scoreRaw.charAt(0)==="+")scoreNum=parseInt(scoreRaw.slice(1))||0;
+    else scoreNum=parseInt(scoreRaw)||0;
+
+    var status=(c.status&&c.status.type&&c.status.type.name)||"";
+    var displayValue=(c.status&&c.status.displayValue)||"";
+    var shortDetail=(c.status&&c.status.type&&c.status.type.shortDetail)||"";
+    var isCut=status==="STATUS_CUT"||displayValue.toLowerCase().indexOf("cut")>=0||
+               shortDetail.toLowerCase().indexOf("cut")>=0;
+    var isWD=status==="STATUS_WITHDRAWN"||displayValue.toLowerCase().indexOf("wd")>=0||
+               shortDetail.toLowerCase().indexOf("wd")>=0;
+
+    var pos=c.order?String(c.order):"";
+    // Extract thru from multiple ESPN fields — priority order:
+    // 1. c.today holes played (ESPN app shows "Today: -1(4)" — the (4) is holesPlayed)
+    // 2. c.status.displayValue per-player (e.g. "Thru 9", "F")
+    // 3. Count non-null linescores holes
+    var thru="";
+    var holesPlayed=0;
+    var isFinished=false;
+
+    // Method 1: c.today — ESPN stores {score, period/holesPlayed}
+    var todayObj=c.today||null;
+    if(todayObj){
+      // today can be a string like "-1(4)" or object with holesPlayed
+      if(typeof todayObj==="object"){
+        holesPlayed=todayObj.holesPlayed||todayObj.period||0;
+      } else if(typeof todayObj==="string"){
+        var tm=todayObj.match(/\((\d+)\)/);
+        if(tm) holesPlayed=parseInt(tm[1]);
+      }
+    }
+
+    // Method 2: linescores last round — count holes with real scores
+    if(!holesPlayed){
+      var linescores=c.linescores||[];
+      if(linescores.length){
+        var lastRd=linescores[linescores.length-1];
+        if(lastRd&&lastRd.linescores){
+          for(var lh=0;lh<lastRd.linescores.length;lh++){
+            var hv=lastRd.linescores[lh];
+            // Count holes that have a numeric value (par/birdie/bogey etc)
+            if(hv&&hv.value!==null&&hv.value!==undefined&&hv.value!==0&&hv.displayValue&&hv.displayValue!=="-"&&hv.displayValue!=="") holesPlayed++;
+          }
+        }
+      }
+    }
+
+    // Determine finish/in-progress
+    if(status==="STATUS_FINISHED"||status==="STATUS_PLAY_COMPLETE") isFinished=true;
+    var dv=displayValue.trim();
+    if(dv==="F"||dv==="Final") isFinished=true;
+
+    if(isFinished||holesPlayed>=18){
+      thru="F";
+    } else if(holesPlayed>0){
+      thru="Thru "+holesPlayed;
+    } else {
+      // Method 3: displayValue per-player (may be tee time or "Thru X")
+      if(dv&&dv!=="Scheduled"&&dv.indexOf(":")<0){
+        thru=dv.replace(/^[*T]\s*/,"").trim();
+      }
+    }
+
+    // Extract per-round scores from linescores
+    var roundScores={};
+    var linescoresArr=c.linescores||[];
+    linescoresArr.forEach(function(rd, ri){
+      var rdKey="r"+(ri+1);
+      // Each linescores entry is a round — value is the round score to par
+      var rdScore=null;
+      if(rd.value!==null&&rd.value!==undefined&&rd.value!==""){
+        rdScore=parseInt(rd.value);
+        if(isNaN(rdScore)) rdScore=null;
+      }
+      // Fallback: linescores array within round = hole scores, sum to par
+      if(rdScore===null&&rd.linescores&&rd.linescores.length){
+        var par=0;
+        rd.linescores.forEach(function(h){
+          if(h&&h.value&&h.displayValue&&h.displayValue!=="-"&&h.displayValue!==""){
+            par+=Number(h.value)||0;
+          }
+        });
+        if(par!==0) rdScore=par;
+      }
+      if(rdScore!==null) roundScores[rdKey]=rdScore;
+    });
+
+    var key=normName(fullName);
+    newScores[key]={
+      name:fullName,
+      score:isCut?null:scoreNum,
+      pos:pos,
+      thru:thru,
+      cut:isCut||isWD,
+      status:status,
+      rounds:roundScores
+    };
+  });
+  liveScores=newScores;
+}
+
+function getLiveForGolfer(name){
+  var key=normName(name);
+  if(liveScores[key])return liveScores[key];
+  // Partial match: last name
+  var parts=name.split(" ");
+  var last=parts.length>1?normName(parts[parts.length-1]):"";
+  if(!last)return null;
+  for(var k in liveScores){
+    var kparts=liveScores[k].name.split(" ");
+    if(kparts.length>1&&normName(kparts[kparts.length-1])===last)return liveScores[k];
+  }
+  return null;
+}
+
+function renderLiveInto(){
+  var el=document.getElementById("live-list");
+  if(!el)return;
+  if(!_liveData){el.innerHTML='<div class="live-empty">Loading…</div>';return;}
+
+  // Build sorted list: all golfers from our field who have live data
+  // Plus show any unmatched picked golfers
+  var shown=[];
+  var seenKeys={};
+  // First pass: all liveScores entries ordered by score
+  var allLive=[];
+  for(var k in liveScores)allLive.push(liveScores[k]);
+  allLive.sort(function(a,b){
+    if(a.cut&&!b.cut)return 1;
+    if(!a.cut&&b.cut)return -1;
+    return (a.score||0)-(b.score||0);
+  });
+
+  // Determine which names are in any user's picks
+  var pickedNames={};
+  for(var uk in ST.picks){
+    var picks=(ST.picks[uk].picks)||[];
+    for(var pi=0;pi<picks.length;pi++)pickedNames[normName(picks[pi])]=picks[pi];
+  }
+
+  var myPickedKeys={};
+  if(ST.user){
+    var myP=(ST.picks[ukey(ST.user)]&&ST.picks[ukey(ST.user)].picks)||draftPicks;
+    for(var mi=0;mi<myP.length;mi++)myPickedKeys[normName(myP[mi])]=true;
+  }
+
+  var ago=_liveLastFetch?Math.round((Date.now()-_liveLastFetch)/1000):0;
+  var agoStr=ago<60?ago+"s ago":Math.floor(ago/60)+"m ago";
+
+  // ── My Team ribbon ───────────────────────────────────────
+  var ribbonHtml='';
+  if(ST.user){
+    var myRosterPicks=(ST.picks[ukey(ST.user)]&&ST.picks[ukey(ST.user)].picks)||draftPicks;
+    if(myRosterPicks.length){
+      var myTotal=entryTotal(myRosterPicks);
+      var myTotalStr=myTotal===0?"E":myTotal>0?"+"+myTotal:""+myTotal;
+      var myTotalCls=myTotal<0?"under":myTotal>0?"over":"even";
+      var myTotalColor=myTotal<0?"var(--green)":myTotal>0?"var(--red2)":"var(--muted)";
+      ribbonHtml+='<div class="my-team-ribbon">';
+      ribbonHtml+='<div class="my-team-title"><span>&#9733; My Team</span><span class="my-team-total" style="color:'+myTotalColor+'">'+myTotalStr+'</span></div>';
+      ribbonHtml+='<div class="my-team-picks">';
+      for(var ri=0;ri<myRosterPicks.length;ri++){
+        var rname=myRosterPicks[ri];
+        var rlive=getLiveForGolfer(rname);
+        var rsc=rlive||ST.scores[rname]||{};
+        var rscore=rsc.cut?null:(rsc.score!==undefined&&rsc.score!==null?Number(rsc.score):null);
+        var rscoreStr=rsc.cut?"CUT":(rscore===null?"E":(rscore===0?"E":rscore>0?"+"+rscore:""+rscore));
+        var rscoreCls=rsc.cut?"cut":rscore!==null&&rscore<0?"under":rscore!==null&&rscore>0?"over":"";
+        var rthru=rlive?rlive.thru:"";
+        ribbonHtml+='<span class="my-team-chip '+rscoreCls+'">'+x(rname)+'<span class="chip-score">'+rscoreStr+(rthru&&rthru!=="F"?' <span style="color:var(--muted);font-weight:700">'+x(rthru)+'</span>':'')+'</span></span>';
+      }
+      ribbonHtml+='</div></div>';
+    }
+  }
+
+  var h='';
+  var pos=0;
+  for(var li=0;li<allLive.length;li++){
+    var ls=allLive[li];
+    var key=normName(ls.name);
+    // Only show if in our field
+    var inField=false;
+    for(var gi=0;gi<GOLFERS.length;gi++){
+      if(normName(GOLFERS[gi].name)===key||(GOLFERS[gi].name.split(" ").length>1&&normName(GOLFERS[gi].name.split(" ").slice(-1)[0])===normName(ls.name.split(" ").slice(-1)[0]))){inField=true;break;}
+    }
+    if(!inField&&!pickedNames[key])continue;
+    seenKeys[key]=true;
+    if(!ls.cut)pos++;
+    var isMyPick=myPickedKeys[key];
+    var scoreStr=ls.cut?"CUT":(ls.score===0?"E":(ls.score>0?"+"+ls.score:""+ls.score));
+    var scoreCls=ls.cut?"cut-score":ls.score<0?"under":ls.score>0?"over":"even";
+    var posCls=pos<=5&&!ls.cut?"top5":"";
+    h+='<div class="live-row'+(ls.cut?" cut":"")+(isMyPick?" mypick":"")+'">';
+    h+='<div class="live-pos '+posCls+'">'+(ls.cut?"CUT":(pos?pos:""))+'</div>';
+    h+='<div class="live-name">'+x(ls.name)+(isMyPick?' <span style="font-size:8px;color:var(--gold-dark);font-weight:900">★</span>':'')+'</div>';
+    h+='<div class="live-thru">'+(ls.thru?x(ls.thru):"")+'</div>';
+    h+='<div class="live-score '+scoreCls+'">'+scoreStr+'</div>';
+    h+='</div>';
+  }
+
+  if(!h){
+    h='<div class="live-empty">&#9968;<br>Tournament hasn’t started yet.<br><span style="font-size:9px;color:var(--dim)">Scores will appear here once play begins</span></div>';
+  }
+
+  h+='<div class="live-footer">via ESPN · updated '+agoStr+'</div>';
+  el.innerHTML=ribbonHtml+h;
+}
+
+function renderLive(){
+  var h='<div class="live-wrap">';
+  h+='<div class="live-header">';
+  h+='<div>';
+  h+='<div class="live-title">';
+  h+=(_liveLastFetch&&Object.keys(liveScores).length)?'<span class="live-dot"></span> ':'⛳ ';
+  h+=TOURNAMENT.name+' Live</div>';
+  h+='</div>';
+  h+='<div class="live-meta">';
+  h+='<button class="live-refresh" onclick="fetchLiveScores()">&#8635; Refresh</button>';
+  h+='</div></div>';
+  h+='<div id="live-list">';
+  if(_liveLastFetch&&Object.keys(liveScores).length){
+    // Pre-render synchronously
+    var tempEl=document.createElement("div");
+    // We'll fill via renderLiveInto after insert
+    h+='<div class="live-empty" style="padding:20px">Loading…</div>';
+  } else {
+    h+='<div class="live-empty">&#9968;<br>Tournament hasn’t started yet.<br><span style="font-size:9px;color:var(--dim)">Scores will appear here once play begins</span></div>';
+  }
+  h+='</div>';
+  h+='</div>';
+  return h;
+}
+
+function startLiveRefresh(){
+  clearInterval(_liveTimer);
+  _liveTimer=null;
+  // Only fetch if we don't have recent data (within 5 min)
+  if(!_liveData||Date.now()-_liveLastFetch>300000) fetchLiveScores();
+  else renderLiveInto();
+}
+function stopLiveRefresh(){clearInterval(_liveTimer);_liveTimer=null;}
+
+function userSelectScreen(){
+  var h='<div class="user-screen"><h2>Who are you?</h2><div class="user-grid">';
+  for(var i=0;i<PARTS.length;i++){
+    var p=PARTS[i];
+    var pk=ST.picks[ukey(p)];
+    var sub=pk?"Picks submitted":"No picks yet";
+    h+='<button class="user-btn" data-user="'+x(p)+'"><div>'+x(p)+'</div><div class="user-btn-sub">'+sub+'</div></button>';
+  }
+  h+='</div></div>';
+  return h;
+}
+
+// ── Main draw ─────────────────────────────────────────
+function draw(){
+  var h='';
+
+  // Topbar
+  h+='<div class="topbar">';
+  h+='<div class="topbar-left"><a href="index.html" style="display:flex;align-items:center;gap:3px;text-decoration:none;color:var(--muted);font-size:9px;font-weight:600;padding:4px 8px;border:1px solid var(--border);border-radius:6px;white-space:nowrap">&#8592; Hub</a></div>';
+  var _typeLbl=TOURNAMENT.type==="tier"?"Tier Draft":TOURNAMENT.type==="confidence"?"Confidence":TOURNAMENT.type==="daily"?"Daily Lineup":"Salary Pool";
+  h+='<div class="topbar-center"><div class="app-name"><span class="scorecery-logo">SCORECERY</span></div><div class="app-sub" id="tour-subtitle">'+TOURNAMENT.name+' &bull; '+_typeLbl+'</div></div>';
+  h+='<div class="topbar-right">';
+  if(ST.user){
+    h+='<span class="tag">'+x(ST.user)+'</span>';
+    if(!URL_USER) h+='<button class="btn btn-ghost" id="b-switch">&#8646;</button>';
+  }
+  h+='<button class="btn '+(ST.admin?"btn-gold":"btn-ghost")+'" id="b-admin">'+(ST.admin?"&#9889;":"&#9881;")+'</button>';
+  h+='</div></div>';
+
+  // Page tabs
+  var tabs=[{id:"picks",lbl:"⛳ Picks"},{id:"live",lbl:"&#128308; Live"},{id:"leaderboard",lbl:"&#128202; Pool"}];
+  if(ST.admin) tabs.push({id:"admin",lbl:"&#9881; Admin"});
+  h+='<div class="page-bar">';
+  for(var t=0;t<tabs.length;t++){h+='<button class="ptab'+(ST.page===tabs[t].id?" active":"")+'" data-page="'+tabs[t].id+'">'+tabs[t].lbl+'</button>';}
+  h+='</div>';
+
+  // User select screen if no user on picks tab
+  if(!ST.user&&!ST.admin&&ST.page==="picks"){
+    h+=userSelectScreen();
+    document.getElementById("root").innerHTML=h;
+    bind();return;
+  }
+
+  if(ST.page==="picks") h+=renderPicks();
+  else if(ST.page==="live") h+=renderLive();
+  else if(ST.page==="leaderboard") h+=renderLeaderboard();
+  else if(ST.page==="admin"&&ST.admin) h+=renderAdmin();
+  else{ST.page="picks";h+=renderPicks();}
+
+  document.getElementById("root").innerHTML=h;
+  bind();
+  if(ST.page==="live"){
+    if(_liveData)renderLiveInto(); else startLiveRefresh();
+  } else {
+    stopLiveRefresh();
+  }
+}
+
+// ── Bindings ──────────────────────────────────────────
+
+// ── FINALIZE POOL — records winner to globalSettings/results/pgatour ───────
+
+
+// ── AUTO SALARY & TIER FROM ODDS ─────────────────────────────────────────────
+// Salary: MIN + (MAX - MIN) × √(prob / max_prob)
+// Tiers: fixed slot counts — top 6 Elite, next 8 Contender, next 10 Mid, rest Value
+// This ensures tiers are always meaningful regardless of field strength
+function oddsToProb(oddsStr){
+  var s = String(oddsStr||"").trim();
+  // Match optional sign then digits
+  var m = s.match(/([+-]?)(\d+)/);
+  if(!m) return 0.005;
+  var n = parseInt(m[2]);
+  if(isNaN(n)||n===0) return 0.005;
+  var neg = m[1]==="-";
+  if(!neg) return 100 / (n + 100);        // positive odds
+  return n / (n + 100);                   // negative odds (favorites)
+}
+
+function calcFieldSalariesAndTiers(golfers){
+  if(!golfers||!golfers.length) return golfers;
+  var MIN_SAL = 1000;
+  var ELITE_N = 6, CONT_N = 8, MID_N = 10;
+
+  // Compute probabilities
+  var probs = golfers.map(function(g){ return oddsToProb(g.odds); });
+  var maxProb = Math.max.apply(null, probs);
+
+  // Dynamic max salary — scales down when the best golfer is a long shot
+  // +300 or better → $20K, +2000 or worse → $12K, linear between
+  var bestOdds = Math.round(100/maxProb - 100); // convert prob back to approx odds
+  var STRONG_ODDS=300, WEAK_ODDS=2000, STRONG_SAL=20000, WEAK_SAL=12000;
+  var _t = Math.max(0, Math.min(1, (bestOdds-STRONG_ODDS)/(WEAK_ODDS-STRONG_ODDS)));
+  var MAX_SAL = Math.round((STRONG_SAL + _t*(WEAK_SAL-STRONG_SAL))/50)*50;
+
+  // Sort probs descending to find tier cutoff values
+  var probsSorted = probs.slice().sort(function(a,b){ return b-a; });
+  var n = probsSorted.length;
+  var eliteThresh     = probsSorted[Math.min(ELITE_N-1, n-1)];
+  var contenderThresh = probsSorted[Math.min(ELITE_N+CONT_N-1, n-1)];
+  var midThresh       = probsSorted[Math.min(ELITE_N+CONT_N+MID_N-1, n-1)];
+
+  // Count assigned slots to handle ties at boundaries
+  var eliteCount=0, contCount=0, midCount=0;
+
+  // Sort golfers by prob descending for slot assignment
+  var indexed = golfers.map(function(g,i){ return {g:g, prob:probs[i], idx:i}; });
+  indexed.sort(function(a,b){ return b.prob-a.prob; });
+
+  var result = new Array(golfers.length);
+  indexed.forEach(function(item){
+    var prob = item.prob;
+    var ratio = Math.sqrt(prob / maxProb);
+    var salary = Math.round((MIN_SAL + (MAX_SAL - MIN_SAL) * ratio) / 50) * 50;
+    var tier;
+    if(eliteCount < ELITE_N){ tier="elite"; eliteCount++; }
+    else if(contCount < CONT_N){ tier="contender"; contCount++; }
+    else if(midCount < MID_N){ tier="mid"; midCount++; }
+    else { tier="value"; }
+    result[item.idx] = { name:item.g.name, odds:item.g.odds, salary:salary, tier:tier };
+  });
+  return result;
+}
+
+
+// ── RECALCULATE FIELD SALARIES & TIERS ────────────────────────────────────────
+// Re-runs the formula on the existing stored field without requiring re-import
+function recalcField(){
+  if(!GOLFERS||!GOLFERS.length){ toast("No field loaded","err"); return; }
+  // Fix any golfers where odds are embedded in name ("Chris Gotterup +1400")
+  // or where odds field is "NR" but name contains the odds
+  var _fixed = GOLFERS.map(function(g){
+    var _odds = g.odds;
+    if(!_odds || _odds==="NR" || _odds===""){
+      // Try to extract odds from end of name
+      var _m = (g.name||"").match(/^(.*?)\s+([+-]\d+)$/);
+      if(_m){ return { name:_m[1].trim(), odds:_m[2], salary:g.salary||5000 }; }
+    }
+    return g;
+  });
+  var _g0 = _fixed[0]||{};
+  var _dbg = "First: "+_g0.name+" odds="+_g0.odds+" prob="+oddsToProb(_g0.odds).toFixed(4);
+  if(!confirm("Recalculate "+_fixed.length+" players?\n\n"+_dbg)) return;
+  // Clear cache BEFORE recalc so stale values never load on next read
+  try{
+    localStorage.removeItem("sc_pga_field");
+    localStorage.removeItem("sc_pga_field"+(GROUP_ID?"_"+GROUP_ID:""));
+  }catch(e){}
+  var recalced = calcFieldSalariesAndTiers(_fixed);
+  var _fieldPath = GROUP_ID
+    ? "groups/"+GROUP_ID+"/data/pgatour/field"
+    : "globalSettings/pgatour/field";
+  DB.ref(_fieldPath).set(recalced, function(err){
+    if(err){ toast("Error saving","err"); return; }
+    GOLFERS = recalced;
+    // Bust all possible cache keys so stale data never persists
+    var _cacheKey = "sc_pga_field"+(GROUP_ID?"_"+GROUP_ID:"");
+    try{
+      localStorage.removeItem("sc_pga_field");
+      localStorage.removeItem(_cacheKey);
+      localStorage.setItem(_cacheKey, JSON.stringify(recalced));
+    }catch(e){}
+    toast("Recalculated "+recalced.length+" players ✓","ok");
+    draw();
+  });
+}
+
+// ── IMPORT PLAYER FIELD ────────────────────────────────────────────────────
+function importPlayerField() {
+  var raw = (document.getElementById("field-import")||{}).value||"";
+  if(!raw.trim()){ toast("Paste player data first","err"); return; }
+  var lines = raw.trim().split("\n");
+  var parsed = [];
+  var errors = 0;
+  lines.forEach(function(line){
+    line = line.trim();
+    if(!line) return;
+    var name, odds="NR", salary=5000;
+    if(line.indexOf(",")>=0){
+      // CSV: Name, Odds[, Salary]
+      var parts = line.split(",").map(function(s){ return s.trim(); });
+      name = parts[0];
+      if(!name) return;
+      if(parts.length >= 3){ odds=parts[1]||"NR"; salary=parseInt(parts[2])||5000; }
+      else if(parts.length === 2){
+        var p2=parts[1];
+        if(p2.indexOf("+")>=0||p2.indexOf("-")>=0){ odds=p2; }
+        else { salary=parseInt(p2)||5000; }
+      }
+    } else {
+      // Space-separated: "First Last +Odds" — last token is odds
+      var tokens = line.split(" ");
+      var last = tokens[tokens.length-1];
+      if(last && (last.charAt(0)==="+" || last.charAt(0)==="-") && !isNaN(parseInt(last.slice(1)))){
+        odds = last;
+        name = tokens.slice(0, tokens.length-1).join(" ");
+      } else {
+        name = line;
+      }
+    }
+    if(!name || !name.trim()) return;
+    parsed.push({ name:name.trim(), odds:odds, salary:salary });
+  });
+  if(!parsed.length){ toast("No valid players found","err"); return; }
+  // Auto-calculate salaries and tiers from odds
+  parsed = calcFieldSalariesAndTiers(parsed);
+  if(!confirm("Import "+parsed.length+" players?\n\nSalaries and tiers auto-calculated from odds.\nThis replaces the current field.")){ return; }
+  var _fieldPath = GROUP_ID
+    ? "groups/"+GROUP_ID+"/data/pgatour/field"
+    : "globalSettings/pgatour/field";
+  DB.ref(_fieldPath).set(parsed, function(err){
+    if(err){ toast("Error saving","err"); return; }
+    GOLFERS = parsed;
+    // Cache keyed by group so different groups don't overwrite each other
+    var _cacheKey = "sc_pga_field"+(GROUP_ID?"_"+GROUP_ID:"");
+    try{ localStorage.setItem(_cacheKey, JSON.stringify(parsed)); }catch(e){}
+    toast("Field imported: "+parsed.length+" players ✓","ok");
+    draw();
+  });
+}
+
+function finalizePool() {
+  if(!DB||!ST.isAdmin) return;
+  // Compute standings from current picks + scores
+  var picks = ST.picks;
+  var entries = [];
+  for(var uk in picks){
+    var p = picks[uk];
+    if(!p||!p.name) continue;
+    entries.push({ name:p.name, total:entryTotal(p.picks||[]) });
+  }
+  entries.sort(function(a,b){ return a.total-b.total; });
+  if(!entries.length){ toast("No entries to finalize","err"); return; }
+  var first  = entries[0] ? entries[0].name : "";
+  var second = entries[1] ? entries[1].name : "";
+  var third  = entries[2] ? entries[2].name : "";
+  var msg = "Finalize "+TOURNAMENT.name+"?\n\n"
+    +"1st: "+first+"\n"+(second?"2nd: "+second+"\n":"")+(third?"3rd: "+third+"\n":"")
+    +"\nThis records the result and cannot be undone.";
+  if(!confirm(msg)) return;
+  var result = { first:first, second:second||"", third:third||"", ts:Date.now(),
+    tournament:TOURNAMENT.name, year:TOURNAMENT.year };
+  DB.ref("globalSettings/results/pgatour").set(result, function(){
+    toast("Pool finalized ✓","ok");
+  });
+  // Also set status to complete
+  DB.ref("globalSettings/statuses/pgatour").set("complete");
+}
+
+// ── TOURNAMENT EDITOR — admin can swap tournament details ──────────────────
+function openTournamentEditor() {
+  var existing = document.getElementById("tournament-editor-overlay");
+  if(existing){ existing.remove(); return; }
+  var overlay = document.createElement("div");
+  overlay.id = "tournament-editor-overlay";
+  overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:flex;align-items:flex-end;justify-content:center";
+  overlay.innerHTML =
+    '<div style="background:#fff;border:3px solid #111;border-radius:14px 14px 0 0;width:100%;max-width:480px;padding:20px 20px 44px">' +
+    '<div style="width:36px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 16px"></div>' +
+    '<div style="font-size:16px;font-weight:900;margin-bottom:16px">Edit Tournament</div>' +
+    '<div style="display:flex;flex-direction:column;gap:10px">' +
+    '<div><label style="font-size:10px;font-weight:800;color:#777;text-transform:uppercase">Tournament Name</label>' +
+    '<input id="te-name" value="'+TOURNAMENT.name+'" style="width:100%;margin-top:4px;padding:9px 10px;border:2px solid #111;border-radius:8px;font-size:13px;font-weight:700;font-family:Nunito,sans-serif"></div>' +
+    '<div><label style="font-size:10px;font-weight:800;color:#777;text-transform:uppercase">Course / Location</label>' +
+    '<input id="te-course" value="'+TOURNAMENT.course+'" style="width:100%;margin-top:4px;padding:9px 10px;border:2px solid #111;border-radius:8px;font-size:13px;font-weight:700;font-family:Nunito,sans-serif"></div>' +
+    '<div><label style="font-size:10px;font-weight:800;color:#777;text-transform:uppercase">Salary Cap ($)</label>' +
+    '<input id="te-cap" type="number" value="'+TOURNAMENT.cap+'" style="width:100%;margin-top:4px;padding:9px 10px;border:2px solid #111;border-radius:8px;font-size:13px;font-weight:700;font-family:Nunito,sans-serif"></div>' +
+    '<div><label style="font-size:10px;font-weight:800;color:#777;text-transform:uppercase">Year</label>' +
+    '<input id="te-year" type="number" value="'+TOURNAMENT.year+'" style="width:100%;margin-top:4px;padding:9px 10px;border:2px solid #111;border-radius:8px;font-size:13px;font-weight:700;font-family:Nunito,sans-serif"></div>' +
+    '<div><label style="font-size:10px;font-weight:800;color:#777;text-transform:uppercase">Pool Type</label>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">' +
+    [["salary","💰 Salary Cap"],["tier","🏷️ Tier Draft"],["confidence","🎯 Confidence"],["daily","📅 Daily Lineup"]].map(function(t){
+      var active=TOURNAMENT.type===t[0];
+      return '<button class="te-type-btn" data-type="'+t[0]+'" style="padding:9px 6px;border-radius:8px;border:2px solid #111;font-size:11px;font-weight:800;font-family:Nunito,sans-serif;cursor:pointer;background:'+( active?"#e8c840":"#fff")+';box-shadow:2px 2px 0 #111">'+t[1]+'</button>';
+    }).join("")+
+    '</div></div>' +
+    '</div>' +
+    '<div style="display:flex;gap:10px;margin-top:20px">' +
+    '<button id="te-cancel" style="flex:1;padding:11px;border-radius:10px;border:2px solid #111;background:#f5f0e8;font-size:13px;font-weight:800;font-family:Nunito,sans-serif;box-shadow:3px 3px 0 #111">Cancel</button>' +
+    '<button id="te-save" style="flex:2;padding:11px;border-radius:10px;border:2px solid #111;background:#e8c840;font-size:13px;font-weight:900;font-family:Nunito,sans-serif;box-shadow:3px 3px 0 #111">Save Tournament</button>' +
+    '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  overlay.addEventListener("click", function(e){ if(e.target===overlay) overlay.remove(); });
+  document.getElementById("te-cancel").addEventListener("click", function(){ overlay.remove(); });
+  // Type button selection
+  var _selectedType = TOURNAMENT.type||"salary";
+  overlay.querySelectorAll(".te-type-btn").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      _selectedType=this.getAttribute("data-type");
+      overlay.querySelectorAll(".te-type-btn").forEach(function(b){
+        b.style.background=b.getAttribute("data-type")===_selectedType?"#e8c840":"#fff";
+      });
+    });
+  });
+  document.getElementById("te-save").addEventListener("click", function(){
+    var cfg = {
+      name:   document.getElementById("te-name").value.trim(),
+      course: document.getElementById("te-course").value.trim(),
+      cap:    Number(document.getElementById("te-cap").value)||50000,
+      year:   Number(document.getElementById("te-year").value)||new Date().getFullYear(),
+      type:   _selectedType
+    };
+    if(!cfg.name){ toast("Enter a tournament name","err"); return; }
+    DB.ref("globalSettings/pgatour").set(cfg, function(){
+      TOURNAMENT.name   = cfg.name;
+      TOURNAMENT.course = cfg.course;
+      TOURNAMENT.cap    = cfg.cap;
+      TOURNAMENT.year   = cfg.year;
+      TOURNAMENT.type   = cfg.type||"salary";
+      CAP_LIMIT = cfg.cap;
+      MAX_PICKS = getMaxPicks();
+      // Also write name+type to group-level so invite/display picks it up
+      if(GROUP_ID){
+        DB.ref("groups/"+GROUP_ID+"/data/pgatour/name").set(cfg.name);
+        DB.ref("groups/"+GROUP_ID+"/data/pgatour/type").set(cfg.type||"salary");
+      }
+      var sub = document.getElementById("tour-subtitle");
+      if(sub){
+        var _tl2=cfg.type==="tier"?"Tier Draft":cfg.type==="confidence"?"Confidence":cfg.type==="daily"?"Daily Lineup":"Salary Pool";
+        sub.textContent = cfg.name + " • " + _tl2;
+      }
+      overlay.remove();
+      toast("Tournament updated ✓","ok");
+      draw();
+    });
+  });
+}
+
+function bind(){
+  var els,i,el;
+
+  els=document.querySelectorAll(".ptab");
+  for(i=0;i<els.length;i++) els[i].addEventListener("click",function(){
+    var prev=ST.page;
+    ST.page=this.getAttribute("data-page");
+    if(prev==="live"&&ST.page!=="live") stopLiveRefresh();
+    draw();
+  });
+
+  els=document.querySelectorAll(".user-btn[data-user]");
+  for(i=0;i<els.length;i++) els[i].addEventListener("click",function(){
+    ST.user=this.getAttribute("data-user");
+    var pk=ST.picks[ukey(ST.user)];
+    draftPicks=pk&&pk.picks?pk.picks.slice():[];
+    draw();
+  });
+
+  el=document.getElementById("b-switch"); if(el) el.addEventListener("click",function(){ST.user=null;draftPicks=[];draw();});
+
+  el=document.getElementById("b-admin"); if(el) el.addEventListener("click",function(){
+    if(ST.admin){ST.admin=false;if(ST.page==="admin")ST.page="picks";draw();return;}
+    var pw=prompt("Admin password:");if(pw===null)return;
+    if(pw===MASTER_PW){ST.admin=true;ST.page="admin";draw();toast("&#9889; Admin mode on");}
+    else toast("Wrong password");
+  });
+
+  el=document.getElementById("b-lock"); if(el) el.addEventListener("click",function(){
+    ST.locked=!ST.locked;
+    if(DB) DB.ref(BASE+"/meta/locked").set(ST.locked);
+    toast(ST.locked?"&#128274; Picks locked":"&#9998; Picks opened");
+    draw();
+  });
+
+  el=document.getElementById("b-submit"); if(el) el.addEventListener("click",showPickConfirmation);
+
+  el=document.getElementById("b-filter"); if(el) el.addEventListener("click",function(){
+    ST.filterAffordable=!ST.filterAffordable;draw();
+  });
+
+    el=document.getElementById("search-inp"); if(el){
+    el.addEventListener("input",function(){refreshGolferList(this.value);});
+    el.addEventListener("search",function(){refreshGolferList(this.value);});
+    el.value=ST.search;
+  }
+  el=document.getElementById("b-search-clear"); if(el) el.addEventListener("click",function(){
+    ST.search="";
+    var inp=document.getElementById("search-inp");
+    if(inp){inp.value="";inp.focus();}
+    refreshGolferList("");
+  });
+
+
+  els=document.querySelectorAll(".golfer-row[data-pick]");
+  for(i=0;i<els.length;i++) els[i].addEventListener("click",function(){togglePick(this.getAttribute("data-pick"));});
+
+  // Slot card taps
+  els=document.querySelectorAll(".slot-card[data-slot]");
+  for(i=0;i<els.length;i++) els[i].addEventListener("click",function(e){
+    if(e.target.hasAttribute&&e.target.hasAttribute("data-slot-remove")) return;
+    var s=parseInt(this.getAttribute("data-slot"));
+    if(ST.activeSlot===s){ST.activeSlot=null;ST.showPicker=false;}
+    else{ST.activeSlot=s;ST.showPicker=true;ST.search="";}
+    draw();
+  });
+
+  // Slot remove buttons
+  els=document.querySelectorAll(".slot-remove[data-slot-remove]");
+  for(i=0;i<els.length;i++) els[i].addEventListener("click",function(e){
+    e.stopPropagation();
+    var s=parseInt(this.getAttribute("data-slot-remove"));
+    var _rtype=TOURNAMENT.type||"salary";
+    if(s>=0&&s<draftPicks.length){
+      if(_rtype==="confidence") draftPicks.splice(s,1);
+      else draftPicks[s]="";
+    }
+    ST.activeSlot=null;ST.showPicker=false;
+    draw();
+  });
+
+  // Roster row taps (re-pick)
+  els=document.querySelectorAll(".roster-body .golfer-row[data-slot]");
+  for(i=0;i<els.length;i++) els[i].addEventListener("click",function(){
+    ST.activeSlot=parseInt(this.getAttribute("data-slot"));
+    ST.showPicker=true;ST.search="";
+    draw();
+  });
+
+  el=document.getElementById("b-picker-close"); if(el) el.addEventListener("click",function(){
+    ST.activeSlot=null;ST.showPicker=false;draw();
+  });
+
+  el=document.getElementById("b-finalize"); if(el) el.addEventListener("click",finalizePool);
+  el=document.getElementById("b-edit-tournament"); if(el) el.addEventListener("click",openTournamentEditor);
+  el=document.getElementById("b-import-field"); if(el) el.addEventListener("click",importPlayerField);
+  el=document.getElementById("b-recalc-field"); if(el) el.addEventListener("click",recalcField);
+
+
+  // Admin score inputs
+  els=document.querySelectorAll(".score-inp[data-golfer]");
+  for(i=0;i<els.length;i++) els[i].addEventListener("change",function(){saveScore(this.getAttribute("data-golfer"),this.value);});
+
+  els=document.querySelectorAll(".cut-btn[data-cut]");
+  for(i=0;i<els.length;i++) els[i].addEventListener("click",function(){toggleCut(this.getAttribute("data-cut"));});
+
+  // Wire per-round score inputs (daily pool)
+  els=document.querySelectorAll(".round-inp[data-golfer]");
+  for(i=0;i<els.length;i++) els[i].addEventListener("change",function(){
+    saveRoundScore(this.getAttribute("data-golfer"),this.getAttribute("data-round"),this.value);
+  });
+}
+
+// ── Admin actions ─────────────────────────────────────
+function saveRoundScore(name,roundKey,val){
+  var sc=ST.scores[name]||{};
+  if(!sc.rounds) sc.rounds={};
+  if(val===""||val===null){ delete sc.rounds[roundKey]; }
+  else{ sc.rounds[roundKey]=Number(val); }
+  // Auto-update total score from rounds
+  var total=0;
+  Object.keys(sc.rounds).forEach(function(k){ total+=Number(sc.rounds[k])||0; });;
+  sc.score=total;
+  ST.scores[name]=sc;
+  if(DB) DB.ref(BASE+"/scores/"+ukey(name)).set(sc);
+}
+
+function saveScore(name,val){
+  var sc=ST.scores[name]||{};
+  if(val===""||val===null){delete sc.score;}
+  else{sc.score=Number(val);}
+  ST.scores[name]=sc;
+  if(DB) DB.ref(BASE+"/scores/"+ukey(name)).set(sc);
+}
+
+function toggleCut(name){
+  var sc=ST.scores[name]||{};
+  sc.cut=!sc.cut;
+  if(sc.cut) delete sc.score;
+  ST.scores[name]=sc;
+  if(DB) DB.ref(BASE+"/scores/"+ukey(name)).set(sc,function(){draw();});
+  else draw();
+}
+
+// ── Firebase load ─────────────────────────────────────
+function loadData(){
+  if(!DB){draw();return;}
+  // Load tournament config + golfer field FIRST, then start pool subscriptions
+  // This ensures GOLFERS is populated before any draw() fires
+  loadTournamentConfig(function(){
+    loadGolferField(function(){
+      loadGroup(); // now start group/pool subscriptions
+    });
+  });
+
+  function loadGroup(){
+    if(!GROUP_ID){loadPool();return;}
+    DB.ref("groups/"+GROUP_ID).once("value",function(sn){
+      var g=sn.val()||{};
+      if(g.players&&g.players.length) PARTS=g.players;
+      loadPool();
+    },function(){loadPool();});
+  }
+
+  function loadPool(){
+    DB.ref("globalSettings/masterPw").on("value",function(sn){if(sn.val())MASTER_PW=sn.val();});
+    DB.ref(BASE+"/meta/locked").on("value",function(sn){
+      ST.locked=!!sn.val();
+      draw();
+    });
+    DB.ref(BASE+"/picks").on("value",function(sn){
+      ST.picks=sn.val()||{};setTimeout(syncPlayerScoresToGroup,800);
+      // If user already selected, sync draft with saved picks
+      if(ST.user&&!draftPicks.length){
+        var saved=ST.picks[ukey(ST.user)];
+        if(saved&&saved.picks) draftPicks=saved.picks.slice();
+      }
+      draw();
+    });
+    DB.ref(BASE+"/scores").on("value",function(sn){
+      var raw=sn.val()||{};
+      ST.scores={};
+      for(var k in raw){
+        for(var i=0;i<GOLFERS.length;i++){
+          if(ukey(GOLFERS[i].name)===k){ST.scores[GOLFERS[i].name]=raw[k];break;}
+        }
+      }
+      draw();
+    });
+    // Load cached live scores from Firebase (written by whoever last refreshed)
+    DB.ref(BASE+"/livescores").once("value",function(sn){
+      var raw=sn.val()||{};
+      if(Object.keys(raw).length){
+        for(var _k in raw) liveScores[_k]=raw[_k];
+        _liveLastFetch=Date.now(); // mark as "have data" so leaderboard shows scores
+        if(ST.page==="live") renderLiveInto();
+        else draw();
+      }
+    });
+    draw();
+  }
+
+  loadGroup();
+}
+
+loadData();
+// Pull-to-refresh
+(function(){
+  var startY=0,pulling=false;
+  document.addEventListener("touchstart",function(e){
+    startY=e.touches[0].clientY;
+    pulling=window.scrollY===0;
+  },{passive:true});
+  document.addEventListener("touchend",function(e){
+    if(!pulling)return;
+    var dy=e.changedTouches[0].clientY-startY;
+    if(dy>60&&ST.page==="live"){
+      fetchLiveScores();
+    }
+    pulling=false;
+  },{passive:true});
+})();
+
+</script>
+</body>
+</html>

@@ -2463,23 +2463,20 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   }
 
   function renderPartyCardBody(p, hasPrimarySet, isMulti){
-    if(!hasPrimarySet){
-      return p.names.map(n => chipHtml(n, isMulti, true)).join('');
-    }
-    const primaryNames = p.names.filter(n => p.primary.includes(n));
-    const nonPrimary   = p.names.filter(n => !p.primary.includes(n));
+    const primaryNames = hasPrimarySet ? p.names.filter(n => p.primary.includes(n)) : [];
+    const rest         = hasPrimarySet ? p.names.filter(n => !p.primary.includes(n)) : p.names.slice();
     const used = new Set();
     let html = primaryNames.map(n => chipHtml(n, isMulti, true)).join('');
 
     (p.subgroups || []).forEach(g => {
-      const members = g.members.filter(n => nonPrimary.includes(n) && !used.has(n));
+      const members = g.members.filter(n => rest.includes(n) && !used.has(n));
       if(members.length > 1){
         members.forEach(n => used.add(n));
-        html += `<div class="gl-subgroup">${members.map(n => chipHtml(n, isMulti, false)).join('')}</div>`;
+        html += `<div class="gl-subgroup">${members.map(n => chipHtml(n, isMulti, !hasPrimarySet)).join('')}</div>`;
       }
     });
-    nonPrimary.forEach(n => {
-      if(!used.has(n)){ html += chipHtml(n, isMulti, false); used.add(n); }
+    rest.forEach(n => {
+      if(!used.has(n)){ html += chipHtml(n, isMulti, !hasPrimarySet); used.add(n); }
     });
     return html;
   }

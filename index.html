@@ -1478,7 +1478,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   .gl-newgroup{position:sticky;top:0;z-index:2;border:2px dashed var(--line);border-radius:8px;padding:12px;text-align:center;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);background:var(--ivory);margin-bottom:12px;transition:border-color .15s,color .15s,background .15s}
   .gl-newgroup.drag-over{border-color:var(--rose-ink);color:var(--rose-ink);background:rgba(168,84,84,.08)}
 
-  .gl-toolbar{position:sticky;top:0;z-index:3;display:none;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--rose-ink);color:#fff;padding:10px 14px;border-radius:8px;margin-bottom:10px;font-size:.78rem}
+  .gl-toolbar{position:fixed;left:16px;right:16px;bottom:max(16px, env(safe-area-inset-bottom));z-index:9999;display:none;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--rose-ink);color:#fff;padding:12px 16px;border-radius:10px;box-shadow:0 14px 34px rgba(0,0,0,.4);font-size:.78rem;max-width:668px;margin:0 auto}
   .gl-toolbar-actions{display:flex;gap:8px;flex-wrap:wrap}
   .gl-toolbar-btn{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:5px;padding:7px 12px;font-family:var(--sans);font-size:.68rem;letter-spacing:.08em;cursor:pointer}
   .gl-toolbar-btn:hover{background:rgba(255,255,255,.28)}
@@ -1574,14 +1574,6 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
             <button class="btn" id="gl-save-btn" style="font-size:.68rem;padding:11px 20px">Add to Guest List</button>
           </div>
         </div>
-        <div class="gl-toolbar" id="gl-toolbar">
-          <span id="gl-selected-count">0 selected</span>
-          <div class="gl-toolbar-actions">
-            <button class="gl-toolbar-btn" id="gl-subgroup-btn" style="display:none">Create Sub-Group</button>
-            <button class="gl-toolbar-btn" id="gl-group-btn">Group Selected</button>
-            <button class="gl-toolbar-btn" id="gl-clear-btn">Clear</button>
-          </div>
-        </div>
         <div class="gl-newgroup" id="gl-newgroup">Drag here to split someone into their own group</div>
         <div class="gl-legend">
           <span><i class="gl-cat-dot" data-cat="Wedding Party"></i>Wedding Party</span>
@@ -1621,6 +1613,15 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<div class="gl-toolbar" id="gl-toolbar">
+  <span id="gl-selected-count">0 selected</span>
+  <div class="gl-toolbar-actions">
+    <button class="gl-toolbar-btn" id="gl-subgroup-btn" style="display:none">Create Sub-Group</button>
+    <button class="gl-toolbar-btn" id="gl-group-btn">Group Selected</button>
+    <button class="gl-toolbar-btn" id="gl-clear-btn">Clear</button>
   </div>
 </div>
 

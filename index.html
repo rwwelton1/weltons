@@ -1526,7 +1526,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   .gl-chip-star.active{color:var(--gold);opacity:1}
   .gl-hierarchy-hint{width:100%;font-size:.7rem;color:var(--ink-soft);margin-bottom:10px;line-height:1.5}
   .gl-subgroup{width:100%;display:flex;flex-wrap:wrap;gap:8px 6px;margin:2px 0 6px 22px;padding:8px 0 2px 14px;border-left:2px solid var(--line)}
-  .gl-drag-ghost{position:fixed;z-index:9999;pointer-events:none;background:var(--rose-ink);color:#fff;border-radius:20px;padding:9px 16px;font-size:.85rem;box-shadow:0 8px 20px rgba(0,0,0,.28);transform:translate(-50%,-50%);white-space:nowrap}
+  .gl-drag-ghost{position:absolute;z-index:9999;pointer-events:none;background:var(--rose-ink);color:#fff;border-radius:20px;padding:9px 16px;font-size:.85rem;box-shadow:0 8px 20px rgba(0,0,0,.28);transform:translate(-50%,-50%);white-space:nowrap}
 
   /* Links modal */
   .lf-row{display:grid;grid-template-columns:1fr 2fr;gap:10px;align-items:center;margin-bottom:14px}
@@ -2672,7 +2672,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     document.addEventListener('pointercancel', onDragEnd);
   }
 
-  function positionGhost(ghost, x, y){ ghost.style.left = x+'px'; ghost.style.top = y+'px'; }
+  function positionGhost(ghost, x, y){
+    ghost.style.left = (x + window.scrollX) + 'px';
+    ghost.style.top = (y + window.scrollY) + 'px';
+  }
 
   function findDropTarget(x, y){
     const el = document.elementFromPoint(x, y);

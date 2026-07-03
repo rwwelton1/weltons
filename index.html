@@ -477,6 +477,13 @@ section{padding:120px 0;position:relative;z-index:2}
 .party-guest .choice{margin-bottom:0}
 .party-guest .choice button{padding:13px;font-size:.92rem}
 
+/* ---- Nested hierarchy: parents at top, sibling branches indented beneath ---- */
+.party-branches{margin-left:18px;padding-left:18px;border-left:2px solid var(--line)}
+.party-subgroup{margin-bottom:8px;padding-bottom:8px;border-bottom:1px dashed var(--line)}
+.party-subgroup:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.party-subgroup .party-guest{margin-bottom:16px;padding-bottom:16px}
+.party-subgroup .party-guest:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+
 /* ---- Extra custom events (Bride's Lunch, Groom's Outing, etc.) ---- */
 .rsvp-event{background:var(--shell);border-radius:8px;padding:18px;margin-bottom:18px}
 .rsvp-event-name{font-family:var(--serif);font-style:italic;font-size:1.15rem;margin-bottom:3px}
@@ -910,8 +917,9 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
   function normName(s){ return (s||'').trim().toLowerCase().replace(/\s+/g,' '); }
 
-  let currentParty = null;      // { id, names:[...], category, primary:[...] } — full party record
-  let currentDisplayNames = []; // names actually shown/editable this session (order + hierarchy applied)
+  let currentParty = null;      // { id, names:[...], category, primary:[...], subgroups:[[...]] } — full party record
+  let currentDisplayNames = []; // flat names actually shown/editable this session, in render order
+  let currentDisplayPlan = [];  // [{indent, cluster, names:[...]}, ...] — drives nested rendering
   let currentResponses = {};    // { name: 'yes' | 'no' }
   let currentEventResponses = {}; // { eventId: { name: true|false } }
   let respondedNames = new Set(); // names that already had a saved answer when the form loaded
@@ -945,6 +953,38 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     );
   }
 
+  // Builds the nested hierarchy plan for rendering.
+  // isPrimaryView=false → the matched guest only manages themselves (or their own
+  // sibling sub-group, if they belong to one) — flat, no indentation needed.
+  // isPrimaryView=true  → the matched guest (a parent/primary contact) sees everyone:
+  // primaries at the top, then each sibling sub-group bracketed beneath them, then
+  // any remaining ungrouped members.
+  function computeDisplayPlan(matchedName, isPrimaryView){
+    if(!isPrimaryView){
+      const sg = (currentParty.subgroups || []).find(g => g.includes(matchedName));
+      const names = sg ? [matchedName, ...sg.filter(n => n !== matchedName)] : [matchedName];
+      return [{ indent:false, cluster:false, names }];
+    }
+    const hasPrimaries = currentParty.primary.length > 0;
+    const primaryNames = hasPrimaries
+      ? [matchedName, ...currentParty.primary.filter(n => n !== matchedName)]
+      : [matchedName];
+    const nonPrimary = currentParty.names.filter(n => !primaryNames.includes(n));
+    const used = new Set();
+    const plan = primaryNames.map(n => ({ indent:false, cluster:false, names:[n] }));
+    (currentParty.subgroups || []).forEach(g => {
+      const members = g.filter(n => nonPrimary.includes(n) && !used.has(n));
+      if(members.length > 1){
+        members.forEach(n => used.add(n));
+        plan.push({ indent:true, cluster:true, names: members });
+      }
+    });
+    nonPrimary.forEach(n => {
+      if(!used.has(n)){ plan.push({ indent:true, cluster:false, names:[n] }); used.add(n); }
+    });
+    return plan;
+  }
+
   function formatEventDateTime(value){
     if(!value) return '';
     const d = new Date(value);
@@ -955,6 +995,38 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   }
   function eventMapsUrl(address){
     return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address);
+  }
+
+  function guestRowHtml(name, eventId){
+    const i = currentDisplayNames.indexOf(name);
+    const existingVal = eventId ? (currentEventResponses[eventId] || {})[name] : currentResponses[name];
+    const wasResponded = !eventId && respondedNames.has(name);
+    const attr = eventId ? `data-event="${eventId}" data-name="${i}"` : `data-name="${i}"`;
+    return `
+      <div class="party-guest">
+        <div class="pg-name">${name}${wasResponded ? '<span class="pg-status">Already responded</span>' : ''}</div>
+        <div class="choice" role="group" aria-label="${name} attending${eventId ? ' this event' : ''}?">
+          <button type="button" ${attr} data-val="yes" role="radio" aria-checked="${existingVal==='yes'}" class="${existingVal==='yes'?'sel':''}">Joyfully accepts</button>
+          <button type="button" ${attr} data-val="no" role="radio" aria-checked="${existingVal==='no'}" class="${existingVal==='no'?'sel':''}">Regretfully declines</button>
+        </div>
+      </div>`;
+  }
+
+  // Renders currentDisplayPlan into a container, nesting sub-groups visually.
+  function renderPlanInto(container, eventId){
+    let html = '';
+    let branchOpen = false;
+    currentDisplayPlan.forEach(block => {
+      if(block.indent && !branchOpen){ html += '<div class="party-branches">'; branchOpen = true; }
+      if(!block.indent && branchOpen){ html += '</div>'; branchOpen = false; }
+      if(block.cluster){
+        html += `<div class="party-subgroup">${block.names.map(n => guestRowHtml(n, eventId)).join('')}</div>`;
+      } else {
+        html += block.names.map(n => guestRowHtml(n, eventId)).join('');
+      }
+    });
+    if(branchOpen) html += '</div>';
+    container.innerHTML = html;
   }
 
   function renderEventBlocks(){
@@ -971,19 +1043,11 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         ${metaLine ? `<div class="rsvp-event-meta">${metaLine}</div>` : ''}
         ${ev.address ? `<div class="rsvp-event-meta"><a href="${eventMapsUrl(ev.address)}" target="_blank" rel="noopener">${ev.address} ↗</a></div>` : ''}
         ${ev.invite ? `<div class="rsvp-event-desc">${ev.invite}</div>` : ''}
-        ${currentDisplayNames.map((name, i) => {
-          const existingVal = (currentEventResponses[ev.id] || {})[name];
-          return `
-          <div class="party-guest">
-            <div class="pg-name">${name}</div>
-            <div class="choice" role="group" aria-label="${name} attending ${ev.name}?">
-              <button type="button" data-event="${ev.id}" data-name="${i}" data-val="yes" role="radio" aria-checked="${existingVal==='yes'}" class="${existingVal==='yes'?'sel':''}">Joyfully accepts</button>
-              <button type="button" data-event="${ev.id}" data-name="${i}" data-val="no" role="radio" aria-checked="${existingVal==='no'}" class="${existingVal==='no'?'sel':''}">Regretfully declines</button>
-            </div>
-          </div>`;
-        }).join('')}
+        <div class="rsvp-event-guests" data-event-id="${ev.id}"></div>
       </div>`;
     }).join('');
+
+    wrap.querySelectorAll('.rsvp-event-guests').forEach(el => renderPlanInto(el, el.dataset.eventId));
 
     wrap.querySelectorAll('.rsvp-event .choice button').forEach(b => {
       b.addEventListener('click', () => {
@@ -1004,20 +1068,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
   function renderPartyList(){
     const wrap = document.getElementById('partyList');
-    wrap.innerHTML = '';
-    currentDisplayNames.forEach((name, i) => {
-      const existingVal = currentResponses[name];
-      const wasResponded = respondedNames.has(name);
-      const row = document.createElement('div');
-      row.className = 'party-guest';
-      row.innerHTML = `
-        <div class="pg-name">${name}${wasResponded ? '<span class="pg-status">Already responded</span>' : ''}</div>
-        <div class="choice" role="group" aria-label="${name} attending?">
-          <button type="button" data-name="${i}" data-val="yes" role="radio" aria-checked="${existingVal==='yes'}" class="${existingVal==='yes'?'sel':''}">Joyfully accepts</button>
-          <button type="button" data-name="${i}" data-val="no" role="radio" aria-checked="${existingVal==='no'}" class="${existingVal==='no'?'sel':''}">Regretfully declines</button>
-        </div>`;
-      wrap.appendChild(row);
-    });
+    renderPlanInto(wrap, null);
     wrap.querySelectorAll('.choice button').forEach(b => {
       b.addEventListener('click', () => {
         const idx = b.dataset.name;
@@ -1067,30 +1118,32 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     }
 
     const matchedName = match.names.find(n => normName(n) === norm);
-    currentParty = { id: match.id, names: match.names, category: match.category || '', primary: match.primary || [] };
+    currentParty = { id: match.id, names: match.names, category: match.category || '', primary: match.primary || [], subgroups: match.subgroups || [] };
     currentResponses = {};
     currentEventResponses = {};
     respondedNames = new Set();
 
     // Hierarchy: if this party has designated primary contacts (e.g. parents) and the
     // person who just typed their name isn't one of them, they can only respond for
-    // themselves — not the rest of the family. No primaries set = everyone can manage
-    // everyone (the original, simpler behavior).
+    // themselves (or their own sibling sub-group, if they belong to one) — not the
+    // whole party. No primaries set = everyone can manage everyone.
     const hasPrimaries = currentParty.primary.length > 0;
     const isPrimary = !hasPrimaries || currentParty.primary.includes(matchedName);
 
+    currentDisplayPlan = computeDisplayPlan(matchedName, isPrimary);
+    currentDisplayNames = currentDisplayPlan.flatMap(b => b.names);
+
     const noteEl = document.getElementById('hierarchyNote');
-    if(isPrimary){
-      // Matched guest first, then the rest of the party in their existing order
-      currentDisplayNames = [matchedName, ...currentParty.names.filter(n => n !== matchedName)];
-      if(noteEl) noteEl.textContent = '';
-    } else {
-      currentDisplayNames = [matchedName];
-      const others = currentParty.primary.filter(n => n !== matchedName);
-      if(noteEl){
-        noteEl.textContent = others.length
-          ? `Responding just for yourself — ${others.join(' or ')} can respond for the rest of your party.`
-          : '';
+    if(noteEl){
+      if(isPrimary){
+        noteEl.textContent = '';
+      } else {
+        const others = currentParty.primary.filter(n => n !== matchedName);
+        noteEl.textContent = others.length && currentDisplayNames.length > 1
+          ? `Responding for your immediate group — ${others.join(' or ')} can respond for the rest of your party.`
+          : others.length
+            ? `Responding just for yourself — ${others.join(' or ')} can respond for the rest of your party.`
+            : '';
       }
     }
 
@@ -1184,6 +1237,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   window._firestoreDeleteParty= window._firestoreDeleteParty|| function(){ return Promise.reject(new Error('Firebase unavailable')); };
   window._firestoreSetPartyCategory = window._firestoreSetPartyCategory || function(){ return Promise.reject(new Error('Firebase unavailable')); };
   window._firestoreSetPartyPrimary = window._firestoreSetPartyPrimary || function(){ return Promise.reject(new Error('Firebase unavailable')); };
+  window._firestoreSetPartySubgroups = window._firestoreSetPartySubgroups || function(){ return Promise.reject(new Error('Firebase unavailable')); };
   window._firestoreSaveEvent   = window._firestoreSaveEvent   || function(){ return Promise.reject(new Error('Firebase unavailable')); };
   window._firestoreDeleteEvent = window._firestoreDeleteEvent || function(){ return Promise.reject(new Error('Firebase unavailable')); };
 </script>
@@ -1206,10 +1260,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
 
-    // Fetch every party in the guest list, e.g. { id, names:['Wes Avett','James Avett','Nancy Avett'], category, primary }
+    // Fetch every party in the guest list, e.g. { id, names:['Wes Avett','James Avett','Nancy Avett'], category, primary, subgroups }
     window._firestoreGetParties = async () => {
       const snap = await getDocs(collection(db, 'parties'));
-      return snap.docs.map(d => ({ id: d.id, names: d.data().names || [], category: d.data().category || '', primary: d.data().primary || [] }));
+      return snap.docs.map(d => ({ id: d.id, names: d.data().names || [], category: d.data().category || '', primary: d.data().primary || [], subgroups: d.data().subgroups || [] }));
     };
 
     // Fetch an already-submitted RSVP (if any) so the form can prefill previous
@@ -1470,6 +1524,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   .gl-chip-star{background:none;border:none;cursor:pointer;font-size:.9rem;line-height:1;padding:2px 2px 2px 4px;color:var(--ink-soft);opacity:.55}
   .gl-chip-star.active{color:var(--gold);opacity:1}
   .gl-hierarchy-hint{width:100%;font-size:.7rem;color:var(--ink-soft);margin-bottom:10px;line-height:1.5}
+  .gl-subgroup{width:100%;display:flex;flex-wrap:wrap;gap:8px 6px;margin:2px 0 6px 22px;padding:8px 0 2px 14px;border-left:2px solid var(--line)}
   .gl-drag-ghost{position:fixed;z-index:9999;pointer-events:none;background:var(--rose-ink);color:#fff;border-radius:20px;padding:9px 16px;font-size:.85rem;box-shadow:0 8px 20px rgba(0,0,0,.28);transform:translate(-50%,-50%);white-space:nowrap}
 
   /* Links modal */
@@ -1522,6 +1577,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         <div class="gl-toolbar" id="gl-toolbar">
           <span id="gl-selected-count">0 selected</span>
           <div class="gl-toolbar-actions">
+            <button class="gl-toolbar-btn" id="gl-subgroup-btn" style="display:none">Create Sub-Group</button>
             <button class="gl-toolbar-btn" id="gl-group-btn">Group Selected</button>
             <button class="gl-toolbar-btn" id="gl-clear-btn">Clear</button>
           </div>
@@ -1969,6 +2025,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     await initFirestore();
     await fm.setDoc(fm.doc(db,'parties', partyId), { primary }, { merge: true });
   };
+  window._firestoreSetPartySubgroups = async (partyId, subgroups) => {
+    await initFirestore();
+    await fm.setDoc(fm.doc(db,'parties', partyId), { subgroups }, { merge: true });
+  };
 
   // ---- Admin-only custom RSVP event management (Bride's Lunch, Groom's Outing, etc.) ----
   window._firestoreSaveEvent = async (eventId, data) => {
@@ -2203,7 +2263,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         fm.getDocs(fm.collection(db,'parties')),
         fm.getDocs(fm.collection(db,'events'))
       ]);
-      allParties = partySnap.docs.map(d => ({ id: d.id, names: d.data().names || [], label: d.data().label || '', category: d.data().category || '', primary: d.data().primary || [] }));
+      allParties = partySnap.docs.map(d => ({ id: d.id, names: d.data().names || [], label: d.data().label || '', category: d.data().category || '', primary: d.data().primary || [], subgroups: d.data().subgroups || [] }));
       allEvents  = eventSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       const rsvpRows = rsvpSnap.docs.map(d => d.data());
       renderResponsesPane(rsvpRows);
@@ -2327,6 +2387,15 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
             party.primary = trimmedPrimary;
           }
         }
+        if(party.subgroups && party.subgroups.length){
+          const trimmedSubgroups = party.subgroups
+            .map(g => g.filter(n => !removeSet.has(n)))
+            .filter(g => g.length > 1);
+          if(JSON.stringify(trimmedSubgroups) !== JSON.stringify(party.subgroups)){
+            await window._firestoreSetPartySubgroups(partyId, trimmedSubgroups);
+            party.subgroups = trimmedSubgroups;
+          }
+        }
       }
     }
   }
@@ -2364,6 +2433,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const n = selectedGuestKeys.size;
     document.getElementById('gl-toolbar').style.display = n ? 'flex' : 'none';
     document.getElementById('gl-selected-count').textContent = n + ' selected';
+
+    const partyIds = [...selectedGuestKeys].map(k => k.slice(0, k.indexOf('::')));
+    const samePart = n > 1 && partyIds.every(id => id === partyIds[0]);
+    document.getElementById('gl-subgroup-btn').style.display = samePart ? 'inline-block' : 'none';
   }
 
   function toggleChipSelect(chip){
@@ -2377,6 +2450,37 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       chip.classList.add('selected');
     }
     updateGlToolbar();
+  }
+
+  function chipHtml(name, isMulti, isPrimary){
+    return `
+      <div class="gl-chip" data-name="${name.replace(/"/g,'&quot;')}">
+        ${isMulti ? `<button class="gl-chip-star ${isPrimary ? 'active' : ''}" title="${isPrimary ? 'Can RSVP for the whole party — tap to restrict to just themself' : 'Can only RSVP for themself — tap to let them RSVP for the whole party'}">${isPrimary ? '★' : '☆'}</button>` : ''}
+        <span class="gl-chip-name">${name}</span>
+        <button class="gl-chip-x" title="Remove from guest list">×</button>
+      </div>`;
+  }
+
+  function renderPartyCardBody(p, hasPrimarySet, isMulti){
+    if(!hasPrimarySet){
+      return p.names.map(n => chipHtml(n, isMulti, true)).join('');
+    }
+    const primaryNames = p.names.filter(n => p.primary.includes(n));
+    const nonPrimary   = p.names.filter(n => !p.primary.includes(n));
+    const used = new Set();
+    let html = primaryNames.map(n => chipHtml(n, isMulti, true)).join('');
+
+    (p.subgroups || []).forEach(g => {
+      const members = g.filter(n => nonPrimary.includes(n) && !used.has(n));
+      if(members.length > 1){
+        members.forEach(n => used.add(n));
+        html += `<div class="gl-subgroup">${members.map(n => chipHtml(n, isMulti, false)).join('')}</div>`;
+      }
+    });
+    nonPrimary.forEach(n => {
+      if(!used.has(n)){ html += chipHtml(n, isMulti, false); used.add(n); }
+    });
+    return html;
   }
 
   function renderGuestListPane(){
@@ -2405,17 +2509,9 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
           </div>
         </div>
         ${isMulti ? `<div class="gl-hierarchy-hint">${hasPrimarySet
-            ? 'Only starred names can RSVP for the whole party — everyone else can only respond for themselves.'
+            ? 'Only starred names can RSVP for the whole party. Select two or more non-starred names above and tap "Create Sub-Group" to bundle siblings/couples together under them.'
             : 'Star anyone (like a parent) who should be able to RSVP for the whole party. Leave none starred and anyone can RSVP for everyone.'}</div>` : ''}
-        ${p.names.map(name => {
-          const isPrimary = !hasPrimarySet || p.primary.includes(name);
-          return `
-          <div class="gl-chip" data-name="${name.replace(/"/g,'&quot;')}">
-            ${isMulti ? `<button class="gl-chip-star ${isPrimary ? 'active' : ''}" title="${isPrimary ? 'Can RSVP for the whole party — tap to restrict to just themself' : 'Can only RSVP for themself — tap to let them RSVP for the whole party'}">${isPrimary ? '★' : '☆'}</button>` : ''}
-            <span class="gl-chip-name">${name}</span>
-            <button class="gl-chip-x" title="Remove from guest list">×</button>
-          </div>`;
-        }).join('')}
+        ${renderPartyCardBody(p, hasPrimarySet, isMulti)}
       </div>`;
     }).join('');
 
@@ -2498,6 +2594,33 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       renderGuestListPane();
     } catch(e){
       alert('Could not group guests: ' + e.message);
+    }
+    btn.disabled = false;
+  });
+
+  document.getElementById('gl-subgroup-btn').addEventListener('click', async () => {
+    const keys = [...selectedGuestKeys];
+    if(keys.length < 2) return;
+    const partyId = keys[0].slice(0, keys[0].indexOf('::'));
+    const names = keys.map(k => k.slice(k.indexOf('::') + 2));
+    const party = allParties.find(p => p.id === partyId);
+    if(!party) return;
+
+    const btn = document.getElementById('gl-subgroup-btn');
+    btn.disabled = true;
+    try {
+      // A person can only belong to one branch at a time — pull the selected
+      // names out of any existing sub-group before forming the new one.
+      const others = (party.subgroups || [])
+        .map(g => g.filter(n => !names.includes(n)))
+        .filter(g => g.length > 1);
+      const updated = [...others, names];
+      await window._firestoreSetPartySubgroups(partyId, updated);
+      party.subgroups = updated;
+      selectedGuestKeys.clear();
+      renderGuestListPane();
+    } catch(e){
+      alert('Could not create sub-group: ' + e.message);
     }
     btn.disabled = false;
   });

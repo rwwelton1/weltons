@@ -1486,7 +1486,6 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   .gl-cards{display:flex;flex-direction:column;gap:8px}
   .gl-card{border:1px solid var(--line);border-radius:10px;padding:10px 10px 4px;background:var(--ivory);display:flex;flex-wrap:wrap;gap:8px 6px;align-items:center;transition:border-color .15s,background .15s}
   .gl-card.drag-over{border-color:var(--rose-ink);background:rgba(168,84,84,.06)}
-  .gl-chip.chip-drop-target{transform:scale(1.08);border-color:var(--gold);background:rgba(176,138,82,.18);box-shadow:0 0 0 3px rgba(176,138,82,.25)}
   .gl-card-head{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
   .gl-card-label{font-family:var(--serif);font-style:italic;font-size:.88rem;color:var(--rose-ink)}
   .gl-card-cat{display:flex;align-items:center;gap:6px;margin-left:auto}
@@ -2507,7 +2506,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
           </div>
         </div>
         ${isMulti ? `<div class="gl-hierarchy-hint">${hasPrimarySet
-            ? 'Only starred names can RSVP for the whole party. Drag a non-starred name onto another to bundle them into a branch — or select several and tap "Create Sub-Group."'
+            ? 'Only starred names can RSVP for the whole party. Tap two or more non-starred names to select them, then tap "Create Sub-Group" to bundle them into a branch.'
             : 'Star anyone (like a parent) who should be able to RSVP for the whole party. Leave none starred and anyone can RSVP for everyone.'}</div>` : ''}
         ${renderPartyCardBody(p, hasPrimarySet, isMulti)}
       </div>`;
@@ -2679,46 +2678,18 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
   function findDropTarget(x, y){
     const el = document.elementFromPoint(x, y);
-    if(!el) return { chip:null, container:null };
-    let chip = el.closest('.gl-chip');
-    if(chip && dragState && chip === dragState.chip) chip = null; // ignore hovering over yourself
-    const container = el.closest('.gl-card, #gl-newgroup');
-    return { chip, container };
-  }
-
-  // Pairs a dragged guest with whoever they're dropped on, bundling both into one
-  // sibling sub-group — like dragging one app onto another to make a folder.
-  // Merges in either side's existing sub-group so branches can grow incrementally.
-  async function formSubgroupBetween(partyId, nameA, nameB){
-    if(nameA === nameB) return;
-    const party = allParties.find(p => p.id === partyId);
-    if(!party) return;
-    const primarySet = new Set(party.primary || []);
-    if(primarySet.has(nameA) || primarySet.has(nameB)) return; // primaries stay top-level, not bundled into a branch
-
-    const existing = party.subgroups || [];
-    const merged = new Set([nameA, nameB]);
-    const remaining = [];
-    existing.forEach(g => {
-      if(g.members.includes(nameA) || g.members.includes(nameB)) g.members.forEach(n => merged.add(n));
-      else remaining.push(g);
-    });
-    const mergedArr = [...merged].filter(n => !primarySet.has(n));
-    if(mergedArr.length < 2) return;
-    const updated = [...remaining, { members: mergedArr }];
-    await window._firestoreSetPartySubgroups(partyId, updated);
-    party.subgroups = updated;
+    if(!el) return null;
+    return el.closest('.gl-card, #gl-newgroup');
   }
 
   function onDragMove(e){
     if(!dragState) return;
     positionGhost(dragState.ghost, e.clientX, e.clientY);
-    const { chip: targetChip, container } = findDropTarget(e.clientX, e.clientY);
-    const newTarget = targetChip || container;
-    if(newTarget !== dragOverEl){
-      if(dragOverEl) dragOverEl.classList.remove('drag-over', 'chip-drop-target');
-      dragOverEl = newTarget;
-      if(dragOverEl) dragOverEl.classList.add(targetChip ? 'chip-drop-target' : 'drag-over');
+    const target = findDropTarget(e.clientX, e.clientY);
+    if(target !== dragOverEl){
+      if(dragOverEl) dragOverEl.classList.remove('drag-over');
+      dragOverEl = target;
+      if(dragOverEl) dragOverEl.classList.add('drag-over');
     }
   }
 
@@ -2728,36 +2699,25 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     document.removeEventListener('pointerup', onDragEnd);
     document.removeEventListener('pointercancel', onDragEnd);
 
-    const { chip: targetChip, container } = findDropTarget(e.clientX, e.clientY);
-    if(dragOverEl) dragOverEl.classList.remove('drag-over', 'chip-drop-target');
+    const target = findDropTarget(e.clientX, e.clientY);
+    if(dragOverEl) dragOverEl.classList.remove('drag-over');
     dragOverEl = null;
     dragState.chip.classList.remove('dragging');
     dragState.ghost.remove();
 
     const guest = { name: dragState.name, partyId: dragState.partyId };
     dragState = null;
+    if(!target) return;
 
     try {
-      if(targetChip){
-        const targetPartyId = targetChip.closest('.gl-card').dataset.partyId;
-        const targetName = targetChip.dataset.name;
-        if(targetPartyId === guest.partyId){
-          // Dropped onto someone in the same party — bundle them into a branch together
-          await formSubgroupBetween(targetPartyId, guest.name, targetName);
-        } else {
-          await moveGuestToParty(guest, targetPartyId);
-        }
+      if(target.id === 'gl-newgroup'){
+        await splitGuestIntoNewGroup(guest);
         renderGuestListPane();
-      } else if(container){
-        if(container.id === 'gl-newgroup'){
-          await splitGuestIntoNewGroup(guest);
+      } else {
+        const targetPartyId = target.dataset.partyId;
+        if(targetPartyId && targetPartyId !== guest.partyId){
+          await moveGuestToParty(guest, targetPartyId);
           renderGuestListPane();
-        } else {
-          const targetPartyId = container.dataset.partyId;
-          if(targetPartyId && targetPartyId !== guest.partyId){
-            await moveGuestToParty(guest, targetPartyId);
-            renderGuestListPane();
-          }
         }
       }
     } catch(err){

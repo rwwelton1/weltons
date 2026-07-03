@@ -917,7 +917,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
   function normName(s){ return (s||'').trim().toLowerCase().replace(/\s+/g,' '); }
 
-  let currentParty = null;      // { id, names:[...], category, primary:[...], subgroups:[[...]] } — full party record
+  let currentParty = null;      // { id, names:[...], category, primary:[...], subgroups:[{members:[...]}] } — full party record
   let currentDisplayNames = []; // flat names actually shown/editable this session, in render order
   let currentDisplayPlan = [];  // [{indent, cluster, names:[...]}, ...] — drives nested rendering
   let currentResponses = {};    // { name: 'yes' | 'no' }
@@ -961,8 +961,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   // any remaining ungrouped members.
   function computeDisplayPlan(matchedName, isPrimaryView){
     if(!isPrimaryView){
-      const sg = (currentParty.subgroups || []).find(g => g.includes(matchedName));
-      const names = sg ? [matchedName, ...sg.filter(n => n !== matchedName)] : [matchedName];
+      const sg = (currentParty.subgroups || []).find(g => g.members.includes(matchedName));
+      const names = sg ? [matchedName, ...sg.members.filter(n => n !== matchedName)] : [matchedName];
       return [{ indent:false, cluster:false, names }];
     }
     const hasPrimaries = currentParty.primary.length > 0;
@@ -973,7 +973,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const used = new Set();
     const plan = primaryNames.map(n => ({ indent:false, cluster:false, names:[n] }));
     (currentParty.subgroups || []).forEach(g => {
-      const members = g.filter(n => nonPrimary.includes(n) && !used.has(n));
+      const members = g.members.filter(n => nonPrimary.includes(n) && !used.has(n));
       if(members.length > 1){
         members.forEach(n => used.add(n));
         plan.push({ indent:true, cluster:true, names: members });
@@ -2390,8 +2390,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         }
         if(party.subgroups && party.subgroups.length){
           const trimmedSubgroups = party.subgroups
-            .map(g => g.filter(n => !removeSet.has(n)))
-            .filter(g => g.length > 1);
+            .map(g => ({ members: g.members.filter(n => !removeSet.has(n)) }))
+            .filter(g => g.members.length > 1);
           if(JSON.stringify(trimmedSubgroups) !== JSON.stringify(party.subgroups)){
             await window._firestoreSetPartySubgroups(partyId, trimmedSubgroups);
             party.subgroups = trimmedSubgroups;
@@ -2472,7 +2472,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     let html = primaryNames.map(n => chipHtml(n, isMulti, true)).join('');
 
     (p.subgroups || []).forEach(g => {
-      const members = g.filter(n => nonPrimary.includes(n) && !used.has(n));
+      const members = g.members.filter(n => nonPrimary.includes(n) && !used.has(n));
       if(members.length > 1){
         members.forEach(n => used.add(n));
         html += `<div class="gl-subgroup">${members.map(n => chipHtml(n, isMulti, false)).join('')}</div>`;
@@ -2613,9 +2613,9 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       // A person can only belong to one branch at a time — pull the selected
       // names out of any existing sub-group before forming the new one.
       const others = (party.subgroups || [])
-        .map(g => g.filter(n => !names.includes(n)))
-        .filter(g => g.length > 1);
-      const updated = [...others, names];
+        .map(g => ({ members: g.members.filter(n => !names.includes(n)) }))
+        .filter(g => g.members.length > 1);
+      const updated = [...others, { members: names }];
       await window._firestoreSetPartySubgroups(partyId, updated);
       party.subgroups = updated;
       selectedGuestKeys.clear();
@@ -2700,12 +2700,12 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const merged = new Set([nameA, nameB]);
     const remaining = [];
     existing.forEach(g => {
-      if(g.includes(nameA) || g.includes(nameB)) g.forEach(n => merged.add(n));
+      if(g.members.includes(nameA) || g.members.includes(nameB)) g.members.forEach(n => merged.add(n));
       else remaining.push(g);
     });
     const mergedArr = [...merged].filter(n => !primarySet.has(n));
     if(mergedArr.length < 2) return;
-    const updated = [...remaining, mergedArr];
+    const updated = [...remaining, { members: mergedArr }];
     await window._firestoreSetPartySubgroups(partyId, updated);
     party.subgroups = updated;
   }

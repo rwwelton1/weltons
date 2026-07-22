@@ -87,7 +87,11 @@ body{
 body::before{
   content:"";position:fixed;inset:0;pointer-events:none;z-index:500;
   mix-blend-mode:multiply;
-  opacity:.9;
+  /* Driven by scroll — full strength over the hero, fading out as the page
+     proper begins. --grain is set on <html> by the scroll handler below and
+     falls back to full opacity if JS never runs. */
+  opacity:calc(var(--grain, 1) * var(--grain-max, .9));
+  transition:opacity .18s linear;
   background-image:
     /* laid ribbing — the close parallel lines of laid paper */
     repeating-linear-gradient(90deg,
@@ -105,7 +109,7 @@ body::before{
   /* Tighter ribbing and a lighter hand on a small screen, where the same
      values read as visible stripes rather than texture. */
   body::before{
-    opacity:.75;
+    --grain-max:.75;
     background-size:auto, auto, 150px 150px, 320px 320px, 700px 700px;
     background-image:
       repeating-linear-gradient(90deg,
@@ -117,7 +121,10 @@ body::before{
       url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27900%27%20height%3D%27900%27%3E%3Cfilter%20id%3D%27n3%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%27.012%27%20numOctaves%3D%272%27%20seed%3D%273%27%2F%3E%3CfeColorMatrix%20type%3D%27saturate%27%20values%3D%270%27%2F%3E%3CfeComponentTransfer%3E%3CfeFuncA%20type%3D%27linear%27%20slope%3D%270.45%27%20intercept%3D%270%27%2F%3E%3C%2FfeComponentTransfer%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23n3%29%27%2F%3E%3C%2Fsvg%3E");
   }
 }
-@media(prefers-reduced-motion:reduce){ body::before{opacity:.7} }
+@media(prefers-reduced-motion:reduce){
+  /* No scroll-driven fade — hold a steady, lighter grain instead. */
+  body::before{opacity:.7;transition:none}
+}
 
 /* Softening veil over the botanical background. Sections are now translucent, so
    this keeps a busy or high-contrast photo from fighting the body copy while
@@ -306,6 +313,59 @@ body.hero-has-images nav:not(.scrolled):not(.menu-open) .menu-btn span{backgroun
 
 /* ---- SECTIONS — translucent panels let the botanical background ghost through ---- */
 section{padding:120px 0;position:relative;z-index:2}
+
+/* ---- PAGE EDGES ----
+   Each section is a leaf of the album. A soft shadow along the top edge reads
+   as the page beneath, and a fine highlight along the bottom as the cut edge
+   catching light. Together they give the sheets physical separation instead of
+   butting flat against one another.
+   The gallery is skipped — it has no panel, so an edge there would float. */
+section:not(#gallery)::before,
+section:not(#gallery)::after{
+  content:"";position:absolute;left:0;right:0;height:22px;
+  pointer-events:none;z-index:3;
+}
+/* shadow cast by the sheet above */
+section:not(#gallery)::before{
+  top:0;
+  background:linear-gradient(180deg,
+    rgba(40,35,31,.085) 0%,
+    rgba(40,35,31,.030) 38%,
+    transparent 100%);
+}
+/* the lit cut edge at the foot of the sheet */
+section:not(#gallery)::after{
+  bottom:0;height:14px;
+  background:linear-gradient(0deg,
+    rgba(255,252,246,.55) 0%,
+    rgba(255,252,246,.16) 45%,
+    transparent 100%);
+}
+/* The section after the gallery still needs its top edge — the gallery has no
+   panel to cast one. */
+#travel::before{height:26px}
+
+/* ---- PAGE TURN ----
+   As a section scrolls in, its top edge deepens then settles — the shadow a
+   page casts as it comes down. Driven by a class the observer adds, not by
+   scroll position, so there's no per-frame work.
+   Deliberately not a 3D flip: at this page length a literal turn would fight
+   the reveal animations already running inside each section, and rotating a
+   full-height panel is expensive on a phone. */
+section.leaf::before{
+  opacity:0;
+  transform:scaleY(2.4);
+  transform-origin:top;
+  transition:opacity .75s cubic-bezier(.2,.7,.2,1),
+             transform .75s cubic-bezier(.2,.7,.2,1);
+}
+section.leaf.settled::before{
+  opacity:1;
+  transform:scaleY(1);
+}
+@media(prefers-reduced-motion:reduce){
+  section.leaf::before{opacity:1;transform:none;transition:none}
+}
 
 /* Alpha values are tuned per-section: text-dense sections stay more opaque for
    legibility, image-led ones let more of the background texture read. */
@@ -1078,6 +1138,59 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
   }), {threshold:.12});
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // ---- Page turn ----
+  // Each section is a leaf of the album; its top edge shadow deepens and settles
+  // as the sheet comes into view. rootMargin fires it slightly before the edge
+  // reaches the viewport so the settle finishes as you arrive, not after.
+  // Unlike .reveal this stays observed — scroll back up and the page lifts again.
+  // ---- Grain fade ----
+  // The paper texture belongs to the hero — it sits over the photography and
+  // reads as a printed plate. Below the fold the page becomes clean stock, so
+  // the grain fades out across the hero's final third. Writes a single custom
+  // property; the opacity itself is interpolated in CSS.
+  (function initGrainFade(){
+    const root = document.documentElement;
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const hero = document.getElementById('hero');
+    if(!hero) return;
+
+    let ticking = false;
+    function update(){
+      ticking = false;
+      const h = hero.offsetHeight || window.innerHeight;
+      // Hold full grain until 45% of the hero has passed, then ease to zero
+      // by the time the hero is fully gone.
+      const start = h * 0.45, end = h * 0.95;
+      const y = window.scrollY;
+      let t = (y - start) / (end - start);
+      t = t < 0 ? 0 : t > 1 ? 1 : t;
+      // easeInOutCubic so the fade doesn't start or stop abruptly
+      const eased = t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+      root.style.setProperty('--grain', (1 - eased).toFixed(3));
+    }
+    function onScroll(){
+      if(ticking) return;
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    update();
+  })();
+
+  (function initPageTurn(){
+    const leaves = document.querySelectorAll('section:not(#gallery)');
+    if(!leaves.length) return;
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    leaves.forEach(s => s.classList.add('leaf'));
+    const pio = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        e.target.classList.toggle('settled', e.isIntersecting);
+      });
+    }, { rootMargin: '-2% 0px -55% 0px', threshold: 0 });
+    leaves.forEach(s => pio.observe(s));
+  })();
 
   // Stagger repeated items so groups resolve in sequence rather than all at once.
   // Each group is a container whose direct children are visually parallel items.

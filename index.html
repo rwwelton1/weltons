@@ -43,6 +43,12 @@
   --sage-deep:#56624A;
   --line:rgba(40,35,31,.13);
   --gold:#B08A52;
+  /* Two-tone gilt for the picture frames — a bright yellow gold and a deep
+     antique gold. Contrast between the two is what gives a moulding its
+     relief. Kept separate from --gold so hotel tags and focus rings keep the
+     original tone. */
+  --gilt:#D4AF37;
+  --gilt-deep:#8A6A14;
   --max:1180px;
   --serif:'Fraunces',Georgia,serif;
   --sans:'Jost',system-ui,sans-serif;
@@ -431,12 +437,12 @@ section{padding:120px 0;position:relative;z-index:2}
 
 /* ---- GALLERY ---- */
 #gallery{padding:80px 0 90px;overflow:hidden}
-/* ---- MATTED FRAMES ----
-   Photographs as they'd hang in a 1926 marble estate: each print set inside a
-   white mat with a fine gilt rule, in a slim gold frame. Mat shapes echo the
-   house — arched conservatory windows, oval portrait mats, cathedral and
-   chamfered surrounds. Gold picks up --gold (#B08A52), already in the palette.
-   Shape, mat width and frame style are assigned per tile in JS. */
+/* ---- GILT FRAMES ----
+   No mat board — the print sits directly inside a gilt frame that follows its
+   own shape. Frame profiles are drawn with layered box-shadows so each reads as
+   a distinct 1920s moulding: plain fillet, stepped Art Deco, double-banded,
+   beaded, and a broad gilt surround. Gilt is --gilt (#C9A227), a brighter
+   yellow gold than the antique --gold used elsewhere on the page. */
 .gallery-track{
   column-count:2;
   column-gap:clamp(16px,2.6vw,38px);
@@ -452,36 +458,27 @@ section{padding:120px 0;position:relative;z-index:2}
   margin-right:var(--gi-mr,auto);
   margin-top:var(--gi-mt,0px);
   margin-bottom:var(--gi-mb,34px);
-  /* White mat, slim gold frame */
-  background:#FCFAF6;
-  padding:var(--gi-mat,24px);
-  border:var(--gi-fw,2px) solid var(--gold);
-  border-radius:var(--gi-frame,0);
-  box-shadow:
-    0 0 0 1px rgba(176,138,82,.28),
-    0 2px 4px rgba(40,35,31,.06),
-    0 10px 26px rgba(40,35,31,.09);
-}
-/* Gilt rule — the fine gold line drawn around a window mat, tracing the
-   print's own shape just outside the image edge. */
-.gallery-item::before{
-  content:"";position:absolute;
-  inset:calc(var(--gi-mat,24px) * .42);
-  border:1px solid rgba(176,138,82,.55);
+  border:var(--gi-fw,2px) solid var(--gilt);
   border-radius:var(--gi-shape,0);
-  pointer-events:none;
-  z-index:1;
+  /* --gi-profile carries the moulding's layered rings; --gi-drop the shadow */
+  box-shadow:var(--gi-profile, none), var(--gi-drop, 0 3px 12px rgba(40,35,31,.10));
+  line-height:0;
 }
+/* No inner hairline. Without a mat the print fills the frame, so a line drawn
+   inside the border would float over the photograph with a strip of image
+   showing between the two gold lines. All moulding detail is carried by the
+   exterior rings in --gi-profile instead. */
 .gallery-item[hidden]{display:none}
 
-/* The print inside the mat. Shape set per-tile. */
+/* The print fills the frame entirely */
 .gallery-photo{
   display:block;width:100%;
   aspect-ratio:var(--gi-ar,4/5);
   background-size:cover;background-position:center;
   background-color:var(--shell);
-  border-radius:var(--gi-shape,0);
+  border-radius:inherit;
   position:relative;
+  overflow:hidden;
   transition:transform .9s cubic-bezier(.2,.7,.2,1);
 }
 .gallery-item:hover .gallery-photo{transform:scale(1.02)}
@@ -489,15 +486,7 @@ section{padding:120px 0;position:relative;z-index:2}
 .gallery-item .gph{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;
-  color:rgba(40,35,31,.35);border-radius:var(--gi-shape,0);
-}
-
-/* Optional plate caption beneath the print, inside the mat */
-.gallery-cap{
-  display:block;text-align:center;
-  font-family:var(--serif);font-style:italic;
-  font-size:.78rem;color:var(--ink-soft);
-  margin-top:calc(var(--gi-mat,24px) * .5);
+  color:rgba(40,35,31,.35);border-radius:inherit;line-height:1.4;
 }
 
 /* Reveal: a quiet settle, as if the frame were just hung */
@@ -1109,32 +1098,77 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     let done = false;
 
     // Mat opening shapes, as border-radius recipes.
+    // Without a mat the frame crops the photograph directly, so curves are
+    // gentler than the matted version — a deep lancet would cut into faces.
+    // Rectangles carry more weight so shaped frames read as accents.
     const SHAPES = [
-      { name:'rect',      css:'0',                            weight:4 },
-      { name:'softrect',  css:'3px',                          weight:2 },
-      { name:'arch',      css:'50% 50% 0 0 / 34% 34% 0 0',    weight:3 },
-      { name:'arch',      css:'50% 50% 0 0 / 24% 24% 0 0',    weight:2 },
-      { name:'cathedral', css:'44% 44% 0 0 / 52% 52% 0 0',    weight:2 },
-      { name:'oval',      css:'50%',                          weight:2 },
-      { name:'domed',     css:'50% 50% 6% 6% / 30% 30% 4% 4%',weight:2 },
-      { name:'lancet',    css:'50% 50% 0 0 / 62% 62% 0 0',    weight:1 },
+      { name:'rect',      css:'0',                            weight:6 },
+      { name:'softrect',  css:'3px',                          weight:3 },
+      { name:'arch',      css:'50% 50% 0 0 / 22% 22% 0 0',    weight:3 },
+      { name:'arch',      css:'50% 50% 0 0 / 16% 16% 0 0',    weight:2 },
+      { name:'domed',     css:'50% 50% 4% 4% / 20% 20% 3% 3%',weight:2 },
+      { name:'oval',      css:'50%',                          weight:1 },
     ];
     // Ratios that suit each opening — tall shapes want portrait proportions
     const RATIO_FOR = {
       rect:      ['4/5','3/4','1','5/4'],
       softrect:  ['4/5','1','5/4','3/4'],
-      arch:      ['3/4','2/3','4/5'],
-      cathedral: ['2/3','3/4'],
-      oval:      ['3/4','4/5','2/3'],
+      arch:      ['3/4','4/5'],
       domed:     ['3/4','4/5'],
-      lancet:    ['2/3','3/5'],
+      oval:      ['3/4','4/5'],
     };
-    // Frame profiles: outer corner radius and border weight
+    // Frame profiles — 1920s mouldings drawn as layered rings. Each ring is an
+    // inset box-shadow (interior banding) or a spread shadow (exterior step),
+    // so a flat border becomes a moulding with depth.
+    // Two tones only: G = bright gilt, D = deep gilt. No white or ivory rings —
+    // contrast comes from the gold shifting light to dark across the moulding.
+    const G = 'var(--gilt)', D = 'var(--gilt-deep)';
     const FRAMES = [
-      { frame:'0',   fw:'2px',   weight:4 },
-      { frame:'0',   fw:'3px',   weight:3 },
-      { frame:'2px', fw:'2px',   weight:2 },
-      { frame:'0',   fw:'1.5px', weight:2 },
+      {
+        name:'fillet',        // plain slim gilt edge
+        fw:'2px', fwNarrow:'1.5px',
+        profile:'none',
+        weight:4
+      },
+      {
+        name:'double-band',   // two gilt bands with a gap between
+        fw:'2px', fwNarrow:'1.5px',
+        profile:`0 0 0 1.5px ${D}, 0 0 0 3.5px ${G}`,
+        weight:3
+      },
+      {
+        name:'stepped',       // Art Deco stepped surround
+        fw:'2.5px', fwNarrow:'1.5px',
+        profile:`0 0 0 1.5px ${D}, 0 0 0 3.5px ${G}, 0 0 0 5px ${D}`,
+        weight:3
+      },
+      {
+        name:'beaded',        // fine bright bead outside a heavier deep edge
+        fw:'3px', fwNarrow:'2px',
+        // Exterior rings only. An inset shadow draws inside the element, and
+        // with no mat the inside is the photograph — it would lay gold lines
+        // over the image (or over the placeholder before photos load).
+        profile:`0 0 0 1px ${G}, 0 0 0 2.5px ${D}`,
+        weight:3
+      },
+      {
+        name:'reeded',        // narrow reeds, alternating light and deep
+        fw:'1.5px', fwNarrow:'1px',
+        profile:`0 0 0 1px ${D}, 0 0 0 2px ${G}, 0 0 0 3px ${D}`,
+        weight:2
+      },
+      {
+        name:'broad',         // wide gilt surround, gallery-style
+        fw:'5px', fwNarrow:'3px',
+        profile:`0 0 0 2px ${D}`,
+        weight:2
+      },
+      {
+        name:'hairline',      // barely-there gilt line, lets the photo dominate
+        fw:'1px', fwNarrow:'1px',
+        profile:'none',
+        weight:2
+      },
     ];
 
     const rnd  = (a,b) => a + Math.random()*(b-a);
@@ -1175,22 +1209,25 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     function styleTile(el, narrow){
       const shape = pickShape();
       const frame = pickFrame();
-      // Mats must stay modest on a ~170px column or the print vanishes
-      let mat = Math.round(narrow ? rnd(9,15) : rnd(20,36));
-      // Shaped openings need a little more mat around them to read
-      if(shape.name !== 'rect' && shape.name !== 'softrect'){
-        mat = Math.round(mat * (narrow ? 1.15 : 1.25));
-      }
-      el.style.setProperty('--gi-mat', mat + 'px');
       el.style.setProperty('--gi-ar', pick(RATIO_FOR[shape.name]));
       el.style.setProperty('--gi-shape', shape.css);
-      el.style.setProperty('--gi-frame', frame.frame);
-      el.style.setProperty('--gi-fw', narrow ? '1.5px' : frame.fw);
-      // Frames sit square to the column; width varies modestly so the wall has
-      // scale without looking scattered.
-      el.style.setProperty('--gi-w', Math.round(narrow ? rnd(92,100) : rnd(84,100)) + '%');
-      el.style.setProperty('--gi-mt', Math.round(narrow ? rnd(0,12) : rnd(0,26)) + 'px');
-      el.style.setProperty('--gi-mb', Math.round(narrow ? rnd(14,28) : rnd(28,54)) + 'px');
+      // Frame weight: slimmer on narrow screens so the gilt edge stays fine
+      el.style.setProperty('--gi-fw', narrow ? frame.fwNarrow : frame.fw);
+      // Moulding profile. Exterior rings (stepped, reeded, double-band) are
+      // dropped on phones — at ~170px wide they read as noise, not detail.
+      el.style.setProperty('--gi-profile',
+        (narrow && frame.profile.indexOf('inset') === -1) ? 'none' : frame.profile);
+      // Heavier mouldings sit further off the wall
+      const lift = frame.name === 'broad' ? '0 5px 18px rgba(40,35,31,.13)'
+                 : frame.name === 'hairline' ? '0 2px 8px rgba(40,35,31,.07)'
+                 : '0 3px 12px rgba(40,35,31,.10)';
+      el.style.setProperty('--gi-drop', lift);
+      // Frames sit square to the column; width varies so the wall has scale
+      // without looking scattered. Generous vertical gaps do the separating
+      // now that there's no mat board around each print.
+      el.style.setProperty('--gi-w', Math.round(narrow ? rnd(88,100) : rnd(82,100)) + '%');
+      el.style.setProperty('--gi-mt', Math.round(narrow ? rnd(0,16) : rnd(0,28)) + 'px');
+      el.style.setProperty('--gi-mb', Math.round(narrow ? rnd(22,40) : rnd(30,58)) + 'px');
     }
 
     function layout(pool, all, narrow){

@@ -446,6 +446,17 @@ section{padding:120px 0;position:relative;z-index:2}
 
 /* ---- RSVP ---- */
 #rsvp{color:var(--ink)}
+/* RSVP closed (pre-invitation) state */
+.rsvp-closed{display:none;text-align:center;padding:38px 26px;background:rgba(247,242,234,.55);border:1px solid var(--rose-deep);border-radius:10px}
+.rsvp-closed .mark{font-size:1.6rem;color:var(--rose-ink);margin-bottom:14px}
+.rsvp-closed h3{font-family:var(--serif);font-style:italic;font-size:1.5rem;margin-bottom:12px}
+.rsvp-closed p{color:var(--ink-soft);line-height:1.65;max-width:400px;margin:0 auto}
+body.rsvp-locked .rsvp-form-wrap{display:none}
+body.rsvp-locked .rsvp-closed{display:block}
+body.rsvp-locked #rsvp-deadline-line{display:none}
+/* In admin mode, show both so the couple can still edit copy */
+body.admin-mode.rsvp-locked .rsvp-form-wrap{display:block;opacity:.5}
+body.admin-mode.rsvp-locked #rsvp-deadline-line{display:block}
 .rsvp-shell{max-width:540px;margin:0 auto;text-align:center}
 .rsvp-intro{color:var(--ink-soft);margin-bottom:34px}
 .field{margin-bottom:20px;text-align:left}
@@ -786,9 +797,17 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       <div class="sec-head center reveal" style="margin-bottom:34px">
         <span class="sec-num" style="color:var(--rose-ink)">VIII</span>
         <h2 class="sec-title">RSVP</h2>
-        <p class="eyebrow" style="margin-top:14px" data-editable-key="rsvp-deadline">Kindly respond by March 1, 2027</p>
+        <p class="eyebrow" id="rsvp-deadline-line" style="margin-top:14px" data-editable-key="rsvp-deadline">Kindly respond by March 1, 2027</p>
       </div>
-      <div class="reveal">
+
+      <!-- Shown when RSVPs are not yet open -->
+      <div class="rsvp-closed reveal">
+        <div class="mark" aria-hidden="true">✦</div>
+        <h3 data-editable-key="rsvp-closed-title">RSVPs Open Soon</h3>
+        <p data-editable-key="rsvp-closed-msg">Formal invitations will arrive in the mail, and this is where you'll respond. Save the date — we'll open RSVPs here closer to the wedding.</p>
+      </div>
+
+      <div class="reveal rsvp-form-wrap">
         <!-- Step 1: Find -->
         <div class="rsvp-step active" data-step="1" role="group" aria-label="Find your invitation">
           <p class="rsvp-intro">Enter your name exactly as it appears on your invitation.</p>
@@ -1345,6 +1364,11 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   #ab-bg:hover,#ab-links:hover{background:rgba(247,242,234,.2)}
   #ab-dashboard{background:rgba(185,144,90,.25);color:var(--ivory);border:1px solid rgba(185,144,90,.4)}
   #ab-dashboard:hover{background:rgba(185,144,90,.4)}
+  #ab-rsvp-toggle{background:rgba(200,90,90,.25);color:var(--ivory);border:1px solid rgba(200,90,90,.45)}
+  #ab-rsvp-toggle:hover{background:rgba(200,90,90,.4)}
+  #ab-rsvp-toggle.is-open{background:rgba(122,143,110,.35);border-color:rgba(122,143,110,.6)}
+  #ab-rsvp-toggle.is-open:hover{background:rgba(122,143,110,.5)}
+  #ab-rsvp-toggle:disabled{opacity:.5;cursor:default}
 
   /* Editable elements in admin mode */
   body.admin-mode [data-editable]{
@@ -1673,6 +1697,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     <button class="ab-btn" id="ab-bg">📷 BG</button>
     <button class="ab-btn" id="ab-links">🔗 Links</button>
     <button class="ab-btn" id="ab-dashboard">📋 RSVPs</button>
+    <button class="ab-btn" id="ab-rsvp-toggle">🔒 RSVPs Closed</button>
   </div>
   <div class="ab-btns2">
     <button class="ab-btn" id="ab-save">Save Text</button>
@@ -2081,6 +2106,12 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       const linkSnap = await fm.getDoc(fm.doc(db,'siteLinks','main'));
       if(linkSnap.exists()) applyLinks(linkSnap.data());
     } catch(e){ console.error('loadContent links failed:', e); }
+
+    // Settings (RSVP open/closed)
+    try {
+      const setSnap = await fm.getDoc(fm.doc(db,'siteSettings','main'));
+      applySettings(setSnap.exists() ? setSnap.data() : {});
+    } catch(e){ console.error('loadContent settings failed:', e); }
 
     // Images — load all in parallel with individual error logging
     const imageKeys = [
@@ -2892,6 +2923,57 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     btn.disabled = false;
   });
 
+  document.getElementById('ab-rsvp-toggle').addEventListener('click', async () => {
+    const btn  = document.getElementById('ab-rsvp-toggle');
+    const open = savedSettings.rsvpOpen === true;
+    const next = !open;
+    const msg  = next
+      ? 'Open RSVPs? Guests will be able to submit their responses right away.'
+      : 'Close RSVPs? The form will be hidden and guests will see the "RSVPs Open Soon" message. Responses already submitted are kept.';
+    if(!confirm(msg)) return;
+    const prev = btn.textContent;
+    btn.textContent = 'Saving…'; btn.disabled = true;
+    try {
+      await setRsvpOpen(next);
+      setStatus(next ? 'RSVPs are now OPEN ✓' : 'RSVPs are now CLOSED ✓');
+      setTimeout(()=>setStatus(''),3000);
+    } catch(e){
+      setStatus('Could not update RSVP setting');
+      btn.textContent = prev;
+    }
+    btn.disabled = false;
+    updateRsvpToggleBtn();
+  });
+
+  // ---- Site settings (RSVP open/closed) ----
+  // Default is CLOSED so that if the settings doc is missing or Firestore is
+  // unreachable, guests never see a live RSVP form before invitations go out.
+  let savedSettings = { rsvpOpen: false };
+  function applySettings(data){
+    savedSettings = Object.assign({ rsvpOpen: false }, data || {});
+    const open = savedSettings.rsvpOpen === true;
+    document.body.classList.toggle('rsvp-locked', !open);
+    // Hide the nav link and hero button when closed so guests aren't sent to a dead end
+    document.querySelectorAll('a[href="#rsvp"]').forEach(a => {
+      const li = a.closest('li');
+      (li || a).style.display = open ? '' : 'none';
+    });
+    updateRsvpToggleBtn();
+  }
+  function updateRsvpToggleBtn(){
+    const b = document.getElementById('ab-rsvp-toggle');
+    if(!b) return;
+    const open = savedSettings.rsvpOpen === true;
+    b.textContent = open ? '🔓 RSVPs Open' : '🔒 RSVPs Closed';
+    b.classList.toggle('is-open', open);
+  }
+  async function setRsvpOpen(open){
+    await initFirestore();
+    await fm.setDoc(fm.doc(db,'siteSettings','main'),
+      { rsvpOpen: !!open, updatedAt: new Date().toISOString() }, { merge: true });
+    applySettings(Object.assign({}, savedSettings, { rsvpOpen: !!open }));
+  }
+
   // ---- Links editor ----
   let savedLinks = {};
   function applyLinks(data){
@@ -2972,6 +3054,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   function setStatus(msg){ statusEl.textContent = msg; }
 
   // ---- Load published content for all visitors ----
+  // Start locked; loadContent() will unlock if siteSettings says RSVPs are open.
+  // This prevents a flash of the live form on slow connections.
+  applySettings({ rsvpOpen: false });
+
   // Hero loads immediately from GitHub — no waiting for Firestore
   initHeroSlideshow();
 

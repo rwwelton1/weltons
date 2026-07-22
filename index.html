@@ -345,7 +345,10 @@ section{padding:120px 0;position:relative;z-index:2}
 .sched-body h3{font-size:1.6rem}
 .sched-body .place{font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--sage-deep);margin:6px 0}
 .sched-body .note{color:var(--ink-soft);font-size:.96rem}
-@media(max-width:560px){.sched-row{grid-template-columns:1fr;gap:6px}.sched-time{font-size:1.3rem}}
+.sched-day{font-family:var(--sans);font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--sage-deep);padding:34px 0 4px;border-top:1px solid var(--line)}
+.sched-day:first-child{padding-top:0;border-top:none}
+.sched-day + .sched-row{border-top:none}
+@media(max-width:560px){.sched-row{grid-template-columns:1fr;gap:6px}.sched-time{font-size:1.3rem}.sched-day{padding-top:26px}}
 
 /* ---- WEDDING PARTY ---- */
 
@@ -454,9 +457,17 @@ section{padding:120px 0;position:relative;z-index:2}
 body.rsvp-locked .rsvp-form-wrap{display:none}
 body.rsvp-locked .rsvp-closed{display:block}
 body.rsvp-locked #rsvp-deadline-line{display:none}
-/* In admin mode, show both so the couple can still edit copy */
-body.admin-mode.rsvp-locked .rsvp-form-wrap{display:block;opacity:.5}
-body.admin-mode.rsvp-locked #rsvp-deadline-line{display:block}
+/* Deadline line stays visible in admin mode so its copy remains editable */
+body.admin-mode.rsvp-locked #rsvp-deadline-line{display:block;opacity:.5}
+/* Venue policy notes — shown whether RSVPs are open or closed */
+.rsvp-policies{margin-top:30px;text-align:left;background:rgba(247,242,234,.55);border:1px solid var(--rose-deep);border-radius:10px;padding:26px 24px}
+.rsvp-policies h4{font-family:var(--serif);font-style:italic;font-size:1.15rem;text-align:center;margin-bottom:18px;color:var(--ink)}
+.rsvp-policy{display:flex;gap:13px;align-items:flex-start}
+.rsvp-policy + .rsvp-policy{margin-top:16px;padding-top:16px;border-top:1px solid var(--rose-deep)}
+.rsvp-policy .pc-ic{flex:0 0 auto;font-size:1.05rem;line-height:1.5;color:var(--rose-ink)}
+.rsvp-policy p{font-size:.9rem;line-height:1.6;color:var(--ink-soft);margin:0}
+.rsvp-policy strong{color:var(--ink)}
+
 .rsvp-shell{max-width:540px;margin:0 auto;text-align:center}
 .rsvp-intro{color:var(--ink-soft);margin-bottom:34px}
 .field{margin-bottom:20px;text-align:left}
@@ -613,9 +624,15 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   <div class="wrap">
     <div class="sec-head center reveal">
       <span class="sec-num">II</span>
-      <h2 class="sec-title">The <em>Day</em></h2>
+      <h2 class="sec-title">The <em>Weekend</em></h2>
     </div>
     <div class="sched reveal">
+      <div class="sched-day" data-editable-key="sched-day-fri">Friday, April 2</div>
+      <div class="sched-row">
+        <div class="sched-time" data-editable-key="sched-0-time">8:30<small>PM</small></div>
+        <div class="sched-body"><h3 data-editable-key="sched-0-title">Welcome Party</h3><p class="place" data-editable-key="sched-0-place">Reformation Brewery</p><p class="note" data-editable-key="sched-0-note">Join us for a relaxed evening before the big day. All ages welcome — children are invited to this one.</p></div>
+      </div>
+      <div class="sched-day" data-editable-key="sched-day-sat">Saturday, April 3</div>
       <div class="sched-row">
         <div class="sched-time" data-editable-key="sched-1-time">4:00<small>PM</small></div>
         <div class="sched-body"><h3 data-editable-key="sched-1-title">Ceremony</h3><p class="place" data-editable-key="sched-1-place">Tate House Gardens</p><p class="note" data-editable-key="sched-1-note">Please be seated by 3:45 PM.</p></div>
@@ -716,18 +733,18 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         <p class="tag">Recommended</p>
         <h3 data-editable-key="hotel-1-name">Holiday Inn Canton</h3>
         <p class="loc" data-editable-key="hotel-1-loc">Canton, GA</p>
-        <p data-editable-key="hotel-1-desc">A comfortable, convenient base for the weekend — close to Tate House with easy access to dining and the shuttle route.</p>
+        <p data-editable-key="hotel-1-desc">A comfortable, convenient base for the weekend — close to Tate House with easy access to dining and weekend shuttle service.</p>
         <a href="#" class="btn" id="hotel-1-btn" data-link-key="hotel-1-url">Book a Room</a>
       </div>
       <div class="hotel">
         <p class="tag">Recommended</p>
         <h3 data-editable-key="hotel-2-name">Fairfield Inn &amp; Suites</h3>
         <p class="loc" data-editable-key="hotel-2-loc">Canton, GA</p>
-        <p data-editable-key="hotel-2-desc">Modern amenities and a relaxed atmosphere, also conveniently located along the shuttle route.</p>
+        <p data-editable-key="hotel-2-desc">Modern amenities and a relaxed atmosphere, also conveniently located for weekend shuttle service.</p>
         <a href="#" class="btn" id="hotel-2-btn" data-link-key="hotel-2-url">Book a Room</a>
       </div>
     </div>
-    <p class="shuttle reveal"><strong>Shuttle service</strong> runs from both Canton hotels to Tate House on Friday evening and throughout the day Saturday. We strongly encourage guests not to drive after the celebration — the mountain roads are beautiful but winding.</p>
+    <p class="shuttle reveal"><strong>Shuttle service</strong> runs Friday evening to and from Reformation Brewery for the welcome party, and to and from Tate House throughout the day Saturday. Pickup locations and departure times will be shared closer to the date. We strongly encourage guests not to drive after the celebration — the mountain roads are beautiful but winding.</p>
   </div>
 </section>
 
@@ -752,8 +769,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         <div class="faq-ans" role="region"><p data-editable-key="faq-3-a">Tate House has paved pathways and accessible entrances throughout the estate. For specific accessibility needs, email us at <a href="mailto:WeltonWedding1@gmail.com">WeltonWedding1@gmail.com</a> and we'll do everything we can to accommodate you.</p></div>
       </div>
       <div class="faq">
-        <button aria-expanded="false"><span data-editable-key="faq-4-q">Will there be a shuttle from the hotel?</span><span class="ic" aria-hidden="true"></span></button>
-        <div class="faq-ans" role="region"><p data-editable-key="faq-4-a">Yes. Shuttles run from both Canton hotels to Tate House on Friday evening and all day Saturday. Departure times will be shared closer to the date.</p></div>
+        <button aria-expanded="false"><span data-editable-key="faq-4-q">Will there be a shuttle?</span><span class="ic" aria-hidden="true"></span></button>
+        <div class="faq-ans" role="region"><p data-editable-key="faq-4-a">Yes. On Friday evening a shuttle runs to and from Reformation Brewery, where the welcome party begins at 8:30 PM. On Saturday, shuttles run to and from Tate House throughout the day. Pickup locations and departure times will be shared closer to the date.</p></div>
       </div>
       <div class="faq">
         <button aria-expanded="false"><span data-editable-key="faq-5-q">Can I take photos during the ceremony?</span><span class="ic" aria-hidden="true"></span></button>
@@ -762,6 +779,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       <div class="faq">
         <button aria-expanded="false"><span data-editable-key="faq-6-q">I have a dietary restriction. What should I do?</span><span class="ic" aria-hidden="true"></span></button>
         <div class="faq-ans" role="region"><p data-editable-key="faq-6-a">Note any dietary restrictions in the notes field of your RSVP. We want every guest to have a wonderful dinner.</p></div>
+      </div>
+      <div class="faq">
+        <button aria-expanded="false"><span data-editable-key="faq-8-q">Can I bring my own food or drinks?</span><span class="ic" aria-hidden="true"></span></button>
+        <div class="faq-ans" role="region"><p data-editable-key="faq-8-a">No outside food or beverages are permitted anywhere on the property. Tate House enforces this strictly — bringing outside food or drink can result in the venue shutting down the event. All food and drink will be provided throughout the celebration, so please leave coolers, flasks, and outside beverages at home.</p></div>
       </div>
       <div class="faq">
         <button aria-expanded="false"><span data-editable-key="faq-7-q">I have another question.</span><span class="ic" aria-hidden="true"></span></button>
@@ -805,6 +826,19 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         <div class="mark" aria-hidden="true">✦</div>
         <h3 data-editable-key="rsvp-closed-title">RSVPs Open Soon</h3>
         <p data-editable-key="rsvp-closed-msg">Formal invitations will arrive in the mail, and this is where you'll respond. Save the date — we'll open RSVPs here closer to the wedding.</p>
+      </div>
+
+      <!-- Venue policies — visible whether RSVPs are open or closed -->
+      <div class="rsvp-policies reveal">
+        <h4 data-editable-key="rsvp-policy-title">A Few Venue Notes</h4>
+        <div class="rsvp-policy">
+          <span class="pc-ic" aria-hidden="true">✦</span>
+          <p data-editable-key="rsvp-policy-kids"><strong>Children under 13 are not permitted at the venue on wedding days.</strong> We know this means arranging care for the day, and we're grateful for the effort. Little ones are warmly welcome at the Friday night welcome party.</p>
+        </div>
+        <div class="rsvp-policy">
+          <span class="pc-ic" aria-hidden="true">✦</span>
+          <p data-editable-key="rsvp-policy-food"><strong>No outside food or beverages may be brought onto the property.</strong> This is a strict venue policy — any outside food or drink will result in the venue shutting down the event. Everything you'll need will be provided, so please leave coolers and drinks at home.</p>
+        </div>
       </div>
 
       <div class="reveal rsvp-form-wrap">

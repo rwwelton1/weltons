@@ -1103,7 +1103,9 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   // print proportion and shape are assigned per tile so the wall stays varied
   // while every frame remains square to the grid.
   window._initGallery = (function(){
-    const MIN = 5, MAX = 8;
+    // Always show exactly this many — about one phone screen's worth.
+    // If fewer photos are uploaded, show all of them.
+    const SHOW = 6;
     let done = false;
 
     // Mat opening shapes, as border-radius recipes.
@@ -1193,8 +1195,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
     function layout(pool, all, narrow){
       const track = document.querySelector('.gallery-track');
-      const count = Math.min(pool.length,
-                     Math.floor(rnd(MIN, Math.min(MAX, pool.length) + 1)));
+      const count = Math.min(SHOW, pool.length);
       const chosen = shuffle([...pool]).slice(0, count);
       all.forEach(el => { el.hidden = true; });
       chosen.forEach(el => {
@@ -1224,7 +1225,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
       done = true;
       const narrow = matchMedia('(max-width:640px)').matches;
-      // Below MIN, show every photo we have rather than padding with blanks
+      // Shows SHOW photos, or all of them if fewer are uploaded
       layout(filled, all, narrow);
     }
 
@@ -1256,8 +1257,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       if(!all.length) return;
       done = true;
       const narrow = matchMedia('(max-width:640px)').matches;
-      all.forEach(el => { el.hidden = false; ensureStructure(el); styleTile(el, narrow); });
-      attachReveal(all);
+      const shown = shuffle([...all]).slice(0, SHOW);
+      all.forEach(el => { el.hidden = true; });
+      shown.forEach(el => { el.hidden = false; ensureStructure(el); styleTile(el, narrow); track.appendChild(el); });
+      attachReveal(shown);
     }, 4000);
 
     return run;

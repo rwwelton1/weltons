@@ -437,47 +437,116 @@ section{padding:120px 0;position:relative;z-index:2}
 
 /* ---- GALLERY ---- */
 #gallery{padding:80px 0 90px;overflow:hidden}
-/* ---- GILT FRAMES ----
-   No mat board — the print sits directly inside a gilt frame that follows its
-   own shape. Frame profiles are drawn with layered box-shadows so each reads as
-   a distinct 1920s moulding: plain fillet, stepped Art Deco, double-banded,
-   beaded, and a broad gilt surround. Gilt is --gilt (#C9A227), a brighter
-   yellow gold than the antique --gold used elsewhere on the page. */
+/* ---- ART DECO FRAMES ----
+   A fixed 2 x 3 grid of six photographs, each in a gilt Art Deco frame. Corner
+   ornaments are drawn in CSS with layered gradients — stepped chevrons, notched
+   corners and bracket rules in the manner of 1920s frame design. Two tones
+   only: --gilt (bright) and --gilt-deep. */
 .gallery-track{
-  column-count:2;
-  column-gap:clamp(16px,2.6vw,38px);
-  max-width:1240px;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:clamp(18px,3vw,42px);
+  max-width:1100px;
   margin:0 auto;
   padding:0 clamp(16px,3vw,44px);
 }
 .gallery-item{
-  break-inside:avoid;
   position:relative;
-  width:var(--gi-w,100%);
-  margin-left:var(--gi-ml,auto);
-  margin-right:var(--gi-mr,auto);
-  margin-top:var(--gi-mt,0px);
-  margin-bottom:var(--gi-mb,34px);
   border:var(--gi-fw,2px) solid var(--gilt);
-  border-radius:var(--gi-shape,0);
-  /* --gi-profile carries the moulding's layered rings; --gi-drop the shadow */
   box-shadow:var(--gi-profile, none), var(--gi-drop, 0 3px 12px rgba(40,35,31,.10));
   line-height:0;
+  /* Uniform cells — every frame the same size, so the grid reads as a grid */
+  aspect-ratio:var(--gi-ar,4/5);
 }
-/* No inner hairline. Without a mat the print fills the frame, so a line drawn
-   inside the border would float over the photograph with a strip of image
-   showing between the two gold lines. All moulding detail is carried by the
-   exterior rings in --gi-profile instead. */
 .gallery-item[hidden]{display:none}
 
-/* The print fills the frame entirely */
+/* ---- Corner ornaments ----
+   ::before draws the top pair, ::after the bottom pair. Each is a set of
+   repeating-linear-gradient brackets pinned to the frame's corners. The
+   --gi-orn variable selects which treatment a tile receives. */
+.gallery-item::before,
+.gallery-item::after{
+  content:"";position:absolute;
+  left:0;right:0;height:var(--orn-h,16px);
+  pointer-events:none;z-index:3;
+  opacity:var(--orn-op,1);
+}
+.gallery-item::before{top:0}
+.gallery-item::after{bottom:0;transform:scaleY(-1)}
+
+/* Stepped chevron corners — the classic Deco ziggurat */
+.gallery-item[data-orn="stepped"]::before,
+.gallery-item[data-orn="stepped"]::after{
+  background:
+    linear-gradient(var(--gilt),var(--gilt)) left  0    / 22px 1.5px no-repeat,
+    linear-gradient(var(--gilt),var(--gilt)) right 0    / 22px 1.5px no-repeat,
+    linear-gradient(var(--gilt),var(--gilt)) left  4px  / 14px 1.5px no-repeat,
+    linear-gradient(var(--gilt),var(--gilt)) right 4px  / 14px 1.5px no-repeat,
+    linear-gradient(var(--gilt-deep),var(--gilt-deep)) left  8px / 8px 1.5px no-repeat,
+    linear-gradient(var(--gilt-deep),var(--gilt-deep)) right 8px / 8px 1.5px no-repeat;
+}
+/* Notched corner brackets — an L at each corner with a cut step */
+.gallery-item[data-orn="notched"]::before,
+.gallery-item[data-orn="notched"]::after{
+  background:
+    linear-gradient(var(--gilt),var(--gilt)) left  0 / 26px 2px no-repeat,
+    linear-gradient(var(--gilt),var(--gilt)) right 0 / 26px 2px no-repeat,
+    linear-gradient(var(--gilt),var(--gilt)) left  0 / 2px 14px no-repeat,
+    linear-gradient(var(--gilt),var(--gilt)) right 0 / 2px 14px no-repeat,
+    linear-gradient(var(--gilt-deep),var(--gilt-deep)) left  6px / 12px 1px no-repeat,
+    linear-gradient(var(--gilt-deep),var(--gilt-deep)) right 6px / 12px 1px no-repeat;
+}
+/* Sunburst rays — short fanned strokes at each corner */
+.gallery-item[data-orn="rays"]::before,
+.gallery-item[data-orn="rays"]::after{
+  --orn-h:14px;
+  background:
+    repeating-linear-gradient(90deg, var(--gilt) 0 1.5px, transparent 1.5px 6px)
+      left 0 / 30px 6px no-repeat,
+    repeating-linear-gradient(90deg, var(--gilt) 0 1.5px, transparent 1.5px 6px)
+      right 0 / 30px 6px no-repeat,
+    linear-gradient(var(--gilt-deep),var(--gilt-deep)) left  8px / 24px 1px no-repeat,
+    linear-gradient(var(--gilt-deep),var(--gilt-deep)) right 8px / 24px 1px no-repeat;
+}
+/* Double rule — two parallel bands running the full width */
+.gallery-item[data-orn="rule"]::before,
+.gallery-item[data-orn="rule"]::after{
+  --orn-h:8px;
+  background:
+    linear-gradient(var(--gilt),var(--gilt))          0 0   / 100% 1.5px no-repeat,
+    linear-gradient(var(--gilt-deep),var(--gilt-deep)) 0 5px / 100% 1px   no-repeat;
+}
+/* Fan corners — stacked bars stepping inward, the Deco fan motif */
+.gallery-item[data-orn="fan"]::before,
+.gallery-item[data-orn="fan"]::after{
+  --orn-h:18px;
+  background:
+    linear-gradient(var(--gilt),var(--gilt)) left  0    / 10px 2px no-repeat,
+    linear-gradient(var(--gilt),var(--gilt)) right 0    / 10px 2px no-repeat,
+    linear-gradient(var(--gilt),var(--gilt)) left  5px  / 16px 1.5px no-repeat,
+    linear-gradient(var(--gilt),var(--gilt)) right 5px  / 16px 1.5px no-repeat,
+    linear-gradient(var(--gilt-deep),var(--gilt-deep)) left  10px / 22px 1.5px no-repeat,
+    linear-gradient(var(--gilt-deep),var(--gilt-deep)) right 10px / 22px 1.5px no-repeat;
+}
+/* Plain — no ornament, lets the photograph carry the cell */
+.gallery-item[data-orn="plain"]::before,
+.gallery-item[data-orn="plain"]::after{ background:none }
+
+@media(max-width:640px){
+  .gallery-track{gap:12px;padding:0 12px}
+  /* Ornaments shrink so they stay proportional in a ~170px cell */
+  .gallery-item::before,.gallery-item::after{--orn-h:12px;transform-origin:center}
+  .gallery-item::after{transform:scaleY(-1)}
+  .gallery-item[data-orn="rays"]::before,
+  .gallery-item[data-orn="rays"]::after{--orn-h:10px}
+}
+
+/* The print fills the frame cell entirely */
 .gallery-photo{
-  display:block;width:100%;
-  aspect-ratio:var(--gi-ar,4/5);
+  display:block;
+  position:absolute;inset:0;
   background-size:cover;background-position:center;
   background-color:var(--shell);
-  border-radius:inherit;
-  position:relative;
   overflow:hidden;
   transition:transform .9s cubic-bezier(.2,.7,.2,1);
 }
@@ -486,7 +555,7 @@ section{padding:120px 0;position:relative;z-index:2}
 .gallery-item .gph{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;
-  color:rgba(40,35,31,.35);border-radius:inherit;line-height:1.4;
+  color:rgba(40,35,31,.35);line-height:1.4;
 }
 
 /* Reveal: a quiet settle, as if the frame were just hung */
@@ -1098,25 +1167,19 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     let done = false;
 
     // Mat opening shapes, as border-radius recipes.
-    // Without a mat the frame crops the photograph directly, so curves are
-    // gentler than the matted version — a deep lancet would cut into faces.
-    // Rectangles carry more weight so shaped frames read as accents.
-    const SHAPES = [
-      { name:'rect',      css:'0',                            weight:6 },
-      { name:'softrect',  css:'3px',                          weight:3 },
-      { name:'arch',      css:'50% 50% 0 0 / 22% 22% 0 0',    weight:3 },
-      { name:'arch',      css:'50% 50% 0 0 / 16% 16% 0 0',    weight:2 },
-      { name:'domed',     css:'50% 50% 4% 4% / 20% 20% 3% 3%',weight:2 },
-      { name:'oval',      css:'50%',                          weight:1 },
+    // Art Deco corner ornaments. Each maps to a [data-orn] rule in the CSS.
+    // 'plain' is weighted highest so ornament reads as accent, not wallpaper.
+    const ORNAMENTS = [
+      { name:'plain',   weight:3 },
+      { name:'stepped', weight:3 },
+      { name:'notched', weight:3 },
+      { name:'rays',    weight:2 },
+      { name:'rule',    weight:2 },
+      { name:'fan',     weight:2 },
     ];
-    // Ratios that suit each opening — tall shapes want portrait proportions
-    const RATIO_FOR = {
-      rect:      ['4/5','3/4','1','5/4'],
-      softrect:  ['4/5','1','5/4','3/4'],
-      arch:      ['3/4','4/5'],
-      domed:     ['3/4','4/5'],
-      oval:      ['3/4','4/5'],
-    };
+    // Every cell shares one ratio so the 2 x 3 grid stays even
+    const CELL_RATIO = '4/5';
+
     // Frame profiles — 1920s mouldings drawn as layered rings. Each ring is an
     // inset box-shadow (interior banding) or a spread shadow (exterior step),
     // so a flat border becomes a moulding with depth.
@@ -1178,7 +1241,6 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       list.forEach(s => { for(let i=0;i<s.weight;i++) pool.push(s); });
       return pick(pool);
     }
-    const pickShape = () => weighted(SHAPES);
     const pickFrame = () => weighted(FRAMES);
     function shuffle(a){
       for(let i=a.length-1;i>0;i--){
@@ -1207,27 +1269,20 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     }
 
     function styleTile(el, narrow){
-      const shape = pickShape();
       const frame = pickFrame();
-      el.style.setProperty('--gi-ar', pick(RATIO_FOR[shape.name]));
-      el.style.setProperty('--gi-shape', shape.css);
-      // Frame weight: slimmer on narrow screens so the gilt edge stays fine
+      const orn   = weighted(ORNAMENTS);
+      // Uniform cells — the grid does the composing, so no per-tile width,
+      // margin or shape variation. Character comes from frame weight, the
+      // moulding profile and the corner ornament.
+      el.style.setProperty('--gi-ar', CELL_RATIO);
       el.style.setProperty('--gi-fw', narrow ? frame.fwNarrow : frame.fw);
-      // Moulding profile. Exterior rings (stepped, reeded, double-band) are
-      // dropped on phones — at ~170px wide they read as noise, not detail.
       el.style.setProperty('--gi-profile',
         (narrow && frame.profile.indexOf('inset') === -1) ? 'none' : frame.profile);
-      // Heavier mouldings sit further off the wall
+      el.setAttribute('data-orn', orn.name);
       const lift = frame.name === 'broad' ? '0 5px 18px rgba(40,35,31,.13)'
                  : frame.name === 'hairline' ? '0 2px 8px rgba(40,35,31,.07)'
                  : '0 3px 12px rgba(40,35,31,.10)';
       el.style.setProperty('--gi-drop', lift);
-      // Frames sit square to the column; width varies so the wall has scale
-      // without looking scattered. Generous vertical gaps do the separating
-      // now that there's no mat board around each print.
-      el.style.setProperty('--gi-w', Math.round(narrow ? rnd(88,100) : rnd(82,100)) + '%');
-      el.style.setProperty('--gi-mt', Math.round(narrow ? rnd(0,16) : rnd(0,28)) + 'px');
-      el.style.setProperty('--gi-mb', Math.round(narrow ? rnd(22,40) : rnd(30,58)) + 'px');
     }
 
     function layout(pool, all, narrow){

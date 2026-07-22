@@ -499,10 +499,6 @@ section{padding:120px 0;position:relative;z-index:2}
 .gallery-item[data-orn="ziggurat"] .gallery-orn::before,
 .gallery-item[data-orn="ziggurat"] .gallery-orn::after{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2060%2060%27%3E%3Cpath%20d%3D%27M0%200%20H60%20V8%20H14%20V22%20H8%20V40%20H0%20Z%27%20fill%3D%27%23D4AF37%27%2F%3E%3Cpath%20d%3D%27M18%2012%20H60%20V18%20H24%20V30%20H18%20Z%27%20fill%3D%27%238A6A14%27%2F%3E%3C%2Fsvg%3E") }
 
-.gallery-item[data-orn="fan"]::before,
-.gallery-item[data-orn="fan"]::after,
-.gallery-item[data-orn="fan"] .gallery-orn::before,
-.gallery-item[data-orn="fan"] .gallery-orn::after{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2060%2060%27%3E%3Cpath%20d%3D%27M0%200%20A56%2056%200%200%201%2056%2056%20L46%2056%20A46%2046%200%200%200%200%2010%20Z%27%20fill%3D%27%23D4AF37%27%2F%3E%3Cpath%20d%3D%27M0%2018%20A38%2038%200%200%201%2038%2056%20L30%2056%20A30%2030%200%200%200%200%2026%20Z%27%20fill%3D%27%238A6A14%27%2F%3E%3Ccircle%20cx%3D%279%27%20cy%3D%279%27%20r%3D%275%27%20fill%3D%27%23D4AF37%27%2F%3E%3C%2Fsvg%3E") }
 
 .gallery-item[data-orn="notched"]::before,
 .gallery-item[data-orn="notched"]::after,
@@ -519,10 +515,6 @@ section{padding:120px 0;position:relative;z-index:2}
 .gallery-item[data-orn="chevron"] .gallery-orn::before,
 .gallery-item[data-orn="chevron"] .gallery-orn::after{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2060%2060%27%3E%3Cpath%20d%3D%27M0%200%20L30%2030%20L60%200%20L60%2012%20L30%2042%20L0%2012%20Z%27%20fill%3D%27%23D4AF37%27%2F%3E%3Cpath%20d%3D%27M0%2020%20L30%2050%20L60%2020%20L60%2030%20L30%2060%20L0%2030%20Z%27%20fill%3D%27%238A6A14%27%2F%3E%3C%2Fsvg%3E") }
 
-.gallery-item[data-orn="shell"]::before,
-.gallery-item[data-orn="shell"]::after,
-.gallery-item[data-orn="shell"] .gallery-orn::before,
-.gallery-item[data-orn="shell"] .gallery-orn::after{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2060%2060%27%3E%3Cpath%20d%3D%27M0%200%20H60%20A60%2060%200%200%201%200%2060%20Z%27%20fill%3D%27%23D4AF37%27%20opacity%3D%27.16%27%2F%3E%3Cpath%20d%3D%27M0%200%20H48%20A48%2048%200%200%201%200%2048%20Z%27%20fill%3D%27none%27%20stroke%3D%27%23D4AF37%27%20stroke-width%3D%273%27%2F%3E%3Cpath%20d%3D%27M0%200%20H30%20A30%2030%200%200%201%200%2030%20Z%27%20fill%3D%27none%27%20stroke%3D%27%238A6A14%27%20stroke-width%3D%272%27%2F%3E%3C%2Fsvg%3E") }
 
 /* Plain — no corner motif */
 .gallery-item[data-orn="plain"]::before,
@@ -1174,15 +1166,19 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     // 'plain' is weighted highest so ornament reads as accent, not wallpaper.
     // Corner motifs, drawn as SVG. Each is mirrored into all four corners.
     // 'plain' carries weight so some frames stay quiet against the ornamented.
-    const ORNAMENTS = [
-      { name:'plain',    weight:3 },
-      { name:'ziggurat', weight:3 },
-      { name:'fan',      weight:3 },
-      { name:'notched',  weight:2 },
-      { name:'sunburst', weight:2 },
-      { name:'chevron',  weight:2 },
-      { name:'shell',    weight:2 },
-    ];
+    // Every load hangs a fixed composition: two plain frames, two chevron, and
+    // two "enhanced" (a richer motif drawn from the pool below). Positions are
+    // shuffled, and which enhanced motifs appear varies, so the wall changes
+    // without the balance of quiet-to-ornate drifting.
+    const ENHANCED = ['ziggurat','notched','sunburst'];
+    function buildOrnamentSet(){
+      const pool = shuffle([...ENHANCED]);
+      return shuffle([
+        'plain',   'plain',
+        'chevron', 'chevron',
+        pool[0],   pool[1],
+      ]);
+    }
 
     // Every cell shares one ratio so the 2 x 3 grid stays even
     const CELL_RATIO = '4/5';
@@ -1284,9 +1280,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       return photo;
     }
 
-    function styleTile(el, narrow){
+    function styleTile(el, narrow, ornName){
       const frame = pickFrame();
-      const orn = weighted(ORNAMENTS);
       // Uniform cells — the grid does the composing, so no per-tile width,
       // margin or shape variation. Character comes from frame weight, the
       // moulding profile and the corner ornament.
@@ -1294,10 +1289,12 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       el.style.setProperty('--gi-fw', narrow ? frame.fwNarrow : frame.fw);
       el.style.setProperty('--gi-profile',
         (narrow && frame.profile.indexOf('inset') === -1) ? 'none' : frame.profile);
-      el.setAttribute('data-orn', orn.name);
-      // An inner keyline appears on about a third of frames, independent of
-      // the corner motif, so ornamented and plain frames both get variation.
-      el.setAttribute('data-key', Math.random() < 0.34 ? 'on' : 'off');
+      el.setAttribute('data-orn', ornName);
+      // A keyline only ever lands on a plain frame — on an ornamented one it
+      // competes with the corner motif. This gives the two plain frames a
+      // little interest without upsetting the two/two/two balance.
+      el.setAttribute('data-key',
+        (ornName === 'plain' && Math.random() < 0.5) ? 'on' : 'off');
       // Larger motifs on frames with a light moulding, so detail stays balanced
       el.style.setProperty('--orn-sz', narrow ? '30px'
         : (frame.name === 'broad' ? '38px' : '46px'));
@@ -1311,11 +1308,14 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       const track = document.querySelector('.gallery-track');
       const count = Math.min(SHOW, pool.length);
       const chosen = shuffle([...pool]).slice(0, count);
+      // One prepared composition per load, consumed in shuffled order. If
+      // fewer than six photos exist the extra entries are simply unused.
+      const orns = buildOrnamentSet();
       all.forEach(el => { el.hidden = true; });
-      chosen.forEach(el => {
+      chosen.forEach((el, i) => {
         el.hidden = false;
         ensureStructure(el);
-        styleTile(el, narrow);
+        styleTile(el, narrow, orns[i] || 'plain');
         track.appendChild(el);
       });
       attachReveal(chosen);
@@ -1373,7 +1373,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       const narrow = matchMedia('(max-width:640px)').matches;
       const shown = shuffle([...all]).slice(0, SHOW);
       all.forEach(el => { el.hidden = true; });
-      shown.forEach(el => { el.hidden = false; ensureStructure(el); styleTile(el, narrow); track.appendChild(el); });
+      const fbOrns = buildOrnamentSet();
+      shown.forEach((el, i) => { el.hidden = false; ensureStructure(el); styleTile(el, narrow, fbOrns[i] || 'plain'); track.appendChild(el); });
       attachReveal(shown);
     }, 4000);
 

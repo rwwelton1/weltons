@@ -541,6 +541,18 @@ section{padding:120px 0;position:relative;z-index:2}
 }
 .gallery-item:hover .gallery-photo{transform:scale(1.02)}
 
+/* ---- Frames off ----
+   Admin switch. Strips the gilt border, the moulding rings and the inner
+   keyline, leaving the photographs bare in the same 2 x 3 grid. The layout,
+   crop and reveal animation are untouched. */
+body.frames-off .gallery-item{
+  border:none;
+  box-shadow:0 3px 12px rgba(40,35,31,.10);
+}
+body.frames-off .gallery-item::before,
+body.frames-off .gallery-item::after,
+body.frames-off .gallery-orn{ display:none }
+
 /* ---- Per-photo crop ----
    The 4:5 cell crops every photograph. Centre suits most, but a shot with the
    subject low or high in frame loses it at an edge. Set the focal point by
@@ -1869,6 +1881,11 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   #ab-rsvp-toggle:hover{background:rgba(200,90,90,.4)}
   #ab-rsvp-toggle.is-open{background:rgba(122,143,110,.35);border-color:rgba(122,143,110,.6)}
   #ab-rsvp-toggle.is-open:hover{background:rgba(122,143,110,.5)}
+  #ab-frames-toggle{background:rgba(200,90,90,.25);color:var(--ivory);border:1px solid rgba(200,90,90,.45)}
+  #ab-frames-toggle:hover{background:rgba(200,90,90,.4)}
+  #ab-frames-toggle.is-open{background:rgba(176,138,82,.35);border-color:rgba(176,138,82,.6)}
+  #ab-frames-toggle.is-open:hover{background:rgba(176,138,82,.5)}
+  #ab-frames-toggle:disabled{opacity:.5;cursor:default}
   #ab-rsvp-toggle:disabled{opacity:.5;cursor:default}
 
   /* Editable elements in admin mode */
@@ -2199,6 +2216,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     <button class="ab-btn" id="ab-links">🔗 Links</button>
     <button class="ab-btn" id="ab-dashboard">📋 RSVPs</button>
     <button class="ab-btn" id="ab-rsvp-toggle">🔒 RSVPs Closed</button>
+    <button class="ab-btn" id="ab-frames-toggle">🖼 Frames On</button>
   </div>
   <div class="ab-btns2">
     <button class="ab-btn" id="ab-save">Save Text</button>
@@ -3450,12 +3468,33 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     updateRsvpToggleBtn();
   });
 
+  document.getElementById('ab-frames-toggle').addEventListener('click', async () => {
+    const btn = document.getElementById('ab-frames-toggle');
+    const next = savedSettings.framesOn === false;   // flip current state
+    // No confirm here — this is cosmetic and instantly reversible, unlike the
+    // RSVP switch which changes what guests can do.
+    const prev = btn.textContent;
+    btn.textContent = 'Saving…'; btn.disabled = true;
+    try {
+      await setFramesOn(next);
+      setStatus(next ? 'Gallery frames ON ✓' : 'Gallery frames OFF ✓');
+      setTimeout(()=>setStatus(''),3000);
+    } catch(e){
+      setStatus('Could not update frame setting');
+      btn.textContent = prev;
+    }
+    btn.disabled = false;
+    updateFramesToggleBtn();
+  });
+
   // ---- Site settings (RSVP open/closed) ----
   // Default is CLOSED so that if the settings doc is missing or Firestore is
   // unreachable, guests never see a live RSVP form before invitations go out.
-  let savedSettings = { rsvpOpen: false };
+  // Frames default to ON — if Firestore is unreachable the gallery still looks
+  // finished rather than falling back to bare photos.
+  let savedSettings = { rsvpOpen: false, framesOn: true };
   function applySettings(data){
-    savedSettings = Object.assign({ rsvpOpen: false }, data || {});
+    savedSettings = Object.assign({ rsvpOpen: false, framesOn: true }, data || {});
     const open = savedSettings.rsvpOpen === true;
     document.body.classList.toggle('rsvp-locked', !open);
     // Hide the nav link and hero button when closed so guests aren't sent to a dead end
@@ -3463,7 +3502,22 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       const li = a.closest('li');
       (li || a).style.display = open ? '' : 'none';
     });
+    document.body.classList.toggle('frames-off', savedSettings.framesOn === false);
     updateRsvpToggleBtn();
+    updateFramesToggleBtn();
+  }
+  function updateFramesToggleBtn(){
+    const b = document.getElementById('ab-frames-toggle');
+    if(!b) return;
+    const on = savedSettings.framesOn !== false;
+    b.textContent = on ? '🖼 Frames On' : '🖼 Frames Off';
+    b.classList.toggle('is-open', on);
+  }
+  async function setFramesOn(on){
+    await initFirestore();
+    await fm.setDoc(fm.doc(db,'siteSettings','main'),
+      { framesOn: !!on, updatedAt: new Date().toISOString() }, { merge: true });
+    applySettings(Object.assign({}, savedSettings, { framesOn: !!on }));
   }
   function updateRsvpToggleBtn(){
     const b = document.getElementById('ab-rsvp-toggle');
@@ -3561,7 +3615,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   // ---- Load published content for all visitors ----
   // Start locked; loadContent() will unlock if siteSettings says RSVPs are open.
   // This prevents a flash of the live form on slow connections.
-  applySettings({ rsvpOpen: false });
+  applySettings({ rsvpOpen: false, framesOn: true });
 
   // Hero loads immediately from GitHub — no waiting for Firestore
   initHeroSlideshow();

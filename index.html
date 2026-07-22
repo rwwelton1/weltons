@@ -432,17 +432,17 @@ section{padding:120px 0;position:relative;z-index:2}
 /* ---- GALLERY ---- */
 #gallery{padding:80px 0 90px;overflow:hidden}
 /* ---- MATTED FRAMES ----
-   Photographs as they'd be displayed in a 1926 marble estate: each print set
-   inside a generous ivory mat with a fine rule, arched or oval mats echoing the
-   conservatory windows and the botanical plates in the background. Everything
-   stays square to the column grid — formal and composed, not scattered.
-   Mat width, print shape and proportions vary per tile (assigned in JS). */
+   Photographs as they'd hang in a 1926 marble estate: each print set inside a
+   white mat with a fine gilt rule, in a slim gold frame. Mat shapes echo the
+   house — arched conservatory windows, oval portrait mats, cathedral and
+   chamfered surrounds. Gold picks up --gold (#B08A52), already in the palette.
+   Shape, mat width and frame style are assigned per tile in JS. */
 .gallery-track{
-  column-count:3;
-  column-gap:clamp(20px,3vw,44px);
+  column-count:2;
+  column-gap:clamp(16px,2.6vw,38px);
   max-width:1240px;
   margin:0 auto;
-  padding:0 clamp(18px,3.5vw,44px);
+  padding:0 clamp(16px,3vw,44px);
 }
 .gallery-item{
   break-inside:avoid;
@@ -452,26 +452,29 @@ section{padding:120px 0;position:relative;z-index:2}
   margin-right:var(--gi-mr,auto);
   margin-top:var(--gi-mt,0px);
   margin-bottom:var(--gi-mb,34px);
-  /* The mat itself */
-  background:var(--ivory);
-  padding:var(--gi-mat,26px);
-  border:1px solid rgba(40,35,31,.16);
-  box-shadow:0 1px 2px rgba(40,35,31,.05), 0 8px 22px rgba(40,35,31,.07);
+  /* White mat, slim gold frame */
+  background:#FCFAF6;
+  padding:var(--gi-mat,24px);
+  border:var(--gi-fw,2px) solid var(--gold);
+  border-radius:var(--gi-frame,0);
+  box-shadow:
+    0 0 0 1px rgba(176,138,82,.28),
+    0 2px 4px rgba(40,35,31,.06),
+    0 10px 26px rgba(40,35,31,.09);
 }
-/* Fine inner rule, the pencil line drawn around a window mat */
-/* Fine inner rule — the pencil line drawn around a window mat. It traces the
-   print's shape (arch/oval/rect), sitting just outside the image edge. */
+/* Gilt rule — the fine gold line drawn around a window mat, tracing the
+   print's own shape just outside the image edge. */
 .gallery-item::before{
   content:"";position:absolute;
-  inset:calc(var(--gi-mat,26px) * .45);
-  border:1px solid rgba(40,35,31,.20);
+  inset:calc(var(--gi-mat,24px) * .42);
+  border:1px solid rgba(176,138,82,.55);
   border-radius:var(--gi-shape,0);
   pointer-events:none;
   z-index:1;
 }
 .gallery-item[hidden]{display:none}
 
-/* The print inside the mat. Shape is set per-tile: rectangle, arch, or oval. */
+/* The print inside the mat. Shape set per-tile. */
 .gallery-photo{
   display:block;width:100%;
   aspect-ratio:var(--gi-ar,4/5);
@@ -483,20 +486,18 @@ section{padding:120px 0;position:relative;z-index:2}
 }
 .gallery-item:hover .gallery-photo{transform:scale(1.02)}
 
-/* Placeholder label sits inside the print area */
 .gallery-item .gph{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;
   color:rgba(40,35,31,.35);border-radius:var(--gi-shape,0);
 }
 
-/* Optional plate caption beneath the print, in the mat */
+/* Optional plate caption beneath the print, inside the mat */
 .gallery-cap{
   display:block;text-align:center;
   font-family:var(--serif);font-style:italic;
   font-size:.78rem;color:var(--ink-soft);
-  margin-top:calc(var(--gi-mat,26px) * .5);
-  letter-spacing:.01em;
+  margin-top:calc(var(--gi-mat,24px) * .5);
 }
 
 /* Reveal: a quiet settle, as if the frame were just hung */
@@ -508,14 +509,11 @@ section{padding:120px 0;position:relative;z-index:2}
 }
 .gallery-item.reveal.in{opacity:1;transform:translateY(0) scale(1)}
 
-@media(max-width:1000px){ .gallery-track{column-count:2} }
 @media(max-width:640px){
-  /* One column on a phone: a matted frame needs its mat to read, and two
-     columns at ~180px leaves no room for it. Single column lets each print
-     be seen properly, which suits the formal presentation. */
-  .gallery-track{column-count:1;max-width:460px;padding:0 22px}
-  .gallery-item{margin-bottom:34px}
-  .gallery-item.reveal{transform:translateY(22px) scale(.98)}
+  /* Two columns retained on mobile for variation; mats and frames scale down
+     via JS (narrow mode) so they still read at ~170px wide. */
+  .gallery-track{column-gap:12px;padding:0 12px}
+  .gallery-item.reveal{transform:translateY(20px) scale(.98)}
   .gallery-item.reveal.in{transform:translateY(0) scale(1)}
 }
 @media(prefers-reduced-motion:reduce){
@@ -1108,27 +1106,44 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const MIN = 5, MAX = 8;
     let done = false;
 
-    // border-radius recipes. Arches curve only the top corners; ovals are full.
+    // Mat opening shapes, as border-radius recipes.
     const SHAPES = [
-      { name:'rect',  css:'0',                       weight:4 },
-      { name:'arch',  css:'50% 50% 0 0 / 34% 34% 0 0', weight:3 },
-      { name:'arch',  css:'50% 50% 0 0 / 26% 26% 0 0', weight:2 },
-      { name:'oval',  css:'50%',                      weight:2 },
+      { name:'rect',      css:'0',                            weight:4 },
+      { name:'softrect',  css:'3px',                          weight:2 },
+      { name:'arch',      css:'50% 50% 0 0 / 34% 34% 0 0',    weight:3 },
+      { name:'arch',      css:'50% 50% 0 0 / 24% 24% 0 0',    weight:2 },
+      { name:'cathedral', css:'44% 44% 0 0 / 52% 52% 0 0',    weight:2 },
+      { name:'oval',      css:'50%',                          weight:2 },
+      { name:'domed',     css:'50% 50% 6% 6% / 30% 30% 4% 4%',weight:2 },
+      { name:'lancet',    css:'50% 50% 0 0 / 62% 62% 0 0',    weight:1 },
     ];
-    // Ratios that suit each shape — arches and ovals want portrait proportions
+    // Ratios that suit each opening — tall shapes want portrait proportions
     const RATIO_FOR = {
-      rect: ['4/5','3/4','1','5/4'],
-      arch: ['3/4','2/3','4/5'],
-      oval: ['3/4','4/5','2/3'],
+      rect:      ['4/5','3/4','1','5/4'],
+      softrect:  ['4/5','1','5/4','3/4'],
+      arch:      ['3/4','2/3','4/5'],
+      cathedral: ['2/3','3/4'],
+      oval:      ['3/4','4/5','2/3'],
+      domed:     ['3/4','4/5'],
+      lancet:    ['2/3','3/5'],
     };
+    // Frame profiles: outer corner radius and border weight
+    const FRAMES = [
+      { frame:'0',   fw:'2px',   weight:4 },
+      { frame:'0',   fw:'3px',   weight:3 },
+      { frame:'2px', fw:'2px',   weight:2 },
+      { frame:'0',   fw:'1.5px', weight:2 },
+    ];
 
     const rnd  = (a,b) => a + Math.random()*(b-a);
     const pick = arr => arr[Math.floor(Math.random()*arr.length)];
-    function pickShape(){
+    function weighted(list){
       const pool = [];
-      SHAPES.forEach(s => { for(let i=0;i<s.weight;i++) pool.push(s); });
+      list.forEach(s => { for(let i=0;i<s.weight;i++) pool.push(s); });
       return pick(pool);
     }
+    const pickShape = () => weighted(SHAPES);
+    const pickFrame = () => weighted(FRAMES);
     function shuffle(a){
       for(let i=a.length-1;i>0;i--){
         const j = Math.floor(Math.random()*(i+1));
@@ -1157,19 +1172,23 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
     function styleTile(el, narrow){
       const shape = pickShape();
-      const mat   = Math.round(narrow ? rnd(16,26) : rnd(20,38));
+      const frame = pickFrame();
+      // Mats must stay modest on a ~170px column or the print vanishes
+      let mat = Math.round(narrow ? rnd(9,15) : rnd(20,36));
+      // Shaped openings need a little more mat around them to read
+      if(shape.name !== 'rect' && shape.name !== 'softrect'){
+        mat = Math.round(mat * (narrow ? 1.15 : 1.25));
+      }
       el.style.setProperty('--gi-mat', mat + 'px');
       el.style.setProperty('--gi-ar', pick(RATIO_FOR[shape.name]));
       el.style.setProperty('--gi-shape', shape.css);
+      el.style.setProperty('--gi-frame', frame.frame);
+      el.style.setProperty('--gi-fw', narrow ? '1.5px' : frame.fw);
       // Frames sit square to the column; width varies modestly so the wall has
       // scale without looking scattered.
-      el.style.setProperty('--gi-w', Math.round(narrow ? rnd(88,100) : rnd(84,100)) + '%');
-      el.style.setProperty('--gi-mt', Math.round(narrow ? rnd(0,14) : rnd(0,26)) + 'px');
-      el.style.setProperty('--gi-mb', Math.round(narrow ? rnd(28,44) : rnd(28,54)) + 'px');
-      // An oval or arch reads better with a wider mat around it
-      if(shape.name !== 'rect'){
-        el.style.setProperty('--gi-mat', Math.round(mat * 1.25) + 'px');
-      }
+      el.style.setProperty('--gi-w', Math.round(narrow ? rnd(92,100) : rnd(84,100)) + '%');
+      el.style.setProperty('--gi-mt', Math.round(narrow ? rnd(0,12) : rnd(0,26)) + 'px');
+      el.style.setProperty('--gi-mb', Math.round(narrow ? rnd(14,28) : rnd(28,54)) + 'px');
     }
 
     function layout(pool, all, narrow){

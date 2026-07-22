@@ -77,9 +77,43 @@ body{
   body{ background-size: cover; background-repeat: no-repeat; background-attachment: fixed; }
 }
 
-/* paper grain over everything */
-body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:500;opacity:.35;mix-blend-mode:multiply;will-change:auto;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");}
+/* ---- PAPER ----
+   A single noise tile reads as digital static. Real stock has structure at
+   several scales at once, so this layers three: a fine tooth you sense more
+   than see, a coarser pulp fibre, and a very low-frequency mottle so the sheet
+   is never perfectly even. Each tiles at a different size, which also breaks up
+   the repeat that a single tile makes obvious.
+   multiply keeps the texture darkening rather than hazing the colour. */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:500;
+  opacity:.5;mix-blend-mode:multiply;will-change:auto;
+  background-repeat:repeat;}
+
+/* Laid lines — the faint parallel ribbing of laid paper, plus the wider chain
+   lines running across it. Barely visible, but it's what separates "paper"
+   from "noise". Carried on the grain layer so it can't clobber the botanical
+   background image on <body>. */
+body::before{
+  background-image:
+    repeating-linear-gradient(90deg,
+      rgba(40,35,31,.020) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(90deg,
+      rgba(40,35,31,.026) 0 1px, transparent 1px 34px),
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27180%27%20height%3D%27180%27%3E%3Cfilter%20id%3D%27f%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%27.9%27%20numOctaves%3D%274%27%20seed%3D%277%27%2F%3E%3CfeColorMatrix%20type%3D%27saturate%27%20values%3D%270%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23f%29%27%20opacity%3D%27.05%27%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27520%27%20height%3D%27520%27%3E%3Cfilter%20id%3D%27c%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%27.028%27%20numOctaves%3D%273%27%20seed%3D%2719%27%2F%3E%3CfeColorMatrix%20type%3D%27saturate%27%20values%3D%270%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23c%29%27%20opacity%3D%27.055%27%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%271400%27%20height%3D%271400%27%3E%3Cfilter%20id%3D%27m%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%27.006%27%20numOctaves%3D%272%27%20seed%3D%273%27%2F%3E%3CfeColorMatrix%20type%3D%27saturate%27%20values%3D%270%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23m%29%27%20opacity%3D%27.07%27%2F%3E%3C%2Fsvg%3E");
+  background-size:auto, auto, 180px 180px, 520px 520px, 1400px 1400px;
+}
+@media(max-width:640px){
+  /* Ribbing tightens on a phone so it doesn't read as visible stripes */
+  body::before{
+    background-image:
+      repeating-linear-gradient(90deg,
+        rgba(40,35,31,.013) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg,
+        rgba(40,35,31,.018) 0 1px, transparent 1px 26px),
+      url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27180%27%20height%3D%27180%27%3E%3Cfilter%20id%3D%27f%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%27.9%27%20numOctaves%3D%274%27%20seed%3D%277%27%2F%3E%3CfeColorMatrix%20type%3D%27saturate%27%20values%3D%270%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23f%29%27%20opacity%3D%27.05%27%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27520%27%20height%3D%27520%27%3E%3Cfilter%20id%3D%27c%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%27.028%27%20numOctaves%3D%273%27%20seed%3D%2719%27%2F%3E%3CfeColorMatrix%20type%3D%27saturate%27%20values%3D%270%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23c%29%27%20opacity%3D%27.055%27%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%271400%27%20height%3D%271400%27%3E%3Cfilter%20id%3D%27m%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%27.006%27%20numOctaves%3D%272%27%20seed%3D%273%27%2F%3E%3CfeColorMatrix%20type%3D%27saturate%27%20values%3D%270%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23m%29%27%20opacity%3D%27.07%27%2F%3E%3C%2Fsvg%3E");
+    background-size:auto, auto, 140px 140px, 400px 400px, 1000px 1000px;
+    opacity:.44;
+  }
+}
 
 /* Softening veil over the botanical background. Sections are now translucent, so
    this keeps a busy or high-contrast photo from fighting the body copy while

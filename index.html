@@ -460,85 +460,87 @@ section{padding:120px 0;position:relative;z-index:2}
 }
 .gallery-item[hidden]{display:none}
 
-/* ---- Corner ornaments ----
-   ::before draws the top pair, ::after the bottom pair. Each is a set of
-   repeating-linear-gradient brackets pinned to the frame's corners. The
-   --gi-orn variable selects which treatment a tile receives. */
+/* ---- ART DECO CORNER ORNAMENTS ----
+   Drawn as inline SVG rather than gradient bars — gradients can only produce
+   straight strips, which read as thin and mechanical. SVG gives real geometry:
+   solid ziggurats, curved fans, scalloped lobes and rays with mass.
+   Each ornament is a 60x60 corner motif, mirrored into all four corners via
+   two pseudo-elements (top pair and bottom pair, each flipped horizontally). */
 .gallery-item::before,
 .gallery-item::after{
   content:"";position:absolute;
-  left:0;right:0;height:var(--orn-h,16px);
+  left:0;right:0;height:var(--orn-sz,46px);
   pointer-events:none;z-index:3;
-  opacity:var(--orn-op,1);
+  background-repeat:no-repeat;
+  background-size:var(--orn-sz,46px) var(--orn-sz,46px);
+  background-position:left top, right top;
 }
 .gallery-item::before{top:0}
 .gallery-item::after{bottom:0;transform:scaleY(-1)}
 
-/* Stepped chevron corners — the classic Deco ziggurat */
-.gallery-item[data-orn="stepped"]::before,
-.gallery-item[data-orn="stepped"]::after{
-  background:
-    linear-gradient(var(--gilt),var(--gilt)) left  0    / 22px 1.5px no-repeat,
-    linear-gradient(var(--gilt),var(--gilt)) right 0    / 22px 1.5px no-repeat,
-    linear-gradient(var(--gilt),var(--gilt)) left  4px  / 14px 1.5px no-repeat,
-    linear-gradient(var(--gilt),var(--gilt)) right 4px  / 14px 1.5px no-repeat,
-    linear-gradient(var(--gilt-deep),var(--gilt-deep)) left  8px / 8px 1.5px no-repeat,
-    linear-gradient(var(--gilt-deep),var(--gilt-deep)) right 8px / 8px 1.5px no-repeat;
+/* The right-hand copy is mirrored so the motif points inward on both sides.
+   Two backgrounds per pseudo-element: left corner, then right corner flipped
+   via a separate element below. */
+.gallery-orn{
+  position:absolute;inset:0;pointer-events:none;z-index:4;
 }
-/* Notched corner brackets — an L at each corner with a cut step */
-.gallery-item[data-orn="notched"]::before,
-.gallery-item[data-orn="notched"]::after{
-  background:
-    linear-gradient(var(--gilt),var(--gilt)) left  0 / 26px 2px no-repeat,
-    linear-gradient(var(--gilt),var(--gilt)) right 0 / 26px 2px no-repeat,
-    linear-gradient(var(--gilt),var(--gilt)) left  0 / 2px 14px no-repeat,
-    linear-gradient(var(--gilt),var(--gilt)) right 0 / 2px 14px no-repeat,
-    linear-gradient(var(--gilt-deep),var(--gilt-deep)) left  6px / 12px 1px no-repeat,
-    linear-gradient(var(--gilt-deep),var(--gilt-deep)) right 6px / 12px 1px no-repeat;
+.gallery-orn::before,
+.gallery-orn::after{
+  content:"";position:absolute;
+  width:var(--orn-sz,46px);height:var(--orn-sz,46px);
+  background-repeat:no-repeat;background-size:100% 100%;
 }
-/* Sunburst rays — short fanned strokes at each corner */
-.gallery-item[data-orn="rays"]::before,
-.gallery-item[data-orn="rays"]::after{
-  --orn-h:14px;
-  background:
-    repeating-linear-gradient(90deg, var(--gilt) 0 1.5px, transparent 1.5px 6px)
-      left 0 / 30px 6px no-repeat,
-    repeating-linear-gradient(90deg, var(--gilt) 0 1.5px, transparent 1.5px 6px)
-      right 0 / 30px 6px no-repeat,
-    linear-gradient(var(--gilt-deep),var(--gilt-deep)) left  8px / 24px 1px no-repeat,
-    linear-gradient(var(--gilt-deep),var(--gilt-deep)) right 8px / 24px 1px no-repeat;
-}
-/* Double rule — two parallel bands running the full width */
-.gallery-item[data-orn="rule"]::before,
-.gallery-item[data-orn="rule"]::after{
-  --orn-h:8px;
-  background:
-    linear-gradient(var(--gilt),var(--gilt))          0 0   / 100% 1.5px no-repeat,
-    linear-gradient(var(--gilt-deep),var(--gilt-deep)) 0 5px / 100% 1px   no-repeat;
-}
-/* Fan corners — stacked bars stepping inward, the Deco fan motif */
+.gallery-orn::before{top:0;right:0;transform:scaleX(-1)}
+.gallery-orn::after{bottom:0;right:0;transform:scale(-1,-1)}
+
+/* ---- Motifs ---- */
+.gallery-item[data-orn="ziggurat"]::before,
+.gallery-item[data-orn="ziggurat"]::after,
+.gallery-item[data-orn="ziggurat"] .gallery-orn::before,
+.gallery-item[data-orn="ziggurat"] .gallery-orn::after{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2060%2060%27%3E%3Cpath%20d%3D%27M0%200%20H60%20V8%20H14%20V22%20H8%20V40%20H0%20Z%27%20fill%3D%27%23D4AF37%27%2F%3E%3Cpath%20d%3D%27M18%2012%20H60%20V18%20H24%20V30%20H18%20Z%27%20fill%3D%27%238A6A14%27%2F%3E%3C%2Fsvg%3E") }
+
 .gallery-item[data-orn="fan"]::before,
-.gallery-item[data-orn="fan"]::after{
-  --orn-h:18px;
-  background:
-    linear-gradient(var(--gilt),var(--gilt)) left  0    / 10px 2px no-repeat,
-    linear-gradient(var(--gilt),var(--gilt)) right 0    / 10px 2px no-repeat,
-    linear-gradient(var(--gilt),var(--gilt)) left  5px  / 16px 1.5px no-repeat,
-    linear-gradient(var(--gilt),var(--gilt)) right 5px  / 16px 1.5px no-repeat,
-    linear-gradient(var(--gilt-deep),var(--gilt-deep)) left  10px / 22px 1.5px no-repeat,
-    linear-gradient(var(--gilt-deep),var(--gilt-deep)) right 10px / 22px 1.5px no-repeat;
-}
-/* Plain — no ornament, lets the photograph carry the cell */
+.gallery-item[data-orn="fan"]::after,
+.gallery-item[data-orn="fan"] .gallery-orn::before,
+.gallery-item[data-orn="fan"] .gallery-orn::after{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2060%2060%27%3E%3Cpath%20d%3D%27M0%200%20A56%2056%200%200%201%2056%2056%20L46%2056%20A46%2046%200%200%200%200%2010%20Z%27%20fill%3D%27%23D4AF37%27%2F%3E%3Cpath%20d%3D%27M0%2018%20A38%2038%200%200%201%2038%2056%20L30%2056%20A30%2030%200%200%200%200%2026%20Z%27%20fill%3D%27%238A6A14%27%2F%3E%3Ccircle%20cx%3D%279%27%20cy%3D%279%27%20r%3D%275%27%20fill%3D%27%23D4AF37%27%2F%3E%3C%2Fsvg%3E") }
+
+.gallery-item[data-orn="notched"]::before,
+.gallery-item[data-orn="notched"]::after,
+.gallery-item[data-orn="notched"] .gallery-orn::before,
+.gallery-item[data-orn="notched"] .gallery-orn::after{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2060%2060%27%3E%3Cpath%20d%3D%27M0%200%20H58%20L58%2010%20H22%20L22%2022%20H10%20L10%2058%20H0%20Z%27%20fill%3D%27%23D4AF37%27%2F%3E%3Cpath%20d%3D%27M16%2026%20H26%20V16%20H44%20V22%20H32%20V32%20H16%20Z%27%20fill%3D%27%238A6A14%27%2F%3E%3C%2Fsvg%3E") }
+
+.gallery-item[data-orn="sunburst"]::before,
+.gallery-item[data-orn="sunburst"]::after,
+.gallery-item[data-orn="sunburst"] .gallery-orn::before,
+.gallery-item[data-orn="sunburst"] .gallery-orn::after{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2060%2060%27%3E%3Cpath%20d%3D%27M0%200%20L52%200%20L0%2014%20Z%27%20fill%3D%27%23D4AF37%27%2F%3E%3Cpath%20d%3D%27M0%200%20L0%2052%20L14%200%20Z%27%20fill%3D%27%23D4AF37%27%2F%3E%3Cpath%20d%3D%27M0%200%20L40%2026%20L26%2040%20Z%27%20fill%3D%27%238A6A14%27%2F%3E%3C%2Fsvg%3E") }
+
+.gallery-item[data-orn="chevron"]::before,
+.gallery-item[data-orn="chevron"]::after,
+.gallery-item[data-orn="chevron"] .gallery-orn::before,
+.gallery-item[data-orn="chevron"] .gallery-orn::after{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2060%2060%27%3E%3Cpath%20d%3D%27M0%200%20L30%2030%20L60%200%20L60%2012%20L30%2042%20L0%2012%20Z%27%20fill%3D%27%23D4AF37%27%2F%3E%3Cpath%20d%3D%27M0%2020%20L30%2050%20L60%2020%20L60%2030%20L30%2060%20L0%2030%20Z%27%20fill%3D%27%238A6A14%27%2F%3E%3C%2Fsvg%3E") }
+
+.gallery-item[data-orn="shell"]::before,
+.gallery-item[data-orn="shell"]::after,
+.gallery-item[data-orn="shell"] .gallery-orn::before,
+.gallery-item[data-orn="shell"] .gallery-orn::after{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2060%2060%27%3E%3Cpath%20d%3D%27M0%200%20H60%20A60%2060%200%200%201%200%2060%20Z%27%20fill%3D%27%23D4AF37%27%20opacity%3D%27.16%27%2F%3E%3Cpath%20d%3D%27M0%200%20H48%20A48%2048%200%200%201%200%2048%20Z%27%20fill%3D%27none%27%20stroke%3D%27%23D4AF37%27%20stroke-width%3D%273%27%2F%3E%3Cpath%20d%3D%27M0%200%20H30%20A30%2030%200%200%201%200%2030%20Z%27%20fill%3D%27none%27%20stroke%3D%27%238A6A14%27%20stroke-width%3D%272%27%2F%3E%3C%2Fsvg%3E") }
+
+/* Plain — no corner motif */
 .gallery-item[data-orn="plain"]::before,
-.gallery-item[data-orn="plain"]::after{ background:none }
+.gallery-item[data-orn="plain"]::after,
+.gallery-item[data-orn="plain"] .gallery-orn::before,
+.gallery-item[data-orn="plain"] .gallery-orn::after{ background-image:none }
+
+/* Optional inner keyline, independent of the corner motif */
+.gallery-item[data-key="on"] .gallery-orn{
+  border:1px solid rgba(212,175,55,.55);
+  inset:9px;
+}
 
 @media(max-width:640px){
   .gallery-track{gap:12px;padding:0 12px}
-  /* Ornaments shrink so they stay proportional in a ~170px cell */
-  .gallery-item::before,.gallery-item::after{--orn-h:12px;transform-origin:center}
-  .gallery-item::after{transform:scaleY(-1)}
-  .gallery-item[data-orn="rays"]::before,
-  .gallery-item[data-orn="rays"]::after{--orn-h:10px}
+  /* Corner motifs scale with the cell so they stay proportional at ~170px */
+  .gallery-item{--orn-sz:30px}
+  .gallery-item[data-key="on"] .gallery-orn{inset:6px}
 }
 
 /* The print fills the frame cell entirely */
@@ -568,9 +570,10 @@ section{padding:120px 0;position:relative;z-index:2}
 .gallery-item.reveal.in{opacity:1;transform:translateY(0) scale(1)}
 
 @media(max-width:640px){
-  /* Two columns retained on mobile for variation; mats and frames scale down
-     via JS (narrow mode) so they still read at ~170px wide. */
-  .gallery-track{column-gap:12px;padding:0 12px}
+  .gallery-track{gap:12px;padding:0 12px}
+  /* Corner motifs scale with the cell so they stay proportional at ~170px */
+  .gallery-item{--orn-sz:30px}
+  .gallery-item[data-key="on"] .gallery-orn{inset:6px}
   .gallery-item.reveal{transform:translateY(20px) scale(.98)}
   .gallery-item.reveal.in{transform:translateY(0) scale(1)}
 }
@@ -1169,14 +1172,18 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     // Mat opening shapes, as border-radius recipes.
     // Art Deco corner ornaments. Each maps to a [data-orn] rule in the CSS.
     // 'plain' is weighted highest so ornament reads as accent, not wallpaper.
+    // Corner motifs, drawn as SVG. Each is mirrored into all four corners.
+    // 'plain' carries weight so some frames stay quiet against the ornamented.
     const ORNAMENTS = [
-      { name:'plain',   weight:3 },
-      { name:'stepped', weight:3 },
-      { name:'notched', weight:3 },
-      { name:'rays',    weight:2 },
-      { name:'rule',    weight:2 },
-      { name:'fan',     weight:2 },
+      { name:'plain',    weight:3 },
+      { name:'ziggurat', weight:3 },
+      { name:'fan',      weight:3 },
+      { name:'notched',  weight:2 },
+      { name:'sunburst', weight:2 },
+      { name:'chevron',  weight:2 },
+      { name:'shell',    weight:2 },
     ];
+
     // Every cell shares one ratio so the 2 x 3 grid stays even
     const CELL_RATIO = '4/5';
 
@@ -1265,12 +1272,21 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         el.style.backgroundImage = '';
       }
       el.insertBefore(photo, el.firstChild);
+      // Ornament overlay. The frame's own ::before/::after are spent on the top
+      // and bottom bands, so this element supplies two more pseudo-elements for
+      // corner brackets and side rules.
+      if(!el.querySelector('.gallery-orn')){
+        const orn = document.createElement('span');
+        orn.className = 'gallery-orn';
+        orn.setAttribute('aria-hidden','true');
+        el.appendChild(orn);
+      }
       return photo;
     }
 
     function styleTile(el, narrow){
       const frame = pickFrame();
-      const orn   = weighted(ORNAMENTS);
+      const orn = weighted(ORNAMENTS);
       // Uniform cells — the grid does the composing, so no per-tile width,
       // margin or shape variation. Character comes from frame weight, the
       // moulding profile and the corner ornament.
@@ -1279,6 +1295,12 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       el.style.setProperty('--gi-profile',
         (narrow && frame.profile.indexOf('inset') === -1) ? 'none' : frame.profile);
       el.setAttribute('data-orn', orn.name);
+      // An inner keyline appears on about a third of frames, independent of
+      // the corner motif, so ornamented and plain frames both get variation.
+      el.setAttribute('data-key', Math.random() < 0.34 ? 'on' : 'off');
+      // Larger motifs on frames with a light moulding, so detail stays balanced
+      el.style.setProperty('--orn-sz', narrow ? '30px'
+        : (frame.name === 'broad' ? '38px' : '46px'));
       const lift = frame.name === 'broad' ? '0 5px 18px rgba(40,35,31,.13)'
                  : frame.name === 'hairline' ? '0 2px 8px rgba(40,35,31,.07)'
                  : '0 3px 12px rgba(40,35,31,.10)';

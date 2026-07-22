@@ -433,8 +433,9 @@ section{padding:120px 0;position:relative;z-index:2}
 #gallery{padding:80px 0;overflow:hidden}
 /* SALON HANG
    A rigid grid makes every tile edge align, which reads as a contact sheet.
-   Instead: CSS columns give an uneven, non-aligned flow, and each tile gets
-   its own width, aspect ratio and vertical nudge so nothing shares a baseline. */
+   CSS columns give an uneven, non-aligned flow. Per-tile width, drift and
+   margins are randomized in JS on each load (see initGallery) and written to
+   these custom properties, so the wall is rehung every visit. */
 .gallery-track{
   column-count:4;
   column-gap:clamp(14px,2.2vw,34px);
@@ -445,18 +446,17 @@ section{padding:120px 0;position:relative;z-index:2}
 .gallery-item{
   overflow:hidden;position:relative;cursor:pointer;
   break-inside:avoid;
-  margin-bottom:clamp(14px,2.2vw,34px);
+  /* Defaults are sane on their own, so the wall still looks intentional if JS
+     never runs. --gi-* are overwritten per-tile at runtime. */
+  aspect-ratio:var(--gi-ar,4/5);
+  width:var(--gi-w,92%);
+  margin-left:var(--gi-ml,0);
+  margin-right:var(--gi-mr,0);
+  margin-top:var(--gi-mt,0px);
+  margin-bottom:var(--gi-mb,28px);
 }
-/* Per-tile character. Irregularity comes from varying width, horizontal drift
-   (margin-left/right) and uneven top/bottom margins — NOT translateY, which in a
-   column flow simply carries the following tiles along with it. */
-.gallery-item:nth-child(1){aspect-ratio:4/5; width:100%; margin-left:0;    margin-top:0;    margin-bottom:46px}
-.gallery-item:nth-child(2){aspect-ratio:1;   width:84%;  margin-left:auto; margin-right:4%; margin-bottom:28px}
-.gallery-item:nth-child(3){aspect-ratio:3/4; width:95%;  margin-left:5%;   margin-top:34px; margin-bottom:38px}
-.gallery-item:nth-child(4){aspect-ratio:5/4; width:88%;  margin-left:auto; margin-top:12px; margin-bottom:52px}
-.gallery-item:nth-child(5){aspect-ratio:4/5; width:97%;  margin-left:0;    margin-top:26px; margin-bottom:30px}
-.gallery-item:nth-child(6){aspect-ratio:1;   width:80%;  margin-left:8%;   margin-top:8px;  margin-bottom:44px}
-.gallery-item:nth-child(7){aspect-ratio:3/4; width:92%;  margin-left:auto; margin-top:40px; margin-bottom:20px}
+/* Tiles not chosen for this load */
+.gallery-item[hidden]{display:none}
 
 /* Each .gallery-item has a data-img attribute — set the path there (see HTML below) */
 .gallery-item{background-size:cover;background-position:center;background-color:var(--shell)}
@@ -466,8 +466,8 @@ section{padding:120px 0;position:relative;z-index:2}
 /* placeholder label inside each gallery cell when no image yet */
 .gallery-item .gph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(40,35,31,.35)}
 
-/* Reveal: a plain rise. Resting position now comes from margins, not transform,
-   so the animation can return cleanly to translateY(0). */
+/* Reveal: a plain rise. Resting position comes from margins, not transform,
+   so the animation returns cleanly to translateY(0). */
 .gallery-item.reveal{
   opacity:0;
   transform:translateY(34px) scale(.965);
@@ -476,28 +476,9 @@ section{padding:120px 0;position:relative;z-index:2}
 }
 .gallery-item.reveal.in{opacity:1;transform:translateY(0) scale(1)}
 
-@media(max-width:1100px){
-  .gallery-track{column-count:3}
-  .gallery-item:nth-child(4){margin-bottom:36px}
-  .gallery-item:nth-child(6){margin-bottom:32px}
-}
+@media(max-width:1100px){ .gallery-track{column-count:3} }
 @media(max-width:700px){
-  /* Two columns keeps the offset effect legible; one column would just be a stack.
-     Note: translateY alone does NOT break the baseline here — in a column flow the
-     following tile just moves with it. Real irregularity comes from varying each
-     tile's WIDTH, its horizontal drift, and its top/bottom margins. */
-  .gallery-track{column-count:2;column-gap:10px;padding:0 10px;margin-bottom:0}
-  .gallery-item{margin-bottom:10px;transform:none}
-
-  .gallery-item:nth-child(1){aspect-ratio:4/5;  width:92%; margin-left:0;    margin-top:0;    margin-bottom:18px}
-  .gallery-item:nth-child(2){aspect-ratio:3/4;  width:82%; margin-left:auto; margin-right:2%; margin-bottom:12px}
-  .gallery-item:nth-child(3){aspect-ratio:1;    width:96%; margin-left:4%;   margin-top:6px;  margin-bottom:18px}
-  .gallery-item:nth-child(4){aspect-ratio:1;    width:78%; margin-left:0;    margin-top:4px;  margin-bottom:14px}
-  .gallery-item:nth-child(5){aspect-ratio:3/4;  width:94%; margin-left:auto; margin-top:20px; margin-bottom:24px}
-  .gallery-item:nth-child(6){aspect-ratio:4/5;  width:86%; margin-left:6%;   margin-top:8px;  margin-bottom:28px}
-  .gallery-item:nth-child(7){aspect-ratio:1;    width:90%; margin-left:0;    margin-top:14px; margin-bottom:10px}
-
-  /* Reveal keeps a plain rise on mobile since --off is no longer used */
+  .gallery-track{column-count:2;column-gap:10px;padding:0 10px}
   .gallery-item.reveal{transform:translateY(26px) scale(.97)}
   .gallery-item.reveal.in{transform:translateY(0) scale(1)}
 }
@@ -813,6 +794,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     <div class="gallery-item" role="img" aria-label="Gallery photo 5" data-img-key="img-gallery-5"><span class="gph">Photo 5</span></div>
     <div class="gallery-item" role="img" aria-label="Gallery photo 6" data-img-key="img-gallery-6"><span class="gph">Photo 6</span></div>
     <div class="gallery-item" role="img" aria-label="Gallery photo 7" data-img-key="img-gallery-7"><span class="gph">Photo 7</span></div>
+    <div class="gallery-item" role="img" aria-label="Gallery photo 8" data-img-key="img-gallery-8"><span class="gph">Photo 8</span></div>
   </div>
 </section>
 
@@ -1074,26 +1056,136 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   // In a salon-hang column layout the tiles sit at genuinely different heights,
   // so a single group trigger would pop the whole wall at once. Observing each
   // tile individually means photos arrive as you actually scroll past them.
-  (function initGalleryReveal(){
-    const tiles = document.querySelectorAll('.gallery-track .gallery-item');
-    if(!tiles.length) return;
-    if(matchMedia('(prefers-reduced-motion: reduce)').matches){
-      tiles.forEach(t => t.classList.add('reveal','in'));
-      return;
+  // ---- Gallery: random salon hang + per-tile scroll reveal ----
+  // The wall is rehung on every page load: a random subset of the available
+  // photos (5-8) is shown, in random order, each with a randomized width,
+  // aspect ratio, horizontal drift and surrounding buffer. Hardcoded CSS
+  // positions looked identical every visit; this keeps it alive.
+  window._initGallery = (function(){
+    const MIN = 5, MAX = 8;
+    let done = false;
+
+    // Tunable pools. Widths stay high enough that photos read clearly, with the
+    // irregularity coming mostly from drift and uneven buffers.
+    const RATIOS  = ['4/5','3/4','1','5/4','4/5','3/4'];
+    const rnd = (a,b) => a + Math.random()*(b-a);
+    const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+
+    function shuffle(a){
+      for(let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]] = [a[j],a[i]];
+      }
+      return a;
     }
-    const gio = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if(!e.isIntersecting) return;
-        // Small delay keyed to horizontal position so tiles entering together
-        // resolve left-to-right instead of simultaneously.
-        const col = Math.round(e.target.getBoundingClientRect().left / 120);
-        e.target.style.setProperty('--rd', `${Math.min(col, 5) * 55}ms`);
-        e.target.classList.add('in');
-        gio.unobserve(e.target);
+
+    function styleTile(el, isNarrow){
+      // Buffer around every photo, randomized so no two gaps match
+      const mt = Math.round(rnd(0, isNarrow ? 18 : 40));
+      const mb = Math.round(rnd(isNarrow ? 14 : 24, isNarrow ? 32 : 56));
+      const w  = Math.round(rnd(isNarrow ? 80 : 78, isNarrow ? 97 : 100));
+      el.style.setProperty('--gi-ar', pick(RATIOS));
+      el.style.setProperty('--gi-w',  w + '%');
+      el.style.setProperty('--gi-mt', mt + 'px');
+      el.style.setProperty('--gi-mb', mb + 'px');
+      // Horizontal drift: hug left, hug right, or indent slightly
+      const drift = Math.random();
+      if(drift < 0.34){
+        el.style.setProperty('--gi-ml','0');
+        el.style.setProperty('--gi-mr','auto');
+      } else if(drift < 0.67){
+        el.style.setProperty('--gi-ml','auto');
+        el.style.setProperty('--gi-mr', Math.round(rnd(0,5)) + '%');
+      } else {
+        el.style.setProperty('--gi-ml', Math.round(rnd(2,8)) + '%');
+        el.style.setProperty('--gi-mr','auto');
+      }
+    }
+
+    function run(){
+      if(done) return;
+      const track = document.querySelector('.gallery-track');
+      if(!track) return;
+      const all = [...track.querySelectorAll('.gallery-item')];
+      if(!all.length) return;
+
+      // Only consider tiles that actually have a photo. If images haven't
+      // loaded yet we bail and let the caller re-run after Firestore resolves.
+      const filled = all.filter(el => el.style.backgroundImage &&
+                                      el.style.backgroundImage !== 'none');
+      // If fewer photos exist than MIN, show every one we have rather than
+      // padding the wall out with empty placeholder tiles.
+      if(filled.length < MIN){
+        if(!filled.length) return;    // nothing loaded yet — let the caller retry
+        done = true;
+        const narrow = matchMedia('(max-width:700px)').matches;
+        all.forEach(el => { el.hidden = true; });
+        shuffle([...filled]).forEach(el => {
+          el.hidden = false;
+          styleTile(el, narrow);
+          track.appendChild(el);
+        });
+        attachReveal(filled);
+        return;
+      }
+      const pool = filled;
+      done = true;
+
+      const isNarrow = matchMedia('(max-width:700px)').matches;
+      const count = Math.min(pool.length,
+                     Math.floor(rnd(MIN, Math.min(MAX, pool.length) + 1)));
+      const chosen = shuffle([...pool]).slice(0, count);
+
+      // Hide everything, then show and restyle the chosen tiles in random order
+      all.forEach(el => { el.hidden = true; });
+      chosen.forEach(el => {
+        el.hidden = false;
+        styleTile(el, isNarrow);
+        track.appendChild(el);   // reorder in DOM so column flow differs too
       });
-    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
-    tiles.forEach(t => { t.classList.add('reveal'); gio.observe(t); });
+
+      attachReveal(chosen);
+    }
+
+    function attachReveal(tiles){
+      if(matchMedia('(prefers-reduced-motion: reduce)').matches){
+        tiles.forEach(t => t.classList.add('reveal','in'));
+        return;
+      }
+      const gio = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if(!e.isIntersecting) return;
+          // Delay keyed to horizontal position, plus a little jitter, so tiles
+          // entering together don't resolve in a metronomic left-to-right sweep.
+          const col = Math.round(e.target.getBoundingClientRect().left / 120);
+          const jitter = Math.round(Math.random()*90);
+          e.target.style.setProperty('--rd', `${Math.min(col,5)*55 + jitter}ms`);
+          e.target.classList.add('in');
+          gio.unobserve(e.target);
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+      tiles.forEach(t => { t.classList.add('reveal'); gio.observe(t); });
+    }
+
+    // Fallback: if photos never load (offline, Firestore down), still show the
+    // placeholders rather than an empty section.
+    setTimeout(() => {
+      if(done) return;
+      const track = document.querySelector('.gallery-track');
+      if(!track) return;
+      const all = [...track.querySelectorAll('.gallery-item')];
+      if(!all.length) return;
+      done = true;
+      const isNarrow = matchMedia('(max-width:700px)').matches;
+      all.forEach(el => { el.hidden = false; styleTile(el, isNarrow); });
+      attachReveal(all);
+    }, 4000);
+
+    return run;
   })();
+
+  // Try immediately in case images are already applied (cached / admin preview)
+  window._initGallery();
 
 
 
@@ -1940,6 +2032,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       apply: (el, url) => { el.style.backgroundImage=`url('${url}')`; el.querySelector('.gph').style.display='none'; }},
     { key:'img-gallery-7', maxW:800,  maxH:1000, quality:.82,
       apply: (el, url) => { el.style.backgroundImage=`url('${url}')`; el.querySelector('.gph').style.display='none'; }},
+    { key:'img-gallery-8', maxW:800,  maxH:1000, quality:.82,
+      apply: (el, url) => { el.style.backgroundImage=`url('${url}')`; el.querySelector('.gph').style.display='none'; }},
   ];
 
   // ---- Text editable map — now driven by data-editable-key attributes ----
@@ -2306,7 +2400,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       'img-venue',
       'img-story-1','img-story-2','img-story-3',
       'img-gallery-1','img-gallery-2','img-gallery-3',
-      'img-gallery-4','img-gallery-5','img-gallery-6','img-gallery-7',
+      'img-gallery-4','img-gallery-5','img-gallery-6','img-gallery-7','img-gallery-8',
     ];
     await Promise.all(imageKeys.map(async key => {
       try {
@@ -2327,6 +2421,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       }
     }));
     console.log('loadContent complete');
+    // Gallery images are now applied — hang the wall from whatever actually loaded.
+    if(window._initGallery) window._initGallery();
   }
 
   // ---- Activate admin ----

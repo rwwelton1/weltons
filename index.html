@@ -525,18 +525,36 @@ section{padding:120px 0;position:relative;z-index:2}
 .gallery-item[data-key="arched"]    .gallery-orn{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M1%2091%20V9%20Q50%202%2099%209%20V91%20Q50%2098%201%2091%20Z%27%20stroke%3D%27%23D4AF37%27%20stroke-width%3D%271%27%20vector-effect%3D%27non-scaling-stroke%27%20fill%3D%27none%27%2F%3E%3C%2Fsvg%3E") }
 .gallery-item[data-key="ogee"]      .gallery-orn{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M1%2012%20Q10%201%2026%201%20H74%20Q90%201%2099%2012%20V88%20Q90%2099%2074%2099%20H26%20Q10%2099%201%2088%20Z%27%20stroke%3D%27%23D4AF37%27%20stroke-width%3D%271%27%20vector-effect%3D%27non-scaling-stroke%27%20fill%3D%27none%27%2F%3E%3C%2Fsvg%3E") }
 .gallery-item[data-key="double"]    .gallery-orn{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Crect%20x%3D%271%27%20y%3D%271%27%20width%3D%2798%27%20height%3D%2798%27%20stroke%3D%27%23D4AF37%27%20stroke-width%3D%271%27%20vector-effect%3D%27non-scaling-stroke%27%20fill%3D%27none%27%2F%3E%3Crect%20x%3D%276%27%20y%3D%276%27%20width%3D%2788%27%20height%3D%2788%27%20stroke%3D%27%238A6A14%27%20stroke-width%3D%27.6%27%20vector-effect%3D%27non-scaling-stroke%27%20fill%3D%27none%27%2F%3E%3C%2Fsvg%3E") }
-.gallery-item[data-key="bracketed"] .gallery-orn{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M1%2030%20V1%20H30%20M70%201%20H99%20V30%20M99%2070%20V99%20H70%20M30%2099%20H1%20V70%27%20stroke%3D%27%23D4AF37%27%20stroke-width%3D%271%27%20vector-effect%3D%27non-scaling-stroke%27%20fill%3D%27none%27%2F%3E%3Cpath%20d%3D%27M40%201%20H60%20M99%2040%20V60%20M60%2099%20H40%20M1%2060%20V40%27%20stroke%3D%27%238A6A14%27%20stroke-width%3D%271%27%20vector-effect%3D%27non-scaling-stroke%27%20fill%3D%27none%27%2F%3E%3C%2Fsvg%3E") }
 
 /* The print fills the frame cell entirely */
 .gallery-photo{
   display:block;
   position:absolute;inset:0;
-  background-size:cover;background-position:center;
+  background-size:cover;
+  /* Focal point per slot. A 4:5 cell crops hard, and centre isn't right for
+     every photograph — one with the subject low in frame loses it off the
+     bottom edge. Set --focus on the .gallery-item to steer the crop. */
+  background-position:var(--focus,center);
   background-color:var(--shell);
   overflow:hidden;
   transition:transform .9s cubic-bezier(.2,.7,.2,1);
 }
 .gallery-item:hover .gallery-photo{transform:scale(1.02)}
+
+/* ---- Per-photo crop ----
+   The 4:5 cell crops every photograph. Centre suits most, but a shot with the
+   subject low or high in frame loses it at an edge. Set the focal point by
+   slot number here — the value is any CSS background-position.
+   e.g. 'center bottom' keeps the lower third, 'center 30%' favours the upper.
+   Slots correspond to Photo 1-8 in admin mode. */
+.gallery-item[data-img-key="img-gallery-1"]{ --focus:center }
+.gallery-item[data-img-key="img-gallery-2"]{ --focus:center }
+.gallery-item[data-img-key="img-gallery-3"]{ --focus:center }
+.gallery-item[data-img-key="img-gallery-4"]{ --focus:center }
+.gallery-item[data-img-key="img-gallery-5"]{ --focus:center }
+.gallery-item[data-img-key="img-gallery-6"]{ --focus:center }
+.gallery-item[data-img-key="img-gallery-7"]{ --focus:center }
+.gallery-item[data-img-key="img-gallery-8"]{ --focus:center }
 
 .gallery-item .gph{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
@@ -1159,7 +1177,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     // fixed means the wall never comes out lopsided toward quiet or ornate.
     // Keyline shapes — the inner gold rule. Every frame gets one; the shape is
     // what varies. 'straight' is the plain rectangle.
-    const KEYLINES = ['straight','notched','stepped','arched','ogee','double','bracketed'];
+    const KEYLINES = ['straight','notched','stepped','arched','ogee','double'];
 
     // The 2 x 3 grid has seven adjacent pairs (four horizontal, three vertical).
     // These 12 patterns place three pairs of values so that no two matching
@@ -1217,7 +1235,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       },
       {
         name:'beaded',        // fine bright bead outside a heavier deep edge
-        fw:'3px', fwNarrow:'2px',
+        fw:'2.5px', fwNarrow:'1.5px',
         // Exterior rings only. An inset shadow draws inside the element, and
         // with no mat the inside is the photograph — it would lay gold lines
         // over the image (or over the placeholder before photos load).
@@ -1226,19 +1244,19 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       },
       {
         name:'reeded',        // narrow reeds, alternating light and deep
-        fw:'1.5px', fwNarrow:'1px',
+        fw:'2px', fwNarrow:'1.5px',
         profile:`0 0 0 1px ${D}, 0 0 0 2px ${G}, 0 0 0 3px ${D}`,
         weight:2
       },
       {
         name:'broad',         // wide gilt surround, gallery-style
-        fw:'5px', fwNarrow:'3px',
+        fw:'3px', fwNarrow:'2px',
         profile:`0 0 0 2px ${D}`,
         weight:2
       },
       {
-        name:'hairline',      // barely-there gilt line, lets the photo dominate
-        fw:'1px', fwNarrow:'1px',
+        name:'hairline',      // the lightest edge, but still clearly a frame
+        fw:'1.5px', fwNarrow:'1.25px',
         profile:'none',
         weight:2
       },

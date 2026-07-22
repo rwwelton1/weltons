@@ -496,16 +496,8 @@ section{padding:120px 0;position:relative;z-index:2}
 /* ---- Motifs ---- */
 
 
-.gallery-item[data-orn="notched"]::before,
-.gallery-item[data-orn="notched"]::after,
-.gallery-item[data-orn="notched"] .gallery-orn::before,
-.gallery-item[data-orn="notched"] .gallery-orn::after{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2060%2060%27%3E%3Cpath%20d%3D%27M0%200%20H58%20L58%2010%20H22%20L22%2022%20H10%20L10%2058%20H0%20Z%27%20fill%3D%27%23D4AF37%27%2F%3E%3Cpath%20d%3D%27M16%2026%20H26%20V16%20H44%20V22%20H32%20V32%20H16%20Z%27%20fill%3D%27%238A6A14%27%2F%3E%3C%2Fsvg%3E") }
 
 
-.gallery-item[data-orn="chevron"]::before,
-.gallery-item[data-orn="chevron"]::after,
-.gallery-item[data-orn="chevron"] .gallery-orn::before,
-.gallery-item[data-orn="chevron"] .gallery-orn::after{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2060%2060%27%3E%3Cpath%20d%3D%27M0%200%20L30%2030%20L60%200%20L60%2012%20L30%2042%20L0%2012%20Z%27%20fill%3D%27%23D4AF37%27%2F%3E%3Cpath%20d%3D%27M0%2020%20L30%2050%20L60%2020%20L60%2030%20L30%2060%20L0%2030%20Z%27%20fill%3D%27%238A6A14%27%2F%3E%3C%2Fsvg%3E") }
 
 
 /* Plain — no corner motif */
@@ -514,18 +506,26 @@ section{padding:120px 0;position:relative;z-index:2}
 .gallery-item[data-orn="plain"] .gallery-orn::before,
 .gallery-item[data-orn="plain"] .gallery-orn::after{ background-image:none }
 
-/* Optional inner keyline, independent of the corner motif */
-.gallery-item[data-key="on"] .gallery-orn{
-  border:1px solid rgba(212,175,55,.55);
-  inset:9px;
+/* ---- INNER KEYLINE ----
+   The thin gold rule set inside the frame. Drawn as SVG rather than a CSS
+   border so the corners can be notched, stepped, arched or cusped — a border
+   can only ever be a rectangle. preserveAspectRatio='none' lets one square
+   path stretch to the 4:5 cell, and non-scaling-stroke keeps the line an even
+   weight instead of stretching with it. */
+.gallery-orn{
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:100% 100%;
 }
+.gallery-item[data-key] .gallery-orn{ inset:var(--key-inset,9px) }
 
-@media(max-width:640px){
-  .gallery-track{gap:12px;padding:0 12px}
-  /* Corner motifs scale with the cell so they stay proportional at ~170px */
-  .gallery-item{--orn-sz:30px}
-  .gallery-item[data-key="on"] .gallery-orn{inset:6px}
-}
+.gallery-item[data-key="straight"]  .gallery-orn{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Crect%20x%3D%271%27%20y%3D%271%27%20width%3D%2798%27%20height%3D%2798%27%20stroke%3D%27%23D4AF37%27%20stroke-width%3D%271%27%20vector-effect%3D%27non-scaling-stroke%27%20fill%3D%27none%27%2F%3E%3C%2Fsvg%3E") }
+.gallery-item[data-key="notched"]   .gallery-orn{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M9%201%20H91%20L99%209%20V91%20L91%2099%20H9%20L1%2091%20V9%20Z%27%20stroke%3D%27%23D4AF37%27%20stroke-width%3D%271%27%20vector-effect%3D%27non-scaling-stroke%27%20fill%3D%27none%27%2F%3E%3C%2Fsvg%3E") }
+.gallery-item[data-key="stepped"]   .gallery-orn{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M1%209%20H5%20V5%20H9%20V1%20H91%20V5%20H95%20V9%20H99%20V91%20H95%20V95%20H91%20V99%20H9%20V95%20H5%20V91%20H1%20Z%27%20stroke%3D%27%23D4AF37%27%20stroke-width%3D%271%27%20vector-effect%3D%27non-scaling-stroke%27%20fill%3D%27none%27%2F%3E%3C%2Fsvg%3E") }
+.gallery-item[data-key="arched"]    .gallery-orn{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M1%2099%20V26%20Q50%201%2099%2026%20V99%20Z%27%20stroke%3D%27%23D4AF37%27%20stroke-width%3D%271%27%20vector-effect%3D%27non-scaling-stroke%27%20fill%3D%27none%27%2F%3E%3C%2Fsvg%3E") }
+.gallery-item[data-key="ogee"]      .gallery-orn{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M1%2012%20Q10%201%2026%201%20H74%20Q90%201%2099%2012%20V88%20Q90%2099%2074%2099%20H26%20Q10%2099%201%2088%20Z%27%20stroke%3D%27%23D4AF37%27%20stroke-width%3D%271%27%20vector-effect%3D%27non-scaling-stroke%27%20fill%3D%27none%27%2F%3E%3C%2Fsvg%3E") }
+.gallery-item[data-key="double"]    .gallery-orn{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Crect%20x%3D%271%27%20y%3D%271%27%20width%3D%2798%27%20height%3D%2798%27%20stroke%3D%27%23D4AF37%27%20stroke-width%3D%271%27%20vector-effect%3D%27non-scaling-stroke%27%20fill%3D%27none%27%2F%3E%3Crect%20x%3D%276%27%20y%3D%276%27%20width%3D%2788%27%20height%3D%2788%27%20stroke%3D%27%238A6A14%27%20stroke-width%3D%27.6%27%20vector-effect%3D%27non-scaling-stroke%27%20fill%3D%27none%27%2F%3E%3C%2Fsvg%3E") }
+.gallery-item[data-key="bracketed"] .gallery-orn{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M1%2030%20V1%20H30%20M70%201%20H99%20V30%20M99%2070%20V99%20H70%20M30%2099%20H1%20V70%27%20stroke%3D%27%23D4AF37%27%20stroke-width%3D%271%27%20vector-effect%3D%27non-scaling-stroke%27%20fill%3D%27none%27%2F%3E%3Cpath%20d%3D%27M40%201%20H60%20M99%2040%20V60%20M60%2099%20H40%20M1%2060%20V40%27%20stroke%3D%27%238A6A14%27%20stroke-width%3D%271%27%20vector-effect%3D%27non-scaling-stroke%27%20fill%3D%27none%27%2F%3E%3C%2Fsvg%3E") }
 
 /* The print fills the frame cell entirely */
 .gallery-photo{
@@ -555,9 +555,6 @@ section{padding:120px 0;position:relative;z-index:2}
 
 @media(max-width:640px){
   .gallery-track{gap:12px;padding:0 12px}
-  /* Corner motifs scale with the cell so they stay proportional at ~170px */
-  .gallery-item{--orn-sz:30px}
-  .gallery-item[data-key="on"] .gallery-orn{inset:6px}
   .gallery-item.reveal{transform:translateY(20px) scale(.98)}
   .gallery-item.reveal.in{transform:translateY(0) scale(1)}
 }
@@ -1160,27 +1157,34 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     // Every load hangs the same composition — two plain frames, two chevron and
     // two notched — with only their positions shuffled. Keeping the balance
     // fixed means the wall never comes out lopsided toward quiet or ornate.
+    // Keyline shapes — the inner gold rule. Every frame gets one; the shape is
+    // what varies. 'straight' is the plain rectangle.
+    const KEYLINES = ['straight','notched','stepped','arched','ogee','double','bracketed'];
+
     // The 2 x 3 grid has seven adjacent pairs (four horizontal, three vertical).
-    // Of the 90 ways to arrange two plain, two chevron and two notched frames,
-    // only these 12 avoid placing matching frames next to each other. They're
-    // precomputed rather than rejection-sampled so the layout is guaranteed
-    // valid without looping. Grid index: 0 1 / 2 3 / 4 5.
-    const ARRANGEMENTS = [
-      ['chevron','notched','notched','plain','plain','chevron'],
-      ['chevron','notched','plain','chevron','notched','plain'],
-      ['chevron','plain','notched','chevron','plain','notched'],
-      ['chevron','plain','plain','notched','notched','chevron'],
-      ['notched','chevron','chevron','plain','plain','notched'],
-      ['notched','chevron','plain','notched','chevron','plain'],
-      ['notched','plain','chevron','notched','plain','chevron'],
-      ['notched','plain','plain','chevron','chevron','notched'],
-      ['plain','chevron','chevron','notched','notched','plain'],
-      ['plain','chevron','notched','plain','chevron','notched'],
-      ['plain','notched','chevron','plain','notched','chevron'],
-      ['plain','notched','notched','chevron','chevron','plain']
+    // These 12 patterns place three pairs of values so that no two matching
+    // cells ever touch. Values are slot indices into the chosen trio below.
+    // Grid index: 0 1 / 2 3 / 4 5.
+    const PATTERNS = [
+      [0,1,1,2,2,0],
+      [0,1,2,0,1,2],
+      [0,2,1,0,2,1],
+      [0,2,2,1,1,0],
+      [1,0,0,2,2,1],
+      [1,0,2,1,0,2],
+      [1,2,0,1,2,0],
+      [1,2,2,0,0,1],
+      [2,0,0,1,1,2],
+      [2,0,1,2,0,1],
+      [2,1,0,2,1,0],
+      [2,1,1,0,0,2]
     ];
     function buildOrnamentSet(){
-      return [...ARRANGEMENTS[Math.floor(Math.random() * ARRANGEMENTS.length)]];
+      // Three distinct shapes per load, two frames each, arranged so matching
+      // keylines never abut.
+      const trio    = shuffle([...KEYLINES]).slice(0, 3);
+      const pattern = PATTERNS[Math.floor(Math.random() * PATTERNS.length)];
+      return pattern.map(i => trio[i]);
     }
 
     // Every cell shares one ratio so the 2 x 3 grid stays even
@@ -1292,12 +1296,12 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       el.style.setProperty('--gi-fw', narrow ? frame.fwNarrow : frame.fw);
       el.style.setProperty('--gi-profile',
         (narrow && frame.profile.indexOf('inset') === -1) ? 'none' : frame.profile);
-      el.setAttribute('data-orn', ornName);
-      // A keyline only ever lands on a plain frame — on an ornamented one it
-      // competes with the corner motif. This gives the two plain frames a
-      // little interest without upsetting the two/two/two balance.
-      el.setAttribute('data-key',
-        (ornName === 'plain' && Math.random() < 0.5) ? 'on' : 'off');
+      // ornName is now the keyline shape — every frame gets an inner rule, and
+      // the shape of that rule is what varies. Corner motifs are gone; the
+      // keyline carries the ornament instead.
+      el.setAttribute('data-orn', 'plain');
+      el.setAttribute('data-key', ornName);
+      el.style.setProperty('--key-inset', narrow ? '6px' : '9px');
       // Larger motifs on frames with a light moulding, so detail stays balanced
       el.style.setProperty('--orn-sz', narrow ? '30px'
         : (frame.name === 'broad' ? '38px' : '46px'));

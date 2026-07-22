@@ -75,12 +75,34 @@ body{
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:500;opacity:.35;mix-blend-mode:multiply;will-change:auto;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");}
 
+/* Softening veil over the botanical background. Sections are now translucent, so
+   this keeps a busy or high-contrast photo from fighting the body copy while
+   still letting the texture read through. z-index sits below sections (z:2). */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;
+  background:rgba(247,242,234,.42)}
+
 /* ---- VEIN ---- */
 
 
 /* ---- SKIP LINK ---- */
 .skip{position:absolute;top:-999px;left:16px;z-index:9999;background:var(--ink);color:var(--ivory);padding:10px 18px;border-radius:0 0 6px 6px;font-size:.82rem;letter-spacing:.1em;text-decoration:none}
 .skip:focus{top:0}
+
+/* ---- KEYBOARD FOCUS ----
+   Default focus rings nearly disappear against the low-contrast ivory/shell
+   palette. :focus-visible keeps these off mouse clicks and on for keyboard nav. */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible{
+  outline:2px solid var(--sage-deep);
+  outline-offset:3px;
+  border-radius:2px;
+}
+.btn:focus-visible{outline-offset:4px}
+.navlinks a:focus-visible{outline-offset:6px}
+/* On the rose RSVP panel, sage-on-rose is muddy — use the deeper rose ink */
+#rsvp a:focus-visible,
+#rsvp button:focus-visible{outline-color:var(--rose-ink)}
 
 /* ---- NAV ---- */
 nav{position:fixed;top:0;left:0;right:0;z-index:9000;display:flex;align-items:center;justify-content:space-between;padding:20px 32px;transition:background .4s,box-shadow .4s,padding .4s;isolation:isolate}
@@ -169,6 +191,11 @@ body.hero-has-images nav:not(.scrolled):not(.menu-open) .menu-btn span{backgroun
   text-align:center;
   position:relative;
   overflow:hidden;
+  /* isolate creates a stacking context so .hero-slides (z-index:-1) stays
+     contained here instead of dropping behind the body::after veil, which
+     would tint the hero photography. */
+  isolation:isolate;
+  z-index:2;
 }
 
 /* Hero content hidden until first image loads */
@@ -233,25 +260,42 @@ body.hero-has-images nav:not(.scrolled):not(.menu-open) .menu-btn span{backgroun
 .btn-rose{border-color:var(--rose-deep);color:var(--rose-ink)}
 .btn-rose:hover{background:var(--rose-deep);color:var(--ivory)}
 
-/* ---- SECTIONS — solid panels over the fixed background ---- */
+/* ---- SECTIONS — translucent panels let the botanical background ghost through ---- */
 section{padding:120px 0;position:relative;z-index:2}
 
-#story        { background: var(--shell); }
-#schedule     { background: var(--ivory); }
-#wedding-party{ background: var(--shell); }
-#venue        { background: var(--shell); }
+/* Alpha values are tuned per-section: text-dense sections stay more opaque for
+   legibility, image-led ones let more of the background texture read. */
+#story        { background: rgba(238,228,215,.93); }
+#schedule     { background: rgba(247,242,234,.90); padding:100px 0; }
+#wedding-party{ background: rgba(238,228,215,.90); padding:100px 0; }
+#venue        { background: rgba(238,228,215,.95); }
 #gallery      { background: transparent; padding: 40px 0; }
-#travel       { background: var(--shell); }
-#faq          { background: var(--ivory); }
-#registry     { background: var(--shell); }
-#rsvp         { background: var(--rose);  }
+#travel       { background: rgba(238,228,215,.93); }
+#faq          { background: rgba(247,242,234,.94); padding:110px 0; }
+#registry     { background: rgba(238,228,215,.90); padding:100px 0; }
+
+/* RSVP — the one conversion moment. More room, and a soft gradient so it reads
+   as a destination rather than a flat slab of the most saturated color. */
+#rsvp{
+  background:linear-gradient(180deg,
+    rgba(238,228,215,.94) 0%,
+    rgba(233,214,203,.95) 38%,
+    rgba(228,199,190,.96) 100%);
+  padding:150px 0 140px;
+}
+
+/* Solid fallback for browsers without rgba-on-gradient support */
+@supports not (background: linear-gradient(180deg, rgba(0,0,0,.9), rgba(0,0,0,.9))){
+  #rsvp{background:var(--rose)}
+}
 .sec-num{font-family:var(--serif);font-style:italic;font-size:.92rem;color:var(--rose-deep)}
 .sec-head{margin-bottom:64px}
 .sec-head.center{text-align:center}
 .sec-title{font-size:clamp(2.1rem,6vw,3.6rem);font-style:italic;margin-top:.18em;letter-spacing:-.01em}
 .sec-title em{font-style:normal}
-.reveal{opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1);transition-delay:var(--rd,0ms)}
 .reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.reveal{transition-delay:0ms!important}}
 
 /* ---- OUR STORY ---- */
 /* background now set above */
@@ -941,6 +985,37 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
   }), {threshold:.12});
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // Stagger repeated items so groups resolve in sequence rather than all at once.
+  // Each group is a container whose direct children are visually parallel items.
+  // We mark the children as .reveal themselves and give each an increasing delay.
+  // Note: '.party-list' is scoped to #wedding-party — the RSVP form also has a
+  // #partyList element, and staggering that would fight the form's own step logic.
+  const STAGGER_GROUPS = ['.sched', '.hotels', '#faqList', '#wedding-party .party-list', '.rsvp-policies'];
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!reduceMotion){
+    STAGGER_GROUPS.forEach(sel => {
+      document.querySelectorAll(sel).forEach(group => {
+        // Only stagger real content rows, not day headers or stray text nodes
+        const items = [...group.children].filter(c =>
+          c.matches('.sched-row, .hotel, .faq, li, .rsvp-policy'));
+        if(!items.length) return;
+        // Hand the animation off to the children: if the container itself was a
+        // .reveal, un-observe it and mark it done so it doesn't fade as a block
+        // while its children are also fading (which double-dips the opacity).
+        if(group.classList.contains('reveal')){
+          io.unobserve(group);
+          group.classList.remove('reveal');
+          group.classList.remove('in');
+        }
+        items.forEach((item, i) => {
+          item.classList.add('reveal');
+          item.style.setProperty('--rd', `${Math.min(i, 8) * 70}ms`);
+          io.observe(item);
+        });
+      });
+    });
+  }
 
 
 

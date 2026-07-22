@@ -462,8 +462,8 @@ section{padding:120px 0;position:relative;z-index:2}
 
 /* ---- ART DECO CORNER ORNAMENTS ----
    Drawn as inline SVG rather than gradient bars — gradients can only produce
-   straight strips, which read as thin and mechanical. SVG gives real geometry:
-   solid ziggurats, curved fans, scalloped lobes and rays with mass.
+   straight strips, which read as thin and mechanical. SVG gives real geometry
+   with mass: nested chevrons and thick notched brackets.
    Each ornament is a 60x60 corner motif, mirrored into all four corners via
    two pseudo-elements (top pair and bottom pair, each flipped horizontally). */
 .gallery-item::before,
@@ -494,10 +494,6 @@ section{padding:120px 0;position:relative;z-index:2}
 .gallery-orn::after{bottom:0;right:0;transform:scale(-1,-1)}
 
 /* ---- Motifs ---- */
-.gallery-item[data-orn="ziggurat"]::before,
-.gallery-item[data-orn="ziggurat"]::after,
-.gallery-item[data-orn="ziggurat"] .gallery-orn::before,
-.gallery-item[data-orn="ziggurat"] .gallery-orn::after{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2060%2060%27%3E%3Cpath%20d%3D%27M0%200%20H60%20V8%20H14%20V22%20H8%20V40%20H0%20Z%27%20fill%3D%27%23D4AF37%27%2F%3E%3Cpath%20d%3D%27M18%2012%20H60%20V18%20H24%20V30%20H18%20Z%27%20fill%3D%27%238A6A14%27%2F%3E%3C%2Fsvg%3E") }
 
 
 .gallery-item[data-orn="notched"]::before,
@@ -505,10 +501,6 @@ section{padding:120px 0;position:relative;z-index:2}
 .gallery-item[data-orn="notched"] .gallery-orn::before,
 .gallery-item[data-orn="notched"] .gallery-orn::after{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2060%2060%27%3E%3Cpath%20d%3D%27M0%200%20H58%20L58%2010%20H22%20L22%2022%20H10%20L10%2058%20H0%20Z%27%20fill%3D%27%23D4AF37%27%2F%3E%3Cpath%20d%3D%27M16%2026%20H26%20V16%20H44%20V22%20H32%20V32%20H16%20Z%27%20fill%3D%27%238A6A14%27%2F%3E%3C%2Fsvg%3E") }
 
-.gallery-item[data-orn="sunburst"]::before,
-.gallery-item[data-orn="sunburst"]::after,
-.gallery-item[data-orn="sunburst"] .gallery-orn::before,
-.gallery-item[data-orn="sunburst"] .gallery-orn::after{ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2060%2060%27%3E%3Cpath%20d%3D%27M0%200%20L52%200%20L0%2014%20Z%27%20fill%3D%27%23D4AF37%27%2F%3E%3Cpath%20d%3D%27M0%200%20L0%2052%20L14%200%20Z%27%20fill%3D%27%23D4AF37%27%2F%3E%3Cpath%20d%3D%27M0%200%20L40%2026%20L26%2040%20Z%27%20fill%3D%27%238A6A14%27%2F%3E%3C%2Fsvg%3E") }
 
 .gallery-item[data-orn="chevron"]::before,
 .gallery-item[data-orn="chevron"]::after,
@@ -1165,19 +1157,30 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     // Art Deco corner ornaments. Each maps to a [data-orn] rule in the CSS.
     // 'plain' is weighted highest so ornament reads as accent, not wallpaper.
     // Corner motifs, drawn as SVG. Each is mirrored into all four corners.
-    // 'plain' carries weight so some frames stay quiet against the ornamented.
-    // Every load hangs a fixed composition: two plain frames, two chevron, and
-    // two "enhanced" (a richer motif drawn from the pool below). Positions are
-    // shuffled, and which enhanced motifs appear varies, so the wall changes
-    // without the balance of quiet-to-ornate drifting.
-    const ENHANCED = ['ziggurat','notched','sunburst'];
+    // Every load hangs the same composition — two plain frames, two chevron and
+    // two notched — with only their positions shuffled. Keeping the balance
+    // fixed means the wall never comes out lopsided toward quiet or ornate.
+    // The 2 x 3 grid has seven adjacent pairs (four horizontal, three vertical).
+    // Of the 90 ways to arrange two plain, two chevron and two notched frames,
+    // only these 12 avoid placing matching frames next to each other. They're
+    // precomputed rather than rejection-sampled so the layout is guaranteed
+    // valid without looping. Grid index: 0 1 / 2 3 / 4 5.
+    const ARRANGEMENTS = [
+      ['chevron','notched','notched','plain','plain','chevron'],
+      ['chevron','notched','plain','chevron','notched','plain'],
+      ['chevron','plain','notched','chevron','plain','notched'],
+      ['chevron','plain','plain','notched','notched','chevron'],
+      ['notched','chevron','chevron','plain','plain','notched'],
+      ['notched','chevron','plain','notched','chevron','plain'],
+      ['notched','plain','chevron','notched','plain','chevron'],
+      ['notched','plain','plain','chevron','chevron','notched'],
+      ['plain','chevron','chevron','notched','notched','plain'],
+      ['plain','chevron','notched','plain','chevron','notched'],
+      ['plain','notched','chevron','plain','notched','chevron'],
+      ['plain','notched','notched','chevron','chevron','plain']
+    ];
     function buildOrnamentSet(){
-      const pool = shuffle([...ENHANCED]);
-      return shuffle([
-        'plain',   'plain',
-        'chevron', 'chevron',
-        pool[0],   pool[1],
-      ]);
+      return [...ARRANGEMENTS[Math.floor(Math.random() * ARRANGEMENTS.length)]];
     }
 
     // Every cell shares one ratio so the 2 x 3 grid stays even

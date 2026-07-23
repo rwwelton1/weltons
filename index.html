@@ -143,11 +143,12 @@ body::before{
   body::before{opacity:0;transition:none}
 }
 
-/* Softening veil over the botanical background. Sections are now translucent, so
-   this keeps a busy or high-contrast photo from fighting the body copy while
-   still letting the texture read through. z-index sits below sections (z:2). */
+/* Softening veil over the botanical background. Sections are near-opaque now,
+   so this veil only really acts in the transparent band around the gallery —
+   lightened from .42 to .22 so the illustration actually reads there. Text
+   legibility is unaffected: nothing sits directly on the veil. */
 body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;
-  background:rgba(247,242,234,.42)}
+  background:rgba(247,242,234,.22)}
 
 /* ---- VEIN ---- */
 
@@ -385,10 +386,28 @@ section{padding:120px 0;position:relative;z-index:2}
    legibility, image-led ones let more of the background texture read. */
 #story        { background: rgba(238,228,215,.995); }
 #schedule     { background: rgba(247,242,234,.99);  padding:100px 0; }
-#wedding-party{ background: rgba(238,228,215,.99);  padding:100px 0; }
-#venue        { background: rgba(238,228,215,.995); }
+#wedding-party{ background: rgba(238,228,215,.99);  padding:100px 0 32px; }
+/* #venue's top padding is trimmed to match: the party list ends on a hairline
+   rule and the venue opens with a full-bleed photo, so the default 120+100
+   stacking left roughly 220px of dead field between them.
+   Its foot fades to transparent so the botanical background reads in the
+   band around the gallery — the panels either side are near-opaque, which
+   was sealing the illustration off entirely. */
+#venue{
+  background:linear-gradient(180deg,
+    rgba(238,228,215,.995) 0%,
+    rgba(238,228,215,.995) 72%,
+    rgba(238,228,215,0) 100%);
+  padding-top:32px;
+}
 #gallery      { background: transparent; padding: 40px 0; }
-#travel       { background: rgba(238,228,215,.995); }
+/* mirrored: travel fades in from transparent at its head */
+#travel{
+  background:linear-gradient(180deg,
+    rgba(238,228,215,0) 0%,
+    rgba(238,228,215,.995) 26%,
+    rgba(238,228,215,.995) 100%);
+}
 #faq          { background: rgba(247,242,234,.995); padding:110px 0; }
 #registry     { background: rgba(238,228,215,.99);  padding:100px 0; }
 
@@ -402,7 +421,11 @@ section{padding:120px 0;position:relative;z-index:2}
   padding:150px 0 140px;
 }
 
-.sec-num{font-family:var(--serif);font-style:italic;font-size:.92rem;color:var(--rose-deep)}
+/* display:block is required, not cosmetic: .sec-num is a <span>, and CSS
+   transforms do not apply to non-replaced inline elements. The per-section
+   entrance animations translate this numeral, so as an inline it was both
+   ignoring the transform and collapsing onto the title's line. */
+.sec-num{display:block;font-family:var(--serif);font-style:italic;font-size:.92rem;color:var(--rose-deep)}
 .sec-head{margin-bottom:64px}
 .sec-head.center{text-align:center}
 .sec-title{font-size:clamp(2.1rem,6vw,3.6rem);font-style:italic;margin-top:.18em;letter-spacing:-.01em}
@@ -666,7 +689,48 @@ section{padding:120px 0;position:relative;z-index:2}
 .party-list li.lead .name{color:var(--rose-ink);font-style:italic}
 @media(max-width:680px){.party-grid{grid-template-columns:1fr;gap:48px}}
 
-/* ---- VENUE ---- */
+/* ================================================================
+   SECTION BREAK
+   A small centred mark that closes a section rather than a full-width
+   rule. Set in the page's own hairline ink rather than gilt — an
+   earlier gold version read as too loud against this palette. Used
+   where two text-heavy sections meet and the gap alone was reading
+   as a dropout rather than a pause.
+   ================================================================ */
+/* A single hairline with the diamond positioned at its exact midpoint.
+   The earlier version used two flex children with flex:1, which distributes
+   *remaining* space — with a rotated centre element that resolved unevenly
+   and pushed the diamond off centre. Absolute positioning against a known
+   width removes the ambiguity entirely. */
+.brk{
+  position:relative;
+  width:220px;height:9px;
+  /* 56 + the party list's 8px bottom margin = 64px of clear space above the
+     mark, matching the 32+32 of section padding below it. Previously the mark
+     sat 27px high: 54px above versus 108px below. */
+  margin:56px auto 0;
+}
+.brk::before{
+  content:"";position:absolute;top:50%;left:0;right:0;height:1px;
+  transform:translateY(-50%);
+  background:linear-gradient(90deg,
+    transparent 0%,
+    var(--line) 28%,
+    var(--line) 44%,
+    transparent 46%,
+    transparent 54%,
+    var(--line) 56%,
+    var(--line) 72%,
+    transparent 100%);
+}
+.brk i{
+  position:absolute;top:50%;left:50%;
+  width:5px;height:5px;
+  transform:translate(-50%,-50%) rotate(45deg);
+  transform-origin:center;
+  background:var(--rose-deep);
+  opacity:.75;
+}
 
 .venue-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:60px;align-items:center;max-width:var(--max)}
 .venue-photo{
@@ -676,14 +740,13 @@ section{padding:120px 0;position:relative;z-index:2}
   background-size:cover;background-position:center;
   /* fallback */
   background-color:var(--rose-deep);
-  display:flex;align-items:flex-end;
 }
-/* scrim so the caption stays legible over any photo */
-.venue-photo::after{content:"";position:absolute;left:0;right:0;bottom:0;height:40%;background:linear-gradient(to top, rgba(20,17,14,.5), transparent);pointer-events:none;z-index:0}
-.venue-photo .venue-caption{position:relative;z-index:1;font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;color:var(--sage);padding:20px 24px}
+/* The bottom scrim and caption styles were removed along with the overlay
+   caption — with no text over the photo, the gradient was darkening the
+   lower third of the image for nothing. */
 .venue-copy .place{font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--sage-deep);margin-bottom:8px}
 .venue-copy h3{font-size:clamp(2rem,4vw,2.8rem);font-style:italic;margin-bottom:6px}
-.venue-copy .addr{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:26px}
+.venue-copy .addr{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);padding-bottom:22px;margin-bottom:24px;border-bottom:1px solid var(--line)}
 .venue-copy p{color:var(--ink-soft);margin-bottom:16px}
 .venue-copy p.lead{font-family:var(--serif);font-size:1.2rem;line-height:1.5;color:var(--ink);font-style:italic}
 .venue-copy .btn{margin-top:14px}
@@ -1044,6 +1107,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         </ul>
       </div>
     </div>
+    <div class="brk reveal" role="presentation" aria-hidden="true"><i></i></div>
   </div>
 </section>
 
@@ -1051,17 +1115,17 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 <section id="venue">
   <div class="wrap">
     <div class="venue-grid reveal">
-      <!-- VENUE SLOT — image set via --img-venue CSS variable at top of file -->
-      <div class="venue-photo reveal" role="img" aria-label="Tate House, the pink marble estate in Tate, Georgia" data-img-key="img-venue">
-        <span class="venue-caption">Tate House · Tate, Georgia</span>
-      </div>
+      <!-- VENUE SLOT — image set via --img-venue CSS variable at top of file.
+           No overlay caption: the heading and address directly below already
+           name the place, and a third repetition read as redundant. -->
+      <div class="venue-photo reveal" role="img" aria-label="Tate House, the pink marble estate in Tate, Georgia" data-img-key="img-venue"></div>
       <div class="venue-copy reveal" style="--rd:180ms">
         <span class="sec-num">IV</span>
         <p class="place" style="margin-top:8px">Where We Gather</p>
         <h3>Tate House</h3>
         <p class="addr">2973 GA-53 · Tate, Georgia 30177</p>
         <p class="lead">A mansion that never felt imported or imposed — like it had simply risen out of the Georgia hills on its own.</p>
-        <p>Colonel Sam Tate built this house in 1926 from the pink marble of his own quarries — the same stone used in the Lincoln Memorial and the U.S. Supreme Court. Pink Georgia marble reads less as pink than as warm: nearly ivory in morning light, deepening to a burnished rose by afternoon.</p>
+        <p>Colonel Sam Tate raised this house in 1926 from the pink marble of his own quarries — the same stone used in the Lincoln Memorial and the U.S. Supreme Court. Pink Georgia marble reads less as pink than as warm: nearly ivory in morning light, deepening to a burnished rose by afternoon.</p>
         <p>The grounds spread across 27 acres framed by the Appalachian foothills, with English gardens terracing down from the house and a vine-draped conservatory connecting the private quarters to the formal rooms.</p>
         <a href="https://tatehouse.com" target="_blank" rel="noopener" class="btn">Visit Tate House</a>
       </div>

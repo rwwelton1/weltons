@@ -671,13 +671,16 @@ section{padding:120px 0;position:relative;z-index:2}
   background:var(--rose-deep);
   box-shadow:0 24px 50px -24px rgba(40,35,31,.55);
   transform-origin:center bottom;
-  /* stacked: each card behind sits slightly lower, smaller and rotated */
+  /* stacked: each card behind sits slightly lower, smaller and rotated.
+     --d is the *visual* depth, capped at 3 by the script so a five-card
+     deck doesn't fan out into a mess — cards deeper than that sit hidden
+     behind the third and only appear as they rotate forward. */
   transform:
-    translateY(calc(var(--i) * 10px))
-    scale(calc(1 - var(--i) * .05))
-    rotate(calc(var(--i) * -1.4deg));
-  opacity:calc(1 - var(--i) * .12);
-  z-index:calc(10 - var(--i));
+    translateY(calc(var(--d) * 10px))
+    scale(calc(1 - var(--d) * .05))
+    rotate(calc(var(--d) * -1.4deg));
+  opacity:calc(1 - var(--d) * .18);
+  z-index:calc(10 - var(--d));
   transition:transform .55s cubic-bezier(.2,.7,.2,1),
              opacity .55s cubic-bezier(.2,.7,.2,1);
   will-change:transform;
@@ -726,6 +729,34 @@ section{padding:120px 0;position:relative;z-index:2}
 @media(prefers-reduced-motion:reduce){
   .story-card{transition:none}
 }
+
+/* ---- STORY DECK · ADMIN ----
+   The deck stacks cards absolutely, so in normal use only the front card is
+   on top and reachable. That makes the upload buttons on the cards behind it
+   unclickable. In admin mode the deck un-stacks into a plain vertical list so
+   every card can be tapped and replaced. Swiping is irrelevant here. */
+body.admin-mode .story-deck{
+  position:static;
+  width:100%;
+  aspect-ratio:auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:16px;
+  touch-action:auto;
+}
+body.admin-mode .story-card{
+  position:relative;
+  inset:auto;
+  aspect-ratio:4/5;
+  transform:none !important;
+  opacity:1 !important;
+  z-index:auto;
+  transition:none;
+  /* the deck script sets pointer-events:none on non-front cards; every card
+     must be tappable here or its upload button is dead */
+  pointer-events:auto !important;
+}
+body.admin-mode .deck-hint{display:none}
 
 /* ---- SCHEDULE ---- */
 
@@ -1092,19 +1123,31 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
           <img src="images/story-keeneland.jpg" alt="Grayson and Ryan at Keeneland Race Track" loading="lazy"
                onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
           <div class="img-placeholder" style="display:none"><span>Story Image 1 · Keeneland</span></div>
-          <span class="story-photo-caption">Keeneland, Kentucky</span>
+          <span class="story-photo-caption" data-editable-key="story-cap-1">Keeneland, Kentucky</span>
         </div>
         <div class="story-card" data-img-key="img-story-2">
           <img src="images/story-engagement.jpg" alt="Grayson and Ryan engagement photo" loading="lazy"
                onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
           <div class="img-placeholder" style="display:none"><span>Story Image 2 · Engagement</span></div>
-          <span class="story-photo-caption">Smyrna, Georgia</span>
+          <span class="story-photo-caption" data-editable-key="story-cap-2">Smyrna, Georgia</span>
         </div>
         <div class="story-card" data-img-key="img-story-3">
           <img src="images/story-together.jpg" alt="Grayson and Ryan together" loading="lazy"
                onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
           <div class="img-placeholder" style="display:none"><span>Story Image 3 · Together</span></div>
-          <span class="story-photo-caption">North Georgia</span>
+          <span class="story-photo-caption" data-editable-key="story-cap-3">North Georgia</span>
+        </div>
+        <div class="story-card" data-img-key="img-story-4">
+          <img src="images/story-4.jpg" alt="Grayson and Ryan" loading="lazy"
+               onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
+          <div class="img-placeholder" style="display:none"><span>Story Image 4</span></div>
+          <span class="story-photo-caption" data-editable-key="story-cap-4">Nashville, Tennessee</span>
+        </div>
+        <div class="story-card" data-img-key="img-story-5">
+          <img src="images/story-5.jpg" alt="Grayson and Ryan" loading="lazy"
+               onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
+          <div class="img-placeholder" style="display:none"><span>Story Image 5</span></div>
+          <span class="story-photo-caption" data-editable-key="story-cap-5">Atlanta, Georgia</span>
         </div>
       </div>
       <p class="deck-hint" aria-hidden="true">Swipe</p>
@@ -1480,11 +1523,14 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const THROW = 90;        // px of horizontal travel that commits a swipe
     const SLOP  = 10;        // px before we decide horizontal vs vertical
 
+    const MAXD = 3;          // visual stack depth; deeper cards hide behind
     function order(){
       cards.forEach((c,i) => {
-        c.style.setProperty('--i', i);
+        c.style.setProperty('--d', Math.min(i, MAXD));
         c.dataset.front = (i === 0) ? 'true' : 'false';
-        // only the front card is reachable by assistive tech / tab
+        // cards past the visible stack take no pointer events
+        c.style.pointerEvents = i === 0 ? '' : 'none';
+        // only the front card is reachable by assistive tech
         c.setAttribute('aria-hidden', i === 0 ? 'false' : 'true');
       });
     }
@@ -1495,6 +1541,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     let front = null;
 
     function down(e){
+      // In admin mode the deck is un-stacked for editing — no dragging.
+      if(document.body.classList.contains('admin-mode')) return;
       if(e.button != null && e.button !== 0) return;
       front = cards[0];
       if(!front) return;
@@ -2640,6 +2688,20 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         img.src = url; img.style.display='block';
         const ph = el.querySelector('.img-placeholder'); if(ph) ph.style.display='none';
       }},
+    { key:'img-story-4',   maxW:900,  maxH:1200, quality:.85,
+      apply: (el, url) => {
+        let img = el.querySelector('img');
+        if(!img){ img = document.createElement('img'); img.alt='Story photo 4'; el.prepend(img); }
+        img.src = url; img.style.display='block';
+        const ph = el.querySelector('.img-placeholder'); if(ph) ph.style.display='none';
+      }},
+    { key:'img-story-5',   maxW:900,  maxH:1200, quality:.85,
+      apply: (el, url) => {
+        let img = el.querySelector('img');
+        if(!img){ img = document.createElement('img'); img.alt='Story photo 5'; el.prepend(img); }
+        img.src = url; img.style.display='block';
+        const ph = el.querySelector('.img-placeholder'); if(ph) ph.style.display='none';
+      }},
     { key:'img-gallery-1', maxW:1200, maxH:900,  quality:.82,
       apply: (el, url) => { const ph = el.querySelector('.gallery-photo') || el; ph.style.backgroundImage=`url('${url}')`; const g = el.querySelector('.gph'); if(g) g.style.display='none'; }},
     { key:'img-gallery-2', maxW:800,  maxH:1000, quality:.82,
@@ -3020,7 +3082,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const imageKeys = [
       'img-background',
       'img-venue',
-      'img-story-1','img-story-2','img-story-3',
+      'img-story-1','img-story-2','img-story-3','img-story-4','img-story-5',
       'img-gallery-1','img-gallery-2','img-gallery-3',
       'img-gallery-4','img-gallery-5','img-gallery-6','img-gallery-7','img-gallery-8',
     ];

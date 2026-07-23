@@ -286,11 +286,16 @@ body.hero-has-images nav:not(.scrolled):not(.menu-open) .menu-btn span{backgroun
      would tint the hero photography. */
   isolation:isolate;
 }
-/* main rides above the pinned hero and covers it as it arrives */
+/* main rides above the pinned hero on its own stacking layer.
+   Deliberately NOT given a background: it wraps every section, so a solid
+   fill here sits between the body's botanical illustration and the section
+   gradients above it — which blanked the lithograph everywhere the sections
+   are transparent (most visibly the gallery band). The sections carry their
+   own near-opaque backgrounds, and #story is the first of them, so the hero
+   is still covered as main slides up. */
 main{
   position:relative;
   z-index:3;
-  background:var(--shell, #EEE4D7);
 }
 /* the hero eases back as the content approaches, so it recedes rather
    than simply being covered — scale and dim are both very slight. */

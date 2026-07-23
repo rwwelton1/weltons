@@ -395,22 +395,22 @@ section{padding:120px 0;position:relative;z-index:2}
 /* #venue's top padding is trimmed to match: the party list ends on a hairline
    rule and the venue opens with a full-bleed photo, so the default 120+100
    stacking left roughly 220px of dead field between them.
-   Hard edges rather than gradients: a soft fade bled the illustration up
-   behind the gallery photographs and left the Travel title sitting on the
-   busiest part of it. The lithograph is now confined to one dedicated band
-   between the gallery and Travel — everything else stays solid. */
+   Hard edges rather than gradients: the earlier fade bled the illustration
+   up into the venue section, which read as clutter. The gallery and the
+   plate below it now form one continuous transparent run — the lithograph
+   sits behind the photographs and continues into a clean strip beneath —
+   with solid panels butting hard against it top and bottom. */
 #venue{
   background:rgba(238,228,215,.995);
   padding-top:32px;
 }
-#gallery{ background:rgba(238,228,215,.995); }
+#gallery{ background:transparent; }
 #travel{ background:rgba(238,228,215,.995); }
 
-/* The one place the botanical illustration is allowed to show: a clean
-   horizontal band with nothing else in it. Transparent, so the fixed
-   body background reads straight through. */
+/* Continues the transparent run below the gallery photographs so the
+   illustration gets a clear strip of its own before Travel begins. */
 .plate{
-  height:clamp(180px,32vw,320px);
+  height:clamp(130px,22vw,220px);
   background:transparent;
   position:relative;
   z-index:2;
@@ -764,7 +764,7 @@ section{padding:120px 0;position:relative;z-index:2}
    directly on the page, separated by generous gutters and lifted by a soft
    shadow. The gallery is the one section with no ivory panel behind it, so the
    botanical background reads between the images. */
-#gallery{padding:80px 0 40px;overflow:hidden}
+#gallery{padding:80px 0 60px;overflow:hidden}
 .gallery-track{
   display:grid;
   grid-template-columns:repeat(2,1fr);

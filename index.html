@@ -332,18 +332,14 @@ section{padding:120px 0;position:relative;z-index:2}
 
 /* RSVP — the one conversion moment. More room, and a soft gradient so it reads
    as a destination rather than a flat slab of the most saturated color. */
+/* Solid rose. Previously a gradient that only reached full colour at the
+   foot of the section, which read as a wash rather than a panel — the
+   arrival deserves a decisive block of colour. */
 #rsvp{
-  background:linear-gradient(180deg,
-    rgba(238,228,215,.995) 0%,
-    rgba(233,214,203,.995) 38%,
-    rgba(228,199,190,1) 100%);
+  background:var(--rose);
   padding:150px 0 140px;
 }
 
-/* Solid fallback for browsers without rgba-on-gradient support */
-@supports not (background: linear-gradient(180deg, rgba(0,0,0,.9), rgba(0,0,0,.9))){
-  #rsvp{background:var(--rose)}
-}
 .sec-num{font-family:var(--serif);font-style:italic;font-size:.92rem;color:var(--rose-deep)}
 .sec-head{margin-bottom:64px}
 .sec-head.center{text-align:center}
@@ -370,17 +366,20 @@ section{padding:120px 0;position:relative;z-index:2}
   transform:translateX(-50%);
   transition:width 1.5s cubic-bezier(.16,.84,.32,1) .15s;
 }
-#story.entered .sec-head::before{width:min(420px, 62vw)}
+#story.entered .sec-head::before{width:min(340px, 78%)}
 
-/* a small diamond at the centre of the rule, the keystone */
+/* a small diamond at the centre of the rule, the keystone.
+   Positioned by transform rather than margin so the 45° rotation stays
+   centred on the rule's 1px line regardless of its rendered diagonal. */
 #story .sec-head::after{
-  content:"";position:absolute;top:14px;left:50%;
-  width:7px;height:7px;margin-left:-3.5px;
+  content:"";position:absolute;top:18.5px;left:50%;
+  width:7px;height:7px;
   background:var(--gilt, #D4AF37);
-  transform:rotate(45deg) scale(0);
+  transform:translate(-50%,-50%) rotate(45deg) scale(0);
+  transform-origin:center;
   transition:transform .8s cubic-bezier(.34,1.4,.5,1) .9s;
 }
-#story.entered .sec-head::after{transform:rotate(45deg) scale(1)}
+#story.entered .sec-head::after{transform:translate(-50%,-50%) rotate(45deg) scale(1)}
 
 /* numeral and title rise through the opened rule */
 #story .sec-num,
@@ -412,6 +411,89 @@ section{padding:120px 0;position:relative;z-index:2}
 .reveal{opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1);transition-delay:var(--rd,0ms)}
 .reveal.in{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){.reveal{transition-delay:0ms!important}}
+
+/* ================================================================
+   SECTION ENTRANCES
+   Each section arrives differently, but all from one vocabulary:
+   unhurried easing, small distances, gilt and paper. The numeral
+   always leads and the title follows — that consistency is what
+   keeps eight different motions reading as one design rather than
+   a sampler. Nothing travels far; elegance here is restraint.
+   ================================================================ */
+
+/* Shared: the numeral leads, the title answers. Per-section rules
+   below change only the *character* of that arrival. */
+.sec-head.reveal .sec-num,
+.sec-head.reveal .sec-title{
+  opacity:0;
+  transition:opacity 1s cubic-bezier(.2,.7,.2,1),
+             transform 1s cubic-bezier(.2,.7,.2,1);
+}
+.sec-head.reveal.in .sec-num,
+.sec-head.reveal.in .sec-title{opacity:1;transform:none}
+/* the head itself no longer slides — its children carry the motion */
+.sec-head.reveal{opacity:1;transform:none}
+
+/* II · THE WEEKEND — settles downward, like a card laid on a table.
+   The only section that arrives from above; it suits a schedule. */
+#schedule .sec-head.reveal .sec-num{transform:translateY(-14px)}
+#schedule .sec-head.reveal .sec-title{transform:translateY(-20px);transition-delay:.12s}
+
+/* III · WEDDING PARTY — the two names part from the centre outward,
+   a processional splitting to either side of an aisle. */
+#wedding-party .sec-head.reveal .sec-num{transform:scale(.86);transition-delay:.05s}
+#wedding-party .sec-head.reveal .sec-title{letter-spacing:.06em;transform:none;transition-delay:.15s}
+#wedding-party .sec-head.reveal.in .sec-title{letter-spacing:-.01em}
+
+/* IV · VENUE — the house rises slowly and at scale, the way a
+   building resolves as you come up the drive. The copy follows it in. */
+#venue .venue-photo.reveal{
+  opacity:0;transform:scale(1.04);
+  transition:opacity 1.5s cubic-bezier(.2,.7,.2,1),
+             transform 1.6s cubic-bezier(.2,.7,.2,1);
+}
+#venue .venue-photo.reveal.in{opacity:1;transform:scale(1)}
+
+/* V · TRAVEL — drifts in from the side, a small sense of distance
+   covered. Mirrors the section's subject without being literal. */
+#travel .sec-head.reveal .sec-num{transform:translateX(-16px)}
+#travel .sec-head.reveal .sec-title{transform:translateX(-22px);transition-delay:.12s}
+
+/* VI · GOOD TO KNOW — the plainest arrival on the page. A simple
+   clean fade, no travel: this is the reference section, and it
+   should feel matter-of-fact next to its neighbours. */
+#faq .sec-head.reveal .sec-num,
+#faq .sec-head.reveal .sec-title{
+  transform:none;
+  transition:opacity 1.2s cubic-bezier(.3,.6,.3,1);
+}
+#faq .sec-head.reveal .sec-title{transition-delay:.18s}
+
+/* VII · REGISTRY — the lightest touch, barely lifting. Brief
+   section, brief gesture. */
+#registry .sec-head.reveal .sec-num{transform:translateY(10px)}
+#registry .sec-head.reveal .sec-title{transform:translateY(14px);transition-delay:.1s}
+
+/* VIII · RSVP — the destination. Slowest and most deliberate of all,
+   with the numeral holding a beat before the title resolves. */
+#rsvp .sec-head.reveal .sec-num{
+  transform:translateY(16px) scale(.94);
+  transition-duration:1.3s;
+}
+#rsvp .sec-head.reveal .sec-title{
+  transform:translateY(20px);
+  transition-duration:1.4s;
+  transition-delay:.24s;
+}
+
+@media(prefers-reduced-motion:reduce){
+  .sec-head.reveal .sec-num,
+  .sec-head.reveal .sec-title,
+  #venue .venue-photo.reveal{
+    opacity:1!important;transform:none!important;transition:none!important;
+  }
+  #wedding-party .sec-head.reveal .sec-title{letter-spacing:-.01em}
+}
 
 /* ---- OUR STORY ---- */
 /* background now set above */
@@ -629,7 +711,7 @@ section{padding:120px 0;position:relative;z-index:2}
 .hotel .loc{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--sage-deep);margin-bottom:16px}
 .hotel p{font-size:.92rem;color:var(--ink-soft);flex:1;margin-bottom:22px}
 .hotel .btn{align-self:flex-start;padding:12px 28px;font-size:.68rem}
-.shuttle{max-width:860px;margin:36px auto 0;padding:26px 30px;border-left:2px solid var(--sage);background:rgba(126,139,109,.08);border-radius:0 8px 8px 0;font-size:.95rem;color:var(--ink-soft)}
+.shuttle{max-width:860px;margin:36px auto 0;padding:26px 30px;background:rgba(247,242,234,.72);border:1px solid var(--line);border-radius:8px;font-size:.95rem;color:var(--ink-soft)}
 .shuttle strong{color:var(--ink)}
 @media(max-width:680px){.hotels{grid-template-columns:1fr}}
 
@@ -655,10 +737,16 @@ section{padding:120px 0;position:relative;z-index:2}
 .reg-card .t{font-family:var(--serif);font-style:italic;font-size:1.5rem}
 .reg-card .s{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);margin-top:6px}
 
-/* ---- RSVP ---- */
+/* ================================================================
+   REGISTRY → RSVP
+   The two sections were bleeding into one another. Separation is now
+   carried by spacing and the colour change into the solid rose panel
+   alone — no drawn divider.
+   ================================================================ */
+#registry{padding-bottom:96px}
 #rsvp{color:var(--ink)}
 /* RSVP closed (pre-invitation) state */
-.rsvp-closed{display:none;text-align:center;padding:38px 26px;background:rgba(247,242,234,.55);border:1px solid var(--rose-deep);border-radius:10px}
+.rsvp-closed{display:none;text-align:center;padding:38px 26px;background:rgba(247,242,234,.82);border:1px solid var(--rose-deep);border-radius:10px}
 .rsvp-closed .mark{font-size:1.6rem;color:var(--rose-ink);margin-bottom:14px}
 .rsvp-closed h3{font-family:var(--serif);font-style:italic;font-size:1.5rem;margin-bottom:12px}
 .rsvp-closed p{color:var(--ink-soft);line-height:1.65;max-width:400px;margin:0 auto}
@@ -668,7 +756,7 @@ body.rsvp-locked #rsvp-deadline-line{display:none}
 /* Deadline line stays visible in admin mode so its copy remains editable */
 body.admin-mode.rsvp-locked #rsvp-deadline-line{display:block;opacity:.5}
 /* Venue policy notes — shown whether RSVPs are open or closed */
-.rsvp-policies{margin-top:30px;text-align:left;background:rgba(247,242,234,.55);border:1px solid var(--rose-deep);border-radius:10px;padding:26px 24px}
+.rsvp-policies{margin-top:30px;text-align:left;background:rgba(247,242,234,.82);border:1px solid var(--rose-deep);border-radius:10px;padding:26px 24px}
 .rsvp-policies h4{font-family:var(--serif);font-style:italic;font-size:1.15rem;text-align:center;margin-bottom:18px;color:var(--ink)}
 .rsvp-policy{display:flex;gap:13px;align-items:flex-start}
 .rsvp-policy + .rsvp-policy{margin-top:16px;padding-top:16px;border-top:1px solid var(--rose-deep)}
@@ -683,13 +771,13 @@ body.admin-mode.rsvp-locked #rsvp-deadline-line{display:block;opacity:.5}
 .field{margin-bottom:20px;text-align:left}
 .rsvp-err{font-size:.85rem;color:var(--rose-ink);margin:-8px 0 18px;min-height:1.3em;text-align:left}
 .field label{display:block;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--sage-deep);margin-bottom:9px}
-.field input,.field select,.field textarea{width:100%;padding:15px 17px;border:1px solid var(--rose-deep);border-radius:6px;background:rgba(247,242,234,.72);font-family:var(--sans);font-size:1rem;color:var(--ink)}
+.field input,.field select,.field textarea{width:100%;padding:15px 17px;border:1px solid var(--rose-deep);border-radius:6px;background:rgba(247,242,234,.88);font-family:var(--sans);font-size:1rem;color:var(--ink)}
 .field textarea{resize:vertical;min-height:88px}
 .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--sage);outline-offset:1px;border-color:var(--sage)}
 .rsvp-step{display:none}
 .rsvp-step.active{display:block;animation:rise .55s forwards}
 .choice{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;role:group}
-.choice button{padding:17px;border:1px solid var(--rose-deep);border-radius:6px;background:rgba(247,242,234,.55);font-family:var(--serif);font-style:italic;font-size:1.05rem;cursor:pointer;transition:.25s;color:var(--ink)}
+.choice button{padding:17px;border:1px solid var(--rose-deep);border-radius:6px;background:rgba(247,242,234,.82);font-family:var(--serif);font-style:italic;font-size:1.05rem;cursor:pointer;transition:.25s;color:var(--ink)}
 .choice button.sel{background:var(--ink);color:var(--ivory);border-color:var(--ink)}
 .rsvp-row{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:10px}
 .link-btn{background:none;border:none;color:var(--sage-deep);cursor:pointer;font-family:var(--sans);font-size:.85rem;letter-spacing:.04em}
@@ -900,10 +988,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   <div class="wrap">
     <div class="venue-grid reveal">
       <!-- VENUE SLOT — image set via --img-venue CSS variable at top of file -->
-      <div class="venue-photo" role="img" aria-label="Tate House, the pink marble estate in Tate, Georgia" data-img-key="img-venue">
+      <div class="venue-photo reveal" role="img" aria-label="Tate House, the pink marble estate in Tate, Georgia" data-img-key="img-venue">
         <span class="venue-caption">Tate House · Tate, Georgia</span>
       </div>
-      <div class="venue-copy">
+      <div class="venue-copy reveal" style="--rd:180ms">
         <span class="sec-num">IV</span>
         <p class="place" style="margin-top:8px">Where We Gather</p>
         <h3>Tate House</h3>

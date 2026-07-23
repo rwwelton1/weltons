@@ -981,6 +981,104 @@ body.admin-mode .story-card .img-upload-btn{
 .hotel .btn{align-self:flex-start;padding:12px 28px;font-size:.68rem}
 .shuttle{max-width:860px;margin:36px auto 0;padding:26px 30px;background:rgba(247,242,234,.72);border:1px solid var(--line);border-radius:8px;font-size:.95rem;color:var(--ink-soft)}
 .shuttle strong{color:var(--ink)}
+
+/* ---- CANTON RECOMMENDATIONS ----
+   Sits at the foot of Travel and reuses the FAQ accordion mechanics, so the
+   interaction is already familiar by the time a guest reaches it. */
+.canton{max-width:780px;margin:60px auto 0}
+.canton h4{
+  font-family:var(--serif);font-style:italic;
+  font-size:1.5rem;text-align:center;margin-bottom:8px;
+}
+.canton-intro{
+  text-align:center;color:var(--ink-soft);
+  font-size:.95rem;max-width:520px;margin:0 auto 24px;
+}
+/* ---- CANTON TABS ----
+   Four small pills on one line rather than four full-width accordion bars.
+   The accordion pattern is right for the FAQ (eight questions, you want one)
+   but wrong here: these are short recommendations a guest skims, and stacked
+   collapsed bars made the section read as a second FAQ. */
+.tabstrip{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:8px;margin-bottom:0;
+  transition:margin-bottom .25s ease;
+}
+/* only space the pills off the card when there is a card */
+.tabs.has-open .tabstrip,
+.tabs:has(.tabpanels.is-open) .tabstrip{margin-bottom:22px}
+body.admin-mode .tabstrip{margin-bottom:22px}
+.tabstrip button{
+  font-family:var(--sans);
+  font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-soft);
+  background:transparent;
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:11px 14px;
+  cursor:pointer;
+  text-align:center;
+  white-space:nowrap;
+  transition:color .25s, border-color .25s, background .25s;
+}
+.tabstrip button:hover{color:var(--ink);border-color:var(--rose-deep)}
+.tabstrip button[aria-expanded="true"]{
+  color:var(--ink);
+  border-color:var(--rose-deep);
+  background:rgba(228,199,190,.28);
+}
+.tabstrip button:focus-visible{outline:2px solid var(--sage-deep);outline-offset:2px}
+
+/* The card only exists once something is open — collapsed, the section is
+   just the row of pills with no empty box beneath it. */
+.tabpanels{
+  border:0;padding:0;background:transparent;
+  border-radius:8px;
+}
+.tabpanels.is-open{
+  background:rgba(247,242,234,.72);
+  border:1px solid var(--line);
+  padding:24px 26px;
+}
+.tabpanel[hidden]{display:none}
+.tabpanel p{
+  color:var(--ink-soft);font-size:.95rem;margin:0;
+  /* a soft entrance so opening a pill doesn't snap */
+  animation:tabIn .35s cubic-bezier(.2,.7,.2,1);
+}
+.tabpanel p strong{color:var(--ink);font-weight:600}
+@keyframes tabIn{
+  from{opacity:0;transform:translateY(6px)}
+  to{opacity:1;transform:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .tabpanel p{animation:none}
+}
+@media(max-width:520px){
+  /* the longest label ("Coffee & Breakfast") needs the tracking and size
+     pulled in to sit on one line in a half-width cell */
+  .tabstrip{gap:6px}
+  .tabstrip button{
+    font-size:.58rem;letter-spacing:.06em;
+    padding:11px 6px;
+  }
+  .tabpanels.is-open{padding:20px 18px}
+}
+/* In admin mode every panel is shown at once — hidden panels can't be edited,
+   and toggling one closed would hide the field being worked on. */
+body.admin-mode .tabpanel[hidden]{display:block}
+body.admin-mode .tabpanels{
+  background:rgba(247,242,234,.72);
+  border:1px solid var(--line);
+  padding:24px 26px;
+}
+body.admin-mode .tabpanel{
+  border-top:1px solid var(--line);
+  padding-top:14px;margin-top:14px;
+}
+body.admin-mode .tabpanel:first-child{border-top:0;padding-top:0;margin-top:0}
+body.admin-mode .tabpanel p{animation:none}
 @media(max-width:680px){.hotels{grid-template-columns:1fr}}
 
 /* ---- FAQ ---- */
@@ -1333,6 +1431,36 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       </div>
     </div>
     <p class="shuttle reveal"><strong>Shuttle service</strong> runs Friday evening to and from Reformation Brewery for the welcome party, and to and from Tate House throughout the day Saturday. Pickup locations and departure times will be shared closer to the date. We strongly encourage guests not to drive after the celebration — the mountain roads are beautiful but winding.</p>
+
+    <!-- Canton recommendations. An accordion rather than a card row: this is
+         optional depth, and collapsing it keeps the section scannable for the
+         guest who only came here for the hotel block. -->
+    <div class="canton reveal">
+      <h4 data-editable-key="canton-title">While You're in Canton</h4>
+      <p class="canton-intro" data-editable-key="canton-intro">Both hotels sit minutes from a walkable downtown. A few places we love, if you're making a weekend of it.</p>
+      <div class="tabs" id="cantonTabs">
+        <div class="tabstrip">
+          <button type="button" aria-expanded="false" aria-controls="canton-p1" id="canton-t1" data-editable-key="canton-1-q">Dinner &amp; drinks</button>
+          <button type="button" aria-expanded="false" aria-controls="canton-p2" id="canton-t2" data-editable-key="canton-2-q">Breweries &amp; bars</button>
+          <button type="button" aria-expanded="false" aria-controls="canton-p3" id="canton-t3" data-editable-key="canton-3-q">Coffee &amp; breakfast</button>
+          <button type="button" aria-expanded="false" aria-controls="canton-p4" id="canton-t4" data-editable-key="canton-4-q">Downtown shopping</button>
+        </div>
+        <div class="tabpanels">
+          <div class="tabpanel" role="region" id="canton-p1" aria-labelledby="canton-t1" hidden>
+            <p data-editable-key="canton-1-a"><strong>Downtown Kitchen</strong> is the special-occasion room downtown — refined, romantic, live music some nights. <strong>Local on North</strong> is the reliable all-rounder, upscale but relaxed. <strong>Riverstone Corner Bistro</strong> has rooftop seating and easy parking, which downtown doesn't always. For something louder, <strong>B &amp; B Social</strong> pairs Southern plates with duckpin bowling and arcade games. Most downtown spots close Sundays, so plan Friday or Saturday.</p>
+          </div>
+          <div class="tabpanel" role="region" id="canton-p2" aria-labelledby="canton-t2" hidden>
+            <p data-editable-key="canton-2-a"><strong>Reformation Brewery</strong> is where we're hosting the Friday welcome party — worth a look earlier in the weekend too, with a big taproom and cornhole out back. <strong>The Holler</strong> is the beer-focused spot downtown with live music and outdoor seating. <strong>Laurel Canyon Brewing</strong> is smaller and quieter, and <strong>Green Line Brewery</strong> is a genuine hole-in-the-wall nano brewery if that's your thing.</p>
+          </div>
+          <div class="tabpanel" role="region" id="canton-p3" aria-labelledby="canton-t3" hidden>
+            <p data-editable-key="canton-3-a"><strong>Bizarre Coffee</strong> is the downtown standby — outdoor seating, seasonal menu, opens at 7. <strong>Stitch Coffee</strong> is the family-friendly option with a kids' menu. For a proper Saturday breakfast, <strong>Keithsburg Cafe</strong> is the local favourite — unassuming, quick, and reasonably priced — and <strong>Eggs Up Grill</strong> opens at 6 if you're up early.</p>
+          </div>
+          <div class="tabpanel" role="region" id="canton-p4" aria-labelledby="canton-t4" hidden>
+            <p data-editable-key="canton-4-a">Main Street is small and easily walked in an afternoon. <strong>The White Cottage on Main</strong> and <strong>Boundless Boutique</strong> are both worth a stop, and <strong>B. Loved</strong> is a few doors along. Hours vary and several close Sundays, so late morning Saturday is the safest window.</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1940,22 +2068,70 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
 
   // ---- FAQ accordion with aria-expanded ----
-  document.querySelectorAll('#faqList .faq button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const item = btn.parentElement;
-      const ans  = item.querySelector('.faq-ans');
-      const open = item.classList.contains('open');
-      // close all
-      document.querySelectorAll('#faqList .faq').forEach(f => {
-        f.classList.remove('open');
-        f.querySelector('button').setAttribute('aria-expanded','false');
-        f.querySelector('.faq-ans').style.maxHeight = null;
+  // Pill toggles. Behaves like a disclosure set rather than a tablist: none
+  // are open by default, clicking one opens it and closes any other, and
+  // clicking the open one closes it again — so the section can sit collapsed
+  // to just the row of pills.
+  document.querySelectorAll('.tabs').forEach(group => {
+    const btns   = [...group.querySelectorAll('.tabstrip button')];
+    const panels = [...group.querySelectorAll('.tabpanel')];
+    const shell  = group.querySelector('.tabpanels');
+    if(!btns.length) return;
+
+    let open = -1;   // -1 = nothing open
+
+    function apply(){
+      btns.forEach((b,n) => b.setAttribute('aria-expanded', n === open ? 'true' : 'false'));
+      panels.forEach((p,n) => { p.hidden = n !== open; });
+      // the shell carries the card border — hide it entirely when collapsed
+      // so there's no empty box sitting under the pills
+      if(shell) shell.classList.toggle('is-open', open !== -1);
+      // class fallback for the pill spacing, for browsers without :has()
+      group.classList.toggle('has-open', open !== -1);
+    }
+    apply();
+
+    btns.forEach((btn,i) => {
+      btn.addEventListener('click', () => {
+        // In admin mode the label is contenteditable — let the click place a
+        // cursor rather than toggling the panel out from under the editor.
+        if(document.body.classList.contains('admin-mode')) return;
+        open = (open === i) ? -1 : i;
+        apply();
       });
-      if(!open){
-        item.classList.add('open');
-        btn.setAttribute('aria-expanded','true');
-        ans.style.maxHeight = ans.scrollHeight + 'px';
-      }
+      btn.addEventListener('keydown', e => {
+        let next = null;
+        if(e.key === 'ArrowRight') next = (i + 1) % btns.length;
+        else if(e.key === 'ArrowLeft') next = (i - 1 + btns.length) % btns.length;
+        else if(e.key === 'Home') next = 0;
+        else if(e.key === 'End') next = btns.length - 1;
+        if(next === null) return;
+        e.preventDefault();
+        btns[next].focus();   // move focus only; opening stays deliberate
+      });
+    });
+  });
+
+  // Accordions. Scoped per-list so opening a Canton item doesn't close an
+  // FAQ item and vice versa — each list closes only its own siblings.
+  document.querySelectorAll('.faq-list').forEach(list => {
+    list.querySelectorAll('.faq button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.parentElement;
+        const ans  = item.querySelector('.faq-ans');
+        const open = item.classList.contains('open');
+        // close all within this list only
+        list.querySelectorAll('.faq').forEach(f => {
+          f.classList.remove('open');
+          f.querySelector('button').setAttribute('aria-expanded','false');
+          f.querySelector('.faq-ans').style.maxHeight = null;
+        });
+        if(!open){
+          item.classList.add('open');
+          btn.setAttribute('aria-expanded','true');
+          ans.style.maxHeight = ans.scrollHeight + 'px';
+        }
+      });
     });
   });
 

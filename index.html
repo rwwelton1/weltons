@@ -315,76 +315,28 @@ body.hero-has-images nav:not(.scrolled):not(.menu-open) .menu-btn span{backgroun
 section{padding:120px 0;position:relative;z-index:2}
 
 /* ---- PAGE EDGES ----
-   Each section is a leaf of the album. A soft shadow along the top edge reads
-   as the page beneath, and a fine highlight along the bottom as the cut edge
-   catching light. Together they give the sheets physical separation instead of
-   butting flat against one another.
-   The gallery is skipped — it has no panel, so an edge there would float. */
-section:not(#gallery)::before,
-section:not(#gallery)::after{
-  content:"";position:absolute;left:0;right:0;height:22px;
-  pointer-events:none;z-index:3;
-}
-/* shadow cast by the sheet above */
-section:not(#gallery)::before{
-  top:0;
-  background:linear-gradient(180deg,
-    rgba(40,35,31,.085) 0%,
-    rgba(40,35,31,.030) 38%,
-    transparent 100%);
-}
-/* the lit cut edge at the foot of the sheet */
-section:not(#gallery)::after{
-  bottom:0;height:14px;
-  background:linear-gradient(0deg,
-    rgba(255,252,246,.55) 0%,
-    rgba(255,252,246,.16) 45%,
-    transparent 100%);
-}
-/* The section after the gallery still needs its top edge — the gallery has no
-   panel to cast one. */
-#travel::before{height:26px}
-
-/* ---- PAGE TURN ----
-   As a section scrolls in, its top edge deepens then settles — the shadow a
-   page casts as it comes down. Driven by a class the observer adds, not by
-   scroll position, so there's no per-frame work.
-   Deliberately not a 3D flip: at this page length a literal turn would fight
-   the reveal animations already running inside each section, and rotating a
-   full-height panel is expensive on a phone. */
-section.leaf::before{
-  opacity:0;
-  transform:scaleY(2.4);
-  transform-origin:top;
-  transition:opacity .75s cubic-bezier(.2,.7,.2,1),
-             transform .75s cubic-bezier(.2,.7,.2,1);
-}
-section.leaf.settled::before{
-  opacity:1;
-  transform:scaleY(1);
-}
-@media(prefers-reduced-motion:reduce){
-  section.leaf::before{opacity:1;transform:none;transition:none}
-}
+   Removed. The shadow/highlight seam between sections read as a visible
+   divider rather than as paper depth; sections now meet cleanly, with the
+   color shift between panels doing the separating on its own. */
 
 /* Alpha values are tuned per-section: text-dense sections stay more opaque for
    legibility, image-led ones let more of the background texture read. */
-#story        { background: rgba(238,228,215,.93); }
-#schedule     { background: rgba(247,242,234,.90); padding:100px 0; }
-#wedding-party{ background: rgba(238,228,215,.90); padding:100px 0; }
-#venue        { background: rgba(238,228,215,.95); }
+#story        { background: rgba(238,228,215,.995); }
+#schedule     { background: rgba(247,242,234,.99);  padding:100px 0; }
+#wedding-party{ background: rgba(238,228,215,.99);  padding:100px 0; }
+#venue        { background: rgba(238,228,215,.995); }
 #gallery      { background: transparent; padding: 40px 0; }
-#travel       { background: rgba(238,228,215,.93); }
-#faq          { background: rgba(247,242,234,.94); padding:110px 0; }
-#registry     { background: rgba(238,228,215,.90); padding:100px 0; }
+#travel       { background: rgba(238,228,215,.995); }
+#faq          { background: rgba(247,242,234,.995); padding:110px 0; }
+#registry     { background: rgba(238,228,215,.99);  padding:100px 0; }
 
 /* RSVP — the one conversion moment. More room, and a soft gradient so it reads
    as a destination rather than a flat slab of the most saturated color. */
 #rsvp{
   background:linear-gradient(180deg,
-    rgba(238,228,215,.94) 0%,
-    rgba(233,214,203,.95) 38%,
-    rgba(228,199,190,.96) 100%);
+    rgba(238,228,215,.995) 0%,
+    rgba(233,214,203,.995) 38%,
+    rgba(228,199,190,1) 100%);
   padding:150px 0 140px;
 }
 
@@ -723,6 +675,8 @@ body.admin-mode.rsvp-locked #rsvp-deadline-line{display:block;opacity:.5}
 .rsvp-policy .pc-ic{flex:0 0 auto;font-size:1.05rem;line-height:1.5;color:var(--rose-ink)}
 .rsvp-policy p{font-size:.9rem;line-height:1.6;color:var(--ink-soft);margin:0}
 .rsvp-policy strong{color:var(--ink)}
+.rsvp-policy a{color:var(--rose-ink);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;transition:color .2s ease}
+.rsvp-policy a:hover{color:var(--ink)}
 
 .rsvp-shell{max-width:540px;margin:0 auto;text-align:center}
 .rsvp-intro{color:var(--ink-soft);margin-bottom:34px}
@@ -1039,7 +993,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       </div>
       <div class="faq">
         <button aria-expanded="false"><span data-editable-key="faq-8-q">Can I bring my own food or drinks?</span><span class="ic" aria-hidden="true"></span></button>
-        <div class="faq-ans" role="region"><p data-editable-key="faq-8-a">No outside food or beverages are permitted anywhere on the property. Tate House enforces this strictly — bringing outside food or drink can result in the venue shutting down the event. All food and drink will be provided throughout the celebration, so please leave coolers, flasks, and outside beverages at home.</p></div>
+        <div class="faq-ans" role="region"><p data-editable-key="faq-8-a">Everything you'll need will be provided throughout the celebration, so there's no need to bring a thing — please leave coolers, flasks, and outside beverages at home. Tate House does enforce this strictly: outside food or drink on the property can result in the venue shutting down the event, so it's one worth honoring.</p></div>
       </div>
       <div class="faq">
         <button aria-expanded="false"><span data-editable-key="faq-7-q">I have another question.</span><span class="ic" aria-hidden="true"></span></button>
@@ -1085,16 +1039,11 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         <p data-editable-key="rsvp-closed-msg">Formal invitations will arrive in the mail, and this is where you'll respond. Save the date — we'll open RSVPs here closer to the wedding.</p>
       </div>
 
-      <!-- Venue policies — visible whether RSVPs are open or closed -->
+      <!-- Venue policies — single gentle pointer to the FAQ, which holds the full detail -->
       <div class="rsvp-policies reveal">
-        <h4 data-editable-key="rsvp-policy-title">A Few Venue Notes</h4>
         <div class="rsvp-policy">
           <span class="pc-ic" aria-hidden="true">✦</span>
-          <p data-editable-key="rsvp-policy-kids"><strong>Children under 13 are not permitted at the venue on wedding days.</strong> We know this means arranging care for the day, and we're grateful for the effort. Little ones are warmly welcome at the Friday night welcome party.</p>
-        </div>
-        <div class="rsvp-policy">
-          <span class="pc-ic" aria-hidden="true">✦</span>
-          <p data-editable-key="rsvp-policy-food"><strong>No outside food or beverages may be brought onto the property.</strong> This is a strict venue policy — any outside food or drink will result in the venue shutting down the event. Everything you'll need will be provided, so please leave coolers and drinks at home.</p>
+          <p data-editable-key="rsvp-policy-note">A couple of venue notes worth knowing as you plan — including a few thoughts on children and outside food. You'll find them in the <a href="#faq">FAQ above</a>.</p>
         </div>
       </div>
 
@@ -1223,11 +1172,6 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     tio.observe(story);
   })();
 
-  // ---- Page turn ----
-  // Each section is a leaf of the album; its top edge shadow deepens and settles
-  // as the sheet comes into view. rootMargin fires it slightly before the edge
-  // reaches the viewport so the settle finishes as you arrive, not after.
-  // Unlike .reveal this stays observed — scroll back up and the page lifts again.
   // ---- Grain fade ----
   // The paper texture belongs to the hero — it sits over the photography and
   // reads as a printed plate. Below the fold the page becomes clean stock, so
@@ -1261,19 +1205,6 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
     update();
-  })();
-
-  (function initPageTurn(){
-    const leaves = document.querySelectorAll('section:not(#gallery)');
-    if(!leaves.length) return;
-    if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    leaves.forEach(s => s.classList.add('leaf'));
-    const pio = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        e.target.classList.toggle('settled', e.isIntersecting);
-      });
-    }, { rootMargin: '-2% 0px -55% 0px', threshold: 0 });
-    leaves.forEach(s => pio.observe(s));
   })();
 
   // Stagger repeated items so groups resolve in sequence rather than all at once.

@@ -679,21 +679,29 @@ section{padding:120px 0;position:relative;z-index:2}
     translateY(calc(var(--d) * 10px))
     scale(calc(1 - var(--d) * .05))
     rotate(calc(var(--d) * -1.4deg));
-  opacity:calc(1 - var(--d) * .18);
+  /* No depth dimming — the cards behind stay fully opaque and read as real
+     photographs in a stack. Offset, scale and rotation carry the depth. */
   z-index:calc(10 - var(--d));
-  transition:transform .55s cubic-bezier(.2,.7,.2,1),
-             opacity .55s cubic-bezier(.2,.7,.2,1);
-  will-change:transform;
+  transition:transform .42s cubic-bezier(.2,.7,.2,1);
+  /* backface/perspective hints keep the card on its own compositor layer
+     without the permanent cost of will-change on all five */
+  backface-visibility:hidden;
 }
+/* promote only while it's actually moving */
+.story-card[data-front="true"],
+.story-card.gone{will-change:transform}
 /* only the front card takes the drag */
 .story-card[data-front="true"]{cursor:grab}
 .story-card[data-front="true"]:active{cursor:grabbing}
 /* while a finger is down we drive transform directly and kill the easing */
 .story-card.dragging{transition:none}
-/* the card being thrown */
+/* The card being thrown. No opacity change — it stays fully opaque and simply
+   travels off the edge, which reads as a photograph being moved rather than
+   dissolving. Slightly quicker than the stack transition so it clears the
+   frame while the next card is still settling forward. */
 .story-card.gone{
-  transition:transform .45s cubic-bezier(.4,.1,.7,1), opacity .45s ease;
-  opacity:0;
+  transition:transform .38s cubic-bezier(.33,0,.67,1);
+  opacity:1;
 }
 .story-card img{
   width:100%;height:100%;object-fit:cover;display:block;
@@ -740,8 +748,10 @@ body.admin-mode .story-deck{
   width:100%;
   aspect-ratio:auto;
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:16px;
+  /* wider cells than the front-end deck: these need room for a legible,
+     tappable caption field beneath each photo */
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:20px;
   touch-action:auto;
 }
 body.admin-mode .story-card{
@@ -757,6 +767,43 @@ body.admin-mode .story-card{
   pointer-events:auto !important;
 }
 body.admin-mode .deck-hint{display:none}
+
+/* The caption sits as small white uppercase text on a dark scrim at the foot
+   of the card — fine for reading, near-impossible to tap and edit accurately
+   in the admin grid. In admin mode it's lifted out of the photo and set as a
+   plain, legible field below the image instead. */
+body.admin-mode .story-card{
+  overflow:visible;
+  padding-bottom:42px;
+  background:transparent;
+}
+body.admin-mode .story-card img,
+body.admin-mode .story-card .img-placeholder{
+  border-radius:6px;
+  height:calc(100% - 42px);
+}
+body.admin-mode .story-card::after{display:none}   /* drop the scrim */
+body.admin-mode .story-photo-caption{
+  position:absolute;
+  left:0;right:0;bottom:0;
+  height:34px;
+  display:flex;align-items:center;
+  padding:0 10px;
+  color:var(--ink);
+  background:var(--ivory);
+  font-size:.72rem;
+  letter-spacing:.12em;
+  text-transform:none;
+  border-radius:4px;
+  z-index:12;
+}
+/* the upload overlay covers the whole card by default — pull it up off the
+   caption strip so tapping the caption edits text rather than opening the
+   photo picker */
+body.admin-mode .story-card .img-upload-btn{
+  bottom:42px;
+  border-radius:6px;
+}
 
 /* ---- SCHEDULE ---- */
 
@@ -1520,8 +1567,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     let cards = [...deck.querySelectorAll('.story-card')];
     if(cards.length < 2) return;
 
-    const THROW = 90;        // px of horizontal travel that commits a swipe
-    const SLOP  = 10;        // px before we decide horizontal vs vertical
+    const THROW = 70;        // px of horizontal travel that commits a swipe
+    const SLOP  = 8;         // px before we decide horizontal vs vertical
 
     const MAXD = 3;          // visual stack depth; deeper cards hide behind
     function order(){
@@ -1538,7 +1585,20 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
     let startX = 0, startY = 0, dx = 0;
     let dragging = false, decided = false, horizontal = false;
-    let front = null;
+    let front = null, raf = 0;
+
+    // Batched write: pointermove can fire faster than the display refreshes,
+    // and writing style on every event forces work out of step with the
+    // compositor. One write per frame instead.
+    function paint(){
+      raf = 0;
+      if(!front || !dragging) return;
+      front.style.transform =
+        `translate3d(${dx}px,0,0) rotate(${dx / 22}deg)`;
+    }
+    function schedule(){
+      if(!raf) raf = requestAnimationFrame(paint);
+    }
 
     function down(e){
       // In admin mode the deck is un-stacked for editing — no dragging.
@@ -1570,41 +1630,61 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       }
 
       dx = mx;
-      const rot = dx / 18;
-      front.style.transform =
-        `translateX(${dx}px) rotate(${rot}deg)`;
-      front.style.opacity = String(Math.max(0, 1 - Math.abs(dx) / 420));
+      schedule();
     }
 
     function up(e){
+      if(raf){ cancelAnimationFrame(raf); raf = 0; }
       if(!dragging || !front){ dragging = false; return; }
       dragging = false;
       front.releasePointerCapture?.(e.pointerId);
       front.classList.remove('dragging');
 
+      const card = front;
+      front = null;
+
       if(horizontal && Math.abs(dx) > THROW){
-        // commit: fling it off, then send to the back
         const dir = dx > 0 ? 1 : -1;
-        const card = front;
-        card.classList.add('gone');
-        card.style.transform =
-          `translateX(${dir * 520}px) rotate(${dir * 22}deg)`;
-        card.style.opacity = '0';
+
+        // Re-order immediately: the next card steps forward now, while the
+        // thrown card is still flying off. Waiting on the animation to end
+        // before advancing was what made the swipe feel like it hung.
+        cards.push(cards.shift());
         deck.classList.add('used');
 
-        setTimeout(() => {
-          cards.push(cards.shift());       // rotate order
+        // the thrown card rides above the deck on its own layer while it exits
+        card.classList.add('gone');
+        card.style.zIndex = '20';
+        card.style.transform =
+          `translate3d(${dir * 560}px,0,0) rotate(${dir * 20}deg)`;
+
+        order();   // the rest of the stack advances on its CSS transition
+
+        // once it's clear, drop it back into the stack silently
+        let done = false;
+        const reset = () => {
+          if(done) return;             // transitionend and the fallback race
+          done = true;
+          card.removeEventListener('transitionend', reset);
+          // Snap it back into the stack with no animation, otherwise it
+          // visibly flies back across the screen to reach its new position.
+          card.classList.add('dragging');   // transition:none
           card.classList.remove('gone');
-          card.style.transform = '';        // hand back to CSS
-          card.style.opacity = '';
+          card.style.zIndex = '';
+          card.style.transform = '';   // hand back to CSS
           order();
-        }, 450);
+          // restore easing on the next frame, once the jump has been painted
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => card.classList.remove('dragging'));
+          });
+        };
+        card.addEventListener('transitionend', reset);
+        setTimeout(reset, 700);        // fallback if transitionend never fires
       } else {
         // release: snap back
-        front.style.transform = '';
-        front.style.opacity = '';
+        card.style.transform = '';
       }
-      dx = 0; front = null;
+      dx = 0;
     }
 
     deck.addEventListener('pointerdown', down);

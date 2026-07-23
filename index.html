@@ -648,26 +648,84 @@ section{padding:120px 0;position:relative;z-index:2}
   color:var(--sage-deep);
   margin-top:28px;
 }
-.story-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;max-width:var(--max);align-items:start}
-.story-img{border-radius:4px;overflow:hidden;position:relative}
-.story-img.tall{grid-row:span 1}
-.story-img:nth-child(1){min-height:440px}
-.story-img:nth-child(2){min-height:280px}
-.story-img:nth-child(3){min-height:380px}
-.story-img img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
-.story-img:hover img{transform:scale(1.03)}
-/* scrim so the overlaid caption stays legible over any photo */
-.story-img::after{content:"";position:absolute;left:0;right:0;bottom:0;height:50%;background:linear-gradient(to top, rgba(20,17,14,.55), transparent);pointer-events:none;z-index:1}
-.story-photo-caption{position:absolute;left:0;right:0;bottom:0;z-index:2;font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;color:#fff;padding:18px 20px}
+/* ---- STORY DECK ----
+   Three photographs stacked like a hand of cards. Swipe the top one away
+   and the deck rotates. Deliberately no dots or arrows: the offset stack
+   is itself the affordance — you can see there are cards behind.
 
-/* placeholder shown when image not yet added */
-.story-img .img-placeholder{width:100%;height:100%;position:absolute;inset:0;background:linear-gradient(135deg,var(--rose) 0%,var(--rose-deep) 60%,var(--sage-deep) 130%);z-index:0}
-.img-placeholder span{position:absolute;top:16px;left:20px;font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,242,234,.75)}
-@media(max-width:760px){
-  .story-grid{grid-template-columns:1fr 1fr}
-  .story-img:nth-child(3){display:none}
+   The stack is built with transforms rather than separate positions so
+   only one property animates per card, which keeps it smooth on a phone.
+   Cards are ordered by --i (0 = front) set by the script. */
+.story-deck{
+  position:relative;
+  width:min(340px,78vw);
+  aspect-ratio:4/5;
+  margin:0 auto;
+  touch-action:pan-y;          /* let vertical page scroll through */
+  user-select:none;
+  -webkit-user-select:none;
 }
-@media(max-width:480px){.story-grid{grid-template-columns:1fr}.story-img:nth-child(2){display:none}}
+.story-card{
+  position:absolute;inset:0;
+  border-radius:6px;overflow:hidden;
+  background:var(--rose-deep);
+  box-shadow:0 24px 50px -24px rgba(40,35,31,.55);
+  transform-origin:center bottom;
+  /* stacked: each card behind sits slightly lower, smaller and rotated */
+  transform:
+    translateY(calc(var(--i) * 10px))
+    scale(calc(1 - var(--i) * .05))
+    rotate(calc(var(--i) * -1.4deg));
+  opacity:calc(1 - var(--i) * .12);
+  z-index:calc(10 - var(--i));
+  transition:transform .55s cubic-bezier(.2,.7,.2,1),
+             opacity .55s cubic-bezier(.2,.7,.2,1);
+  will-change:transform;
+}
+/* only the front card takes the drag */
+.story-card[data-front="true"]{cursor:grab}
+.story-card[data-front="true"]:active{cursor:grabbing}
+/* while a finger is down we drive transform directly and kill the easing */
+.story-card.dragging{transition:none}
+/* the card being thrown */
+.story-card.gone{
+  transition:transform .45s cubic-bezier(.4,.1,.7,1), opacity .45s ease;
+  opacity:0;
+}
+.story-card img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  position:absolute;inset:0;
+  pointer-events:none;
+}
+/* scrim so the caption stays legible over any photo */
+.story-card::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:45%;
+  background:linear-gradient(to top, rgba(20,17,14,.55), transparent);
+  pointer-events:none;z-index:1;
+}
+.story-photo-caption{
+  position:absolute;left:0;right:0;bottom:0;z-index:2;
+  font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;
+  color:#fff;padding:18px 20px;
+}
+.story-card .img-placeholder{
+  width:100%;height:100%;position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--rose) 0%,var(--rose-deep) 60%,var(--sage-deep) 130%);
+  z-index:0;
+}
+.img-placeholder span{position:absolute;top:16px;left:20px;font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,242,234,.75)}
+/* a quiet hint, shown until the first successful swipe */
+.deck-hint{
+  text-align:center;margin-top:22px;
+  font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--ink-soft);opacity:.75;
+  transition:opacity .4s ease;
+}
+.story-deck.used ~ .deck-hint{opacity:0}
+
+@media(prefers-reduced-motion:reduce){
+  .story-card{transition:none}
+}
 
 /* ---- SCHEDULE ---- */
 
@@ -1028,25 +1086,28 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         <span class="s-date">April 3rd, 2027 · Tate, Georgia</span>
       </p>
     </div>
-    <div class="story-grid reveal">
-      <div class="story-img" data-img-key="img-story-1">
-        <img src="images/story-keeneland.jpg" alt="Grayson and Ryan at Keeneland Race Track" loading="lazy"
-             onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
-        <div class="img-placeholder" style="display:none"><span>Story Image 1 · Keeneland</span></div>
-        <span class="story-photo-caption">Keeneland, Kentucky</span>
+    <div class="reveal">
+      <div class="story-deck" id="storyDeck">
+        <div class="story-card" data-img-key="img-story-1">
+          <img src="images/story-keeneland.jpg" alt="Grayson and Ryan at Keeneland Race Track" loading="lazy"
+               onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
+          <div class="img-placeholder" style="display:none"><span>Story Image 1 · Keeneland</span></div>
+          <span class="story-photo-caption">Keeneland, Kentucky</span>
+        </div>
+        <div class="story-card" data-img-key="img-story-2">
+          <img src="images/story-engagement.jpg" alt="Grayson and Ryan engagement photo" loading="lazy"
+               onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
+          <div class="img-placeholder" style="display:none"><span>Story Image 2 · Engagement</span></div>
+          <span class="story-photo-caption">Smyrna, Georgia</span>
+        </div>
+        <div class="story-card" data-img-key="img-story-3">
+          <img src="images/story-together.jpg" alt="Grayson and Ryan together" loading="lazy"
+               onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
+          <div class="img-placeholder" style="display:none"><span>Story Image 3 · Together</span></div>
+          <span class="story-photo-caption">North Georgia</span>
+        </div>
       </div>
-      <div class="story-img" data-img-key="img-story-2">
-        <img src="images/story-engagement.jpg" alt="Grayson and Ryan engagement photo" loading="lazy"
-             onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
-        <div class="img-placeholder" style="display:none"><span>Story Image 2 · Engagement</span></div>
-        <span class="story-photo-caption">Smyrna, Georgia</span>
-      </div>
-      <div class="story-img" data-img-key="img-story-3">
-        <img src="images/story-together.jpg" alt="Grayson and Ryan together" loading="lazy"
-             onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
-        <div class="img-placeholder" style="display:none"><span>Story Image 3 · Together</span></div>
-        <span class="story-photo-caption">North Georgia</span>
-      </div>
+      <p class="deck-hint" aria-hidden="true">Swipe</p>
     </div>
   </div>
 </section>
@@ -1403,6 +1464,105 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     addEventListener('scroll', onScroll, {passive:true});
     addEventListener('resize', onScroll, {passive:true});
     update();
+  })();
+
+  // ---- Story deck ----
+  // A stack of photographs; dragging the front card past a threshold throws
+  // it and sends it to the back of the order. Pointer Events cover touch and
+  // mouse in one path. Vertical intent is detected early and released back to
+  // the page so the deck never traps the scroll.
+  (function initStoryDeck(){
+    const deck = document.getElementById('storyDeck');
+    if(!deck) return;
+    let cards = [...deck.querySelectorAll('.story-card')];
+    if(cards.length < 2) return;
+
+    const THROW = 90;        // px of horizontal travel that commits a swipe
+    const SLOP  = 10;        // px before we decide horizontal vs vertical
+
+    function order(){
+      cards.forEach((c,i) => {
+        c.style.setProperty('--i', i);
+        c.dataset.front = (i === 0) ? 'true' : 'false';
+        // only the front card is reachable by assistive tech / tab
+        c.setAttribute('aria-hidden', i === 0 ? 'false' : 'true');
+      });
+    }
+    order();
+
+    let startX = 0, startY = 0, dx = 0;
+    let dragging = false, decided = false, horizontal = false;
+    let front = null;
+
+    function down(e){
+      if(e.button != null && e.button !== 0) return;
+      front = cards[0];
+      if(!front) return;
+      startX = e.clientX; startY = e.clientY;
+      dx = 0; dragging = true; decided = false; horizontal = false;
+      front.setPointerCapture?.(e.pointerId);
+    }
+
+    function move(e){
+      if(!dragging || !front) return;
+      const mx = e.clientX - startX;
+      const my = e.clientY - startY;
+
+      if(!decided){
+        if(Math.abs(mx) < SLOP && Math.abs(my) < SLOP) return;
+        decided = true;
+        horizontal = Math.abs(mx) > Math.abs(my);
+        if(!horizontal){
+          // vertical intent — hand the gesture back to the page
+          dragging = false;
+          front.releasePointerCapture?.(e.pointerId);
+          return;
+        }
+        front.classList.add('dragging');
+      }
+
+      dx = mx;
+      const rot = dx / 18;
+      front.style.transform =
+        `translateX(${dx}px) rotate(${rot}deg)`;
+      front.style.opacity = String(Math.max(0, 1 - Math.abs(dx) / 420));
+    }
+
+    function up(e){
+      if(!dragging || !front){ dragging = false; return; }
+      dragging = false;
+      front.releasePointerCapture?.(e.pointerId);
+      front.classList.remove('dragging');
+
+      if(horizontal && Math.abs(dx) > THROW){
+        // commit: fling it off, then send to the back
+        const dir = dx > 0 ? 1 : -1;
+        const card = front;
+        card.classList.add('gone');
+        card.style.transform =
+          `translateX(${dir * 520}px) rotate(${dir * 22}deg)`;
+        card.style.opacity = '0';
+        deck.classList.add('used');
+
+        setTimeout(() => {
+          cards.push(cards.shift());       // rotate order
+          card.classList.remove('gone');
+          card.style.transform = '';        // hand back to CSS
+          card.style.opacity = '';
+          order();
+        }, 450);
+      } else {
+        // release: snap back
+        front.style.transform = '';
+        front.style.opacity = '';
+      }
+      dx = 0; front = null;
+    }
+
+    deck.addEventListener('pointerdown', down);
+    deck.addEventListener('pointermove', move, {passive:true});
+    deck.addEventListener('pointerup', up);
+    deck.addEventListener('pointercancel', up);
   })();
 
   // ---- Scroll reveal ----

@@ -56,7 +56,11 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation-duration:.001s!important;transition-duration:.001s!important}}
-body{font-family:var(--sans);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+/* overflow-x:clip rather than hidden — `hidden` makes body a scroll
+   container, which silently disables position:sticky on descendants
+   (the hero release below depends on it). `clip` prevents horizontal
+   scroll identically without that side effect. */
+body{font-family:var(--sans);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:clip}
 h1,h2,h3{font-family:var(--serif);font-weight:400;line-height:1.08}
 a{color:inherit}
 img{max-width:100%;display:block}
@@ -86,11 +90,22 @@ body{
    opacities are set to values that actually register. */
 body::before{
   content:"";position:fixed;inset:0;pointer-events:none;z-index:500;
+  /* Grain disabled site-wide. display:none rather than opacity:0 alone — a
+     fixed, full-viewport, multiply-blended layer carrying three SVG noise
+     textures still costs compositing work even when invisible. Restore by
+     removing this line and setting --grain-max back to .9 / .75. */
+  display:none;
   mix-blend-mode:multiply;
-  /* Driven by scroll — full strength over the hero, fading out as the page
-     proper begins. --grain is set on <html> by the scroll handler below and
-     falls back to full opacity if JS never runs. */
-  opacity:calc(var(--grain, 1) * var(--grain-max, .9));
+  /* Driven by scroll — absent over the hero, easing in as the page proper
+     begins. --grain is set on <html> by the scroll handler below and falls
+     back to 0 so the hero photography stays clean on first paint, before
+     any JS has run. */
+  /* Paper grain disabled site-wide. The layer and its scroll handler are left
+     intact so it can be brought back by restoring --grain-max to .9 (and .75
+     in the mobile override below); setting it to 0 here switches it off
+     everywhere without unpicking the machinery. */
+  --grain-max:0;
+  opacity:calc(var(--grain, 0) * var(--grain-max, 0));
   transition:opacity .18s linear;
   background-image:
     /* laid ribbing — the close parallel lines of laid paper */
@@ -109,7 +124,8 @@ body::before{
   /* Tighter ribbing and a lighter hand on a small screen, where the same
      values read as visible stripes rather than texture. */
   body::before{
-    --grain-max:.75;
+    /* was .75 — held at 0 while the grain is disabled site-wide */
+    --grain-max:0;
     background-size:auto, auto, 150px 150px, 320px 320px, 700px 700px;
     background-image:
       repeating-linear-gradient(90deg,
@@ -122,8 +138,9 @@ body::before{
   }
 }
 @media(prefers-reduced-motion:reduce){
-  /* No scroll-driven fade — hold a steady, lighter grain instead. */
-  body::before{opacity:.7;transition:none}
+  /* Grain is disabled site-wide; held at zero here too. Restoring it means
+     putting back `body.past-hero::before{opacity:.7}` alongside --grain-max. */
+  body::before{opacity:0;transition:none}
 }
 
 /* Softening veil over the botanical background. Sections are now translucent, so
@@ -236,17 +253,62 @@ body.hero-has-images nav:not(.scrolled):not(.menu-open) .menu-btn span{backgroun
 .hero-dot.active{background:rgba(247,242,234,.9);transform:scale(1.3)}
 
 /* Hero — full screen, top and bottom blocks pinned absolutely */
+/* ================================================================
+   HERO RELEASE
+   The hero holds while you scroll through roughly a quarter-viewport,
+   then the content slides up over it and normal scrolling resumes.
+
+   Deliberately NOT scroll-jacking: nothing intercepts wheel or touch
+   events, so native momentum, rubber-banding and scrollbar dragging
+   all behave exactly as expected. The resistance is an illusion
+   produced by pinning the hero while a taller parent scrolls past it
+   — the page never stops responding to the reader.
+
+   .hero-stage is the tall element that provides the scroll distance.
+   .hero itself sticks to the top inside it. <main> then rises over
+   the hero on its own stacking layer. */
+.hero-stage{
+  position:relative;
+  height:125svh;          /* 100svh hero + 25svh of "resistance" */
+  z-index:2;
+}
 .hero{
+  position:sticky;
+  top:0;
   min-height:100svh;
+  height:100svh;
   display:block;
   text-align:center;
-  position:relative;
   overflow:hidden;
   /* isolate creates a stacking context so .hero-slides (z-index:-1) stays
      contained here instead of dropping behind the body::after veil, which
      would tint the hero photography. */
   isolation:isolate;
-  z-index:2;
+}
+/* main rides above the pinned hero and covers it as it arrives */
+main{
+  position:relative;
+  z-index:3;
+  background:var(--shell, #EEE4D7);
+}
+/* the hero eases back as the content approaches, so it recedes rather
+   than simply being covered — scale and dim are both very slight. */
+.hero-content{
+  transform:scale(var(--hero-scale,1));
+  opacity:var(--hero-fade,1);
+  transition:transform .1s linear, opacity .1s linear;
+  will-change:transform,opacity;
+}
+/* the cue fades out as soon as the reader starts moving */
+.scroll-cue{
+  opacity:var(--cue-fade,1);
+  transition:opacity .35s ease;
+}
+
+@media(prefers-reduced-motion:reduce){
+  .hero-stage{height:auto}
+  .hero{position:relative}
+  .hero-content{transform:none;opacity:1}
 }
 
 /* Hero content hidden until first image loads */
@@ -843,6 +905,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 </nav>
 
 <!-- HERO -->
+<div class="hero-stage" id="heroStage">
 <header class="hero" id="hero" tabindex="-1">
   <div class="hero-slides" id="heroSlides" aria-hidden="true">
     <!-- Slides injected by JS from Firestore -->
@@ -874,6 +937,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     <span class="scroll-cue" aria-hidden="true" style="position:absolute;bottom:22px;left:50%;transform:translateX(-50%)">Scroll</span>
   </div>
 </header>
+</div>
 
 <main id="main-content">
 
@@ -1230,6 +1294,43 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   }
   tick(); setInterval(tick, 60000);
 
+  // ---- Hero release ----
+  // Maps scroll position through the hero's "resistance" zone onto a slight
+  // scale/fade, so the hero recedes as the content rises over it. Read-only
+  // with respect to scrolling — we never preventDefault or reposition the
+  // page, so native momentum and rubber-banding are untouched.
+  (function initHeroRelease(){
+    const stage = document.getElementById('heroStage');
+    const hero  = document.getElementById('hero');
+    if(!stage || !hero) return;
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const content = hero.querySelector('.hero-content');
+    if(!content) return;
+
+    let ticking = false;
+    function update(){
+      ticking = false;
+      // distance travelled through the resistance zone, 0 → 1
+      const zone = Math.max(1, stage.offsetHeight - window.innerHeight);
+      const p = Math.min(1, Math.max(0, window.scrollY / zone));
+      // ease-out so most of the movement happens late, which reads as the
+      // hero "holding" before it lets go
+      const e = p * p;
+      content.style.setProperty('--hero-scale', (1 - e * 0.04).toFixed(4));
+      content.style.setProperty('--hero-fade',  (1 - e * 0.35).toFixed(4));
+      content.style.setProperty('--cue-fade',   p > 0.04 ? '0' : '1');
+    }
+    function onScroll(){
+      if(ticking) return;
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+    addEventListener('scroll', onScroll, {passive:true});
+    addEventListener('resize', onScroll, {passive:true});
+    update();
+  })();
+
   // ---- Scroll reveal ----
   const io = new IntersectionObserver(es => es.forEach(e => {
     if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
@@ -1261,29 +1362,46 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   })();
 
   // ---- Grain fade ----
-  // The paper texture belongs to the hero — it sits over the photography and
-  // reads as a printed plate. Below the fold the page becomes clean stock, so
-  // the grain fades out across the hero's final third. Writes a single custom
+  // The paper texture belongs to the page body, not the hero: over photography
+  // it read as a screen door across the couple's faces. Grain now starts at
+  // zero and eases IN as the hero clears, so the photo stays clean and the
+  // printed-stock feel begins with the content. Writes a single custom
   // property; the opacity itself is interpolated in CSS.
   (function initGrainFade(){
+    // Grain is currently disabled site-wide (body::before has display:none),
+    // so there is nothing to drive. Bail out rather than run a scroll handler
+    // every frame for a hidden layer. Re-enabling the grain in CSS means
+    // deleting this guard as well.
+    if(getComputedStyle(document.body,'::before').display === 'none') return;
+
     const root = document.documentElement;
-    if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const hero = document.getElementById('hero');
     if(!hero) return;
+
+    // Reduced motion: no interpolated fade, but the grain still must not sit
+    // over the hero. Toggle a class once the reader has cleared it.
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches){
+      const flag = () => document.body.classList.toggle(
+        'past-hero', window.scrollY > (hero.offsetHeight || innerHeight) * 0.6);
+      addEventListener('scroll', flag, { passive: true });
+      addEventListener('resize', flag, { passive: true });
+      flag();
+      return;
+    }
 
     let ticking = false;
     function update(){
       ticking = false;
       const h = hero.offsetHeight || window.innerHeight;
-      // Hold full grain until 45% of the hero has passed, then ease to zero
-      // by the time the hero is fully gone.
-      const start = h * 0.45, end = h * 0.95;
+      // No grain until the hero starts to clear, then ease to full by the
+      // time the content proper has arrived.
+      const start = h * 0.55, end = h * 1.05;
       const y = window.scrollY;
       let t = (y - start) / (end - start);
       t = t < 0 ? 0 : t > 1 ? 1 : t;
       // easeInOutCubic so the fade doesn't start or stop abruptly
       const eased = t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
-      root.style.setProperty('--grain', (1 - eased).toFixed(3));
+      root.style.setProperty('--grain', eased.toFixed(3));
     }
     function onScroll(){
       if(ticking) return;

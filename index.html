@@ -2971,9 +2971,11 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
 <!-- ============================================================
      ADMIN MODE
-     Access: add ?admin to the URL → theweltons.org?admin
-     Password protected. Edits save to Firestore collection "siteContent".
-     Guests never see the admin UI.
+     Access: add ?admin to the URL → theweltons.org?admin, or tap the G & R
+     monogram in the footer five times. The browser stays signed in, so the
+     password is usually only needed once per device.
+     Editing is inline and autosaves — there is no save button. Text goes to
+     the Firestore collection "siteContent"; guests never see the admin UI.
      ============================================================ -->
 <style>
   /* ---- Schedule editing (admin only) ---- */
@@ -2983,7 +2985,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     display:flex;gap:4px;position:absolute;top:24px;right:0;
   }
   .sched-tools button{
-    width:26px;height:26px;padding:0;line-height:1;
+    width:34px;height:34px;padding:0;line-height:1;
     border:1px solid var(--line);border-radius:50%;
     background:var(--ivory);color:var(--ink-soft);
     font-family:var(--sans);font-size:.72rem;cursor:pointer;
@@ -3010,9 +3012,14 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     outline:1.5px dashed rgba(126,139,109,.5);border-radius:3px;cursor:text;
   }
   body.admin-mode .sched-day[contenteditable]:focus{outline:2px solid var(--sage-deep)}
+  @media(hover:none){
+    .sched-tools button{width:44px;height:44px;font-size:.85rem}
+    body.admin-mode .sched-add,
+    body.admin-mode .sched-addday{padding:13px 20px;min-height:46px}
+  }
   @media(max-width:560px){
-    body.admin-mode .sched-row{padding-right:0;padding-top:44px}
-    body.admin-mode .sched-tools{top:8px;right:auto;left:0}
+    body.admin-mode .sched-row{padding-right:0;padding-top:56px}
+    body.admin-mode .sched-tools{top:10px;right:auto;left:0}
   }
 
   /* Admin bar */
@@ -3031,12 +3038,16 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   #ab-status{font-size:.65rem;opacity:.65;white-space:nowrap}
   #ab-exit{background:transparent;color:rgba(247,242,234,.45);border:none;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:4px 6px;white-space:nowrap}
   #ab-exit:hover{color:var(--ivory)}
-  #admin-bar .ab-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;width:100%}
-  #admin-bar .ab-btns2{display:grid;grid-template-columns:1fr;gap:6px;width:100%}
-  .ab-btn{padding:10px 8px;border-radius:30px;border:none;cursor:pointer;font-family:var(--sans);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;transition:.25s;white-space:nowrap;text-align:center}
-  #ab-save{background:var(--sage);color:var(--ivory)}
-  #ab-save:hover{background:var(--sage-deep)}
-  #ab-save:disabled{opacity:.5;cursor:default}
+  #admin-bar .ab-btns{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%}
+  #admin-bar .ab-btns2{display:none;grid-template-columns:1fr;gap:6px;width:100%}
+  #admin-bar .ab-btns2.show{display:grid}
+  .ab-btn{padding:13px 10px;border-radius:30px;border:none;cursor:pointer;font-family:var(--sans);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;transition:.25s;white-space:nowrap;text-align:center;min-height:46px}
+  /* While a field has focus the keyboard takes half the screen — the bar drops
+     to a single status line so it isn't stacked on top of what's being typed. */
+  body.admin-editing #admin-bar .ab-btns{display:none}
+  body.admin-editing #admin-bar{padding:8px 14px}
+  #ab-save{background:var(--gold);color:var(--ink)}
+  #ab-save:hover{background:#C9A063}
   #ab-bg,#ab-links{background:rgba(247,242,234,.12);color:var(--ivory);border:1px solid rgba(247,242,234,.25)}
   #ab-bg:hover,#ab-links:hover{background:rgba(247,242,234,.2)}
   #ab-dashboard{background:rgba(185,144,90,.25);color:var(--ivory);border:1px solid rgba(185,144,90,.4)}
@@ -3050,9 +3061,17 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   /* Editable elements in admin mode */
   body.admin-mode [data-editable]{
     outline:1.5px dashed rgba(126,139,109,.5);
-    border-radius:3px;cursor:text;
+    border-radius:4px;cursor:text;
     transition:outline .2s,background .2s;
     position:relative;
+    /* A little room around every field: on a phone the difference between
+       tapping a caption and tapping the paragraph under it is a few pixels. */
+    padding:4px 7px;
+    min-height:1.9em;
+  }
+  /* Stop iOS zooming in when a small field takes focus */
+  @media(hover:none){
+    body.admin-mode [data-editable]{font-size:max(1em,16px);padding:7px 9px}
   }
   body.admin-mode [data-editable]:hover{
     outline:1.5px solid var(--sage);
@@ -3374,13 +3393,13 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     <button id="ab-exit">Exit</button>
   </div>
   <div class="ab-btns">
-    <button class="ab-btn" id="ab-bg">📷 BG</button>
-    <button class="ab-btn" id="ab-links">🔗 Links</button>
-    <button class="ab-btn" id="ab-dashboard">📋 RSVPs</button>
-    <button class="ab-btn" id="ab-rsvp-toggle">🔒 RSVPs Closed</button>
+    <button class="ab-btn" id="ab-dashboard">RSVP List</button>
+    <button class="ab-btn" id="ab-rsvp-toggle">RSVPs Closed</button>
+    <button class="ab-btn" id="ab-links">Links &amp; Password</button>
+    <button class="ab-btn" id="ab-bg">Background Photo</button>
   </div>
   <div class="ab-btns2">
-    <button class="ab-btn" id="ab-save">Save Text</button>
+    <button class="ab-btn" id="ab-save">Retry Save</button>
   </div>
 </div>
 
@@ -3519,11 +3538,43 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   const saveBtn    = document.getElementById('ab-save');
   const exitBtn    = document.getElementById('ab-exit');
   const statusEl   = document.getElementById('ab-status');
+  const retryRow   = document.querySelector('#admin-bar .ab-btns2');
 
-  if(location.search.includes('admin')){
+  // Opens admin: resumes the existing session if there is one, otherwise asks.
+  // Firebase already remembers the signed-in admin in this browser, so most
+  // visits should skip the login form entirely.
+  async function bootAdmin(){
+    if(adminActive || modal.classList.contains('visible')) return;
+    let user = null;
+    try {
+      await initFirebase();
+      user = await Promise.race([
+        new Promise(res => { const off = authModule.onAuthStateChanged(auth, u => { off(); res(u); }); }),
+        new Promise(res => setTimeout(() => res(null), 3500)),
+      ]);
+    } catch(e){ /* offline — fall through to the form */ }
+    if(user){ await activateAdmin(); return; }
     modal.classList.add('visible');
     setTimeout(() => emailInput.focus(), 100);
   }
+
+  if(location.search.includes('admin')) queueMicrotask(bootAdmin);
+
+  // Shortcut: five taps on the footer monogram opens admin, so there's no URL
+  // to type on a phone. Invisible to guests — five deliberate taps in a row on
+  // one small mark isn't something anyone does by accident.
+  (function(){
+    const mark = document.querySelector('footer .fm');
+    if(!mark) return;
+    let taps = 0, timer = null;
+    mark.style.cursor = 'default';
+    mark.addEventListener('click', () => {
+      taps++;
+      clearTimeout(timer);
+      timer = setTimeout(() => { taps = 0; }, 2500);
+      if(taps >= 5){ taps = 0; bootAdmin(); }
+    });
+  })();
 
   async function tryLogin(){
     const loginBtn = document.getElementById('admin-login-btn');
@@ -3870,7 +3921,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const merged = {...savedContent, ...dirty, ...patch};
     savedContent = merged;
     dirty = {};
-    saveBtn.disabled = true;
+    clearTimeout(saveTimer);
     document.querySelectorAll('[data-dirty]').forEach(el => el.removeAttribute('data-dirty'));
     SCHEDULES.forEach(renderSchedule);
     wireEditables();
@@ -3964,6 +4015,73 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     });
   }
 
+  // ---- Keeping the field you're typing in visible ----
+  // On a phone the keyboard covers the lower half of the screen and the admin
+  // bar sits on top of that, so a field tapped near the bottom would otherwise
+  // be hidden the moment it takes focus.
+  const isEditable = el => el && el.nodeType === 1 &&
+    (el.hasAttribute('data-editable') || el.classList.contains('sched-day'));
+
+  document.addEventListener('focusin', e => {
+    if(!adminActive || !isEditable(e.target)) return;
+    document.body.classList.add('admin-editing');
+    setTimeout(() => {
+      const r = e.target.getBoundingClientRect();
+      if(r.bottom > innerHeight * 0.5 || r.top < 90){
+        e.target.scrollIntoView({ block:'center', behavior:'smooth' });
+      }
+    }, 260); // after the keyboard animation
+  });
+
+  document.addEventListener('focusout', e => {
+    if(!isEditable(e.target)) return;
+    // Only collapse once focus has actually left the editable fields
+    setTimeout(() => {
+      if(!isEditable(document.activeElement)) document.body.classList.remove('admin-editing');
+    }, 60);
+  });
+
+  // ---- Autosave ----
+  // Nothing has to be pressed to keep an edit. Typing schedules a save, and
+  // leaving a field (or the page) commits it immediately.
+  let saveTimer = null, saving = false;
+
+  function queueSave(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(flushSave, 1400);
+  }
+
+  async function flushSave(){
+    clearTimeout(saveTimer);
+    if(saving || !Object.keys(dirty).length) return;
+    saving = true;
+    const merged = {...savedContent, ...dirty};
+    const pending = dirty;
+    dirty = {};
+    setStatus('Saving…');
+    try {
+      await initFirestore();
+      await fm.setDoc(fm.doc(db,'siteContent','main'), merged);
+      savedContent = merged;
+      document.querySelectorAll('[data-dirty]').forEach(el => el.removeAttribute('data-dirty'));
+      setStatus('Saved ✓');
+      retryRow.classList.remove('show');
+      setTimeout(() => { if(!Object.keys(dirty).length) setStatus(''); }, 2500);
+    } catch(e){
+      console.error('Autosave failed:', e);
+      dirty = {...pending, ...dirty};      // put the edits back so nothing is lost
+      setStatus('Not saved — tap Retry');
+      retryRow.classList.add('show');
+    }
+    saving = false;
+  }
+
+  // A last-ditch commit if the page is closed mid-edit
+  addEventListener('visibilitychange', () => { if(document.hidden) flushSave(); });
+  addEventListener('beforeunload', e => {
+    if(Object.keys(dirty).length){ flushSave(); e.preventDefault(); e.returnValue = ''; }
+  });
+
   // Attaches inline editing to every keyed element. Safe to call again after a
   // schedule re-render — already-wired elements are skipped.
   function wireEditables(){
@@ -3975,10 +4093,19 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       el.addEventListener('input', () => {
         dirty[key] = el.innerHTML;
         el.setAttribute('data-dirty','');
-        saveBtn.disabled = false;
-        setStatus('Unsaved changes');
+        setStatus('Editing…');
+        queueSave();
       });
-      el.addEventListener('keydown', e => { if(e.key==='Enter') e.preventDefault(); });
+      // Enter finishes the field rather than inserting a line break
+      el.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); el.blur(); } });
+      // Paste as plain text — pasted styling from Notes or Mail would otherwise
+      // land inside the page's own typography
+      el.addEventListener('paste', e => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text');
+        document.execCommand('insertText', false, text.replace(/\s*\n\s*/g,' '));
+      });
+      el.addEventListener('blur', flushSave);
     });
   }
 
@@ -4045,7 +4172,6 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     adminActive = true;
     document.body.classList.add('admin-mode');
     bar.classList.add('visible');
-    saveBtn.disabled = true;
 
     try {
       await loadContent();
@@ -4113,25 +4239,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   }
 
   // ---- Save text changes ----
-  saveBtn.addEventListener('click', async () => {
-    if(!Object.keys(dirty).length) return;
-    saveBtn.disabled = true;
-    saveBtn.textContent = 'Saving…';
-    setStatus('Saving…');
-    try {
-      await initFirestore();
-      const merged = {...savedContent,...dirty};
-      await fm.setDoc(fm.doc(db,'siteContent','main'), merged);
-      savedContent = merged; dirty = {};
-      document.querySelectorAll('[data-dirty]').forEach(el=>el.removeAttribute('data-dirty'));
-      setStatus('Saved ✓');
-      setTimeout(()=>setStatus(''),3000);
-    } catch(e){
-      console.error('Save failed:',e);
-      setStatus('Save failed');
-    }
-    saveBtn.textContent = 'Save Changes';
-  });
+  // Only appears if an autosave fails
+  saveBtn.addEventListener('click', flushSave);
 
   // ---- Background swap button ----
   const bgInput = document.createElement('input');
@@ -4155,7 +4264,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       console.error('BG upload failed:', e);
       setStatus('Failed: ' + e.message.slice(0,50));
     }
-    bgBtn.textContent = '📷 BG'; bgBtn.disabled = false;
+    bgBtn.textContent = 'Background Photo'; bgBtn.disabled = false;
     bgInput.value = '';
   });
 
@@ -4862,7 +4971,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const b = document.getElementById('ab-rsvp-toggle');
     if(!b) return;
     const open = savedSettings.rsvpOpen === true;
-    b.textContent = open ? '🔓 RSVPs Open' : '🔒 RSVPs Closed';
+    b.textContent = open ? 'RSVPs Open' : 'RSVPs Closed';
     b.classList.toggle('is-open', open);
   }
   async function setRsvpOpen(open){
@@ -4944,8 +5053,9 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
   // (Discard removed — save overwrites directly)
 
-  exitBtn.addEventListener('click', () => {
-    if(Object.keys(dirty).length && !confirm('Unsaved changes. Exit anyway?')) return;
+  exitBtn.addEventListener('click', async () => {
+    if(Object.keys(dirty).length) await flushSave();
+    if(Object.keys(dirty).length && !confirm('Some changes could not be saved. Leave anyway?')) return;
     adminActive = false;
     document.body.classList.remove('admin-mode');
     bar.classList.remove('visible');

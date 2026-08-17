@@ -1314,7 +1314,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       <span class="sec-num">II</span>
       <h2 class="sec-title">The <em>Weekend</em></h2>
     </div>
-    <div class="sched reveal">
+    <div class="sched reveal" id="schedList" data-sched="sched">
       <div class="sched-day" data-editable-key="sched-day-fri">Friday, April 2</div>
       <div class="sched-row">
         <div class="sched-time" data-editable-key="sched-0-time">8:30<small>PM</small></div>
@@ -2724,7 +2724,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
       <section class="wp-block">
         <h2 data-editable-key="wp-h-dates">Where to be, and when</h2>
-        <div class="sched">
+        <div class="sched" id="wpSchedList" data-sched="wp">
           <div class="sched-day" data-editable-key="wp-day-fri">Friday, April 2</div>
           <div class="sched-row">
             <div class="sched-time" data-editable-key="wp-0-time">3:00<small>PM</small></div>
@@ -2976,6 +2976,45 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
      Guests never see the admin UI.
      ============================================================ -->
 <style>
+  /* ---- Schedule editing (admin only) ---- */
+  .sched-tools,.sched-add,.sched-addday{display:none}
+  body.admin-mode .sched-row{position:relative;padding-right:96px}
+  body.admin-mode .sched-tools{
+    display:flex;gap:4px;position:absolute;top:24px;right:0;
+  }
+  .sched-tools button{
+    width:26px;height:26px;padding:0;line-height:1;
+    border:1px solid var(--line);border-radius:50%;
+    background:var(--ivory);color:var(--ink-soft);
+    font-family:var(--sans);font-size:.72rem;cursor:pointer;
+    display:grid;place-items:center;transition:.2s;
+  }
+  .sched-tools button:hover{background:var(--ink);color:var(--ivory);border-color:var(--ink)}
+  .sched-tools button.st-del:hover{background:#B4514D;border-color:#B4514D}
+  .sched-tools button:disabled{opacity:.28;cursor:default}
+  .sched-tools button:disabled:hover{background:var(--ivory);color:var(--ink-soft);border-color:var(--line)}
+  body.admin-mode .sched-add,
+  body.admin-mode .sched-addday{
+    display:inline-flex;align-items:center;gap:6px;
+    margin:14px 0 0;padding:8px 16px;
+    border:1px dashed rgba(126,139,109,.55);border-radius:30px;
+    background:transparent;color:var(--sage-deep);cursor:pointer;
+    font-family:var(--sans);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;
+    transition:.2s;
+  }
+  body.admin-mode .sched-add:hover,
+  body.admin-mode .sched-addday:hover{background:rgba(126,139,109,.1);border-style:solid}
+  body.admin-mode .sched-addday{margin-top:26px;border-color:rgba(176,138,82,.55);color:var(--gold)}
+  body.admin-mode .sched-addday:hover{background:rgba(176,138,82,.1)}
+  body.admin-mode .sched-day[contenteditable]{
+    outline:1.5px dashed rgba(126,139,109,.5);border-radius:3px;cursor:text;
+  }
+  body.admin-mode .sched-day[contenteditable]:focus{outline:2px solid var(--sage-deep)}
+  @media(max-width:560px){
+    body.admin-mode .sched-row{padding-right:0;padding-top:44px}
+    body.admin-mode .sched-tools{top:8px;right:auto;left:0}
+  }
+
   /* Admin bar */
   #admin-bar{
     position:fixed;bottom:0;left:0;right:0;z-index:9000;
@@ -3745,6 +3784,204 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   }
 
   // ---- Load all saved content (text + images) ----
+  // ============================================================
+  //  SCHEDULES — add, remove, and reorder events
+  //  Both the weekend schedule and the party portal schedule are driven by a
+  //  layout array stored alongside the text in siteContent. Until the first
+  //  structural edit there is no array, and the built-in HTML below is left
+  //  exactly as written — so nothing changes for a site that never touches it.
+  // ============================================================
+  const SCHEDULES = [
+    { prefix:'sched', key:'layout-sched', el:document.getElementById('schedList')   },
+    { prefix:'wp',    key:'layout-wp',    el:document.getElementById('wpSchedList') },
+  ].filter(c => c.el);
+
+  const uid = () => Math.random().toString(36).slice(2,7);
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+
+  // First structural edit: read whatever is currently on the page — the
+  // built-in defaults, or the couple's saved edits — so the re-render is faithful.
+  function seedFromDOM(cfg){
+    const layout = [], text = {};
+    let day = '';
+    cfg.el.querySelectorAll('.sched-day, .sched-row').forEach(node => {
+      if(node.classList.contains('sched-day')){ day = node.innerHTML.trim(); return; }
+      const timeEl = node.querySelector('.sched-time');
+      if(!timeEl) return;
+      const tk = timeEl.getAttribute('data-editable-key') || '';
+      const id = tk.slice(cfg.prefix.length + 1, -5) || uid();
+      layout.push({ id, day });
+      ['time','title','place','note'].forEach(f => {
+        const el = node.querySelector(`[data-editable-key="${cfg.prefix}-${id}-${f}"]`);
+        if(el) text[`${cfg.prefix}-${id}-${f}`] = el.innerHTML.trim();
+      });
+    });
+    return { [cfg.key]: layout, ...text };
+  }
+
+  function newRow(cfg, id){
+    const p = cfg.prefix;
+    return {
+      [`${p}-${id}-time`] : '12:00<small>PM</small>',
+      [`${p}-${id}-title`]: 'New Event',
+      [`${p}-${id}-place`]: 'Location',
+      [`${p}-${id}-note`] : 'Details to come.',
+    };
+  }
+
+  function renderSchedule(cfg){
+    const layout = savedContent[cfg.key];
+    if(!Array.isArray(layout) || !layout.length) return; // untouched — keep built-in HTML
+    const p = cfg.prefix;
+    const val = (id, f, fallback) => {
+      const v = savedContent[`${p}-${id}-${f}`];
+      return v === undefined || v === '' ? fallback : v;
+    };
+    let html = '', lastDay = null;
+    layout.forEach(item => {
+      if(item.day !== lastDay){
+        html += `<div class="sched-day" data-day="${esc(item.day)}">${item.day}</div>`;
+        lastDay = item.day;
+      }
+      html +=
+        `<div class="sched-row" data-row="${esc(item.id)}">` +
+          `<div class="sched-time" data-editable-key="${p}-${item.id}-time">${val(item.id,'time','12:00<small>PM</small>')}</div>` +
+          `<div class="sched-body">` +
+            `<h3 data-editable-key="${p}-${item.id}-title">${val(item.id,'title','New Event')}</h3>` +
+            `<p class="place" data-editable-key="${p}-${item.id}-place">${val(item.id,'place','Location')}</p>` +
+            `<p class="note" data-editable-key="${p}-${item.id}-note">${val(item.id,'note','Details to come.')}</p>` +
+          `</div>` +
+          `<div class="sched-tools">` +
+            `<button type="button" class="st-up" aria-label="Move earlier">↑</button>` +
+            `<button type="button" class="st-down" aria-label="Move later">↓</button>` +
+            `<button type="button" class="st-del" aria-label="Remove event">✕</button>` +
+          `</div>` +
+        `</div>`;
+    });
+    html += `<button type="button" class="sched-add">+ Add event</button>`;
+    html += `<button type="button" class="sched-addday">+ Add a day</button>`;
+    cfg.el.innerHTML = html;
+    if(adminActive) wireSchedule(cfg);
+  }
+
+  // Writes structure and any pending text edits together, so a structural
+  // change can never quietly discard something typed a moment earlier.
+  async function saveStructure(patch){
+    const merged = {...savedContent, ...dirty, ...patch};
+    savedContent = merged;
+    dirty = {};
+    saveBtn.disabled = true;
+    document.querySelectorAll('[data-dirty]').forEach(el => el.removeAttribute('data-dirty'));
+    SCHEDULES.forEach(renderSchedule);
+    wireEditables();
+    setStatus('Saving…');
+    try {
+      await initFirestore();
+      await fm.setDoc(fm.doc(db,'siteContent','main'), merged);
+      setStatus('Saved ✓');
+      setTimeout(()=>setStatus(''),2500);
+    } catch(e){
+      console.error('Schedule save failed:', e);
+      setStatus('Save failed');
+    }
+  }
+
+  // Seeds the layout on first use, then hands the current array to the caller
+  function withLayout(cfg, fn){
+    const seed = Array.isArray(savedContent[cfg.key]) && savedContent[cfg.key].length
+      ? {} : seedFromDOM(cfg);
+    const base = seed[cfg.key] || savedContent[cfg.key];
+    const patch = fn(base.map(x => ({...x})));
+    if(!patch) return;
+    saveStructure({...seed, ...patch});
+  }
+
+  function wireSchedule(cfg){
+    cfg.el.querySelectorAll('.sched-row').forEach(row => {
+      const id = row.getAttribute('data-row');
+      row.querySelector('.st-up')  .addEventListener('click', () => moveRow(cfg, id, -1));
+      row.querySelector('.st-down').addEventListener('click', () => moveRow(cfg, id,  1));
+      row.querySelector('.st-del') .addEventListener('click', () => {
+        const name = (row.querySelector('h3')||{}).textContent || 'this event';
+        if(confirm(`Remove “${name.trim()}” from the schedule?`)) removeRow(cfg, id);
+      });
+    });
+    // Ends of the list can't move further
+    const rows = cfg.el.querySelectorAll('.sched-row');
+    if(rows.length){
+      rows[0].querySelector('.st-up').disabled = true;
+      rows[rows.length-1].querySelector('.st-down').disabled = true;
+    }
+
+    cfg.el.querySelector('.sched-add').addEventListener('click', () => withLayout(cfg, L => {
+      const id = uid();
+      L.push({ id, day: L.length ? L[L.length-1].day : 'Add a date' });
+      return { [cfg.key]: L, ...newRow(cfg, id) };
+    }));
+
+    cfg.el.querySelector('.sched-addday').addEventListener('click', () => {
+      const label = prompt('What day is this? (e.g. Sunday, April 4)');
+      if(!label || !label.trim()) return;
+      withLayout(cfg, L => {
+        const id = uid();
+        L.push({ id, day: label.trim() });
+        return { [cfg.key]: L, ...newRow(cfg, id) };
+      });
+    });
+
+    // Day headings are edited in place; renaming one renames its whole group
+    cfg.el.querySelectorAll('.sched-day').forEach(dayEl => {
+      dayEl.setAttribute('contenteditable','true');
+      dayEl.setAttribute('spellcheck','true');
+      dayEl.addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); dayEl.blur(); } });
+      dayEl.addEventListener('blur', () => {
+        const was = dayEl.getAttribute('data-day');
+        const now = dayEl.textContent.trim();
+        if(!now){ dayEl.textContent = was; return; }
+        if(now === was) return;
+        withLayout(cfg, L => ({ [cfg.key]: L.map(x => x.day === was ? {...x, day: now} : x) }));
+      });
+    });
+  }
+
+  function moveRow(cfg, id, dir){
+    withLayout(cfg, L => {
+      const i = L.findIndex(x => x.id === id), j = i + dir;
+      if(i < 0 || j < 0 || j >= L.length) return null;
+      // Crossing a day heading moves the event to that day rather than
+      // jumping over the whole group.
+      if(L[i].day !== L[j].day) L[i].day = L[j].day;
+      else { const tmp = L[i]; L[i] = L[j]; L[j] = tmp; }
+      return { [cfg.key]: L };
+    });
+  }
+
+  function removeRow(cfg, id){
+    withLayout(cfg, L => {
+      const next = L.filter(x => x.id !== id);
+      if(!next.length){ alert('A schedule needs at least one event. Edit this one instead.'); return null; }
+      return { [cfg.key]: next };
+    });
+  }
+
+  // Attaches inline editing to every keyed element. Safe to call again after a
+  // schedule re-render — already-wired elements are skipped.
+  function wireEditables(){
+    buildEditableMap().forEach(({el, key}) => {
+      if(el.hasAttribute('data-editable')) return;
+      el.setAttribute('contenteditable','true');
+      el.setAttribute('data-editable', key);
+      el.setAttribute('spellcheck','true');
+      el.addEventListener('input', () => {
+        dirty[key] = el.innerHTML;
+        el.setAttribute('data-dirty','');
+        saveBtn.disabled = false;
+        setStatus('Unsaved changes');
+      });
+      el.addEventListener('keydown', e => { if(e.key==='Enter') e.preventDefault(); });
+    });
+  }
+
   async function loadContent(){
     await initFirestore();
     // Text
@@ -3752,6 +3989,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       const textSnap = await fm.getDoc(fm.doc(db,'siteContent','main'));
       if(textSnap.exists()){
         savedContent = textSnap.data();
+        // Rebuild any schedule the couple has restructured, then apply text.
+        SCHEDULES.forEach(renderSchedule);
         buildEditableMap().forEach(({el,key}) => {
           if(savedContent[key]) el.innerHTML = savedContent[key];
         });
@@ -3817,19 +4056,19 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       setStatus('Offline');
     }
 
-    // ---- Text editables (dynamic from data-editable-key) ----
-    buildEditableMap().forEach(({el, key}) => {
-      el.setAttribute('contenteditable','true');
-      el.setAttribute('data-editable', key);
-      el.setAttribute('spellcheck','true');
-      el.addEventListener('input', () => {
-        dirty[key] = el.innerHTML;
-        el.setAttribute('data-dirty','');
-        saveBtn.disabled = false;
-        setStatus('Unsaved changes');
-      });
-      el.addEventListener('keydown', e => { if(e.key==='Enter') e.preventDefault(); });
+    // ---- Schedules ----
+    // Entering admin mode builds a layout in memory for any schedule that
+    // hasn't been restructured yet, so the add/remove controls are there from
+    // the start. Nothing is written until an actual change is made.
+    SCHEDULES.forEach(cfg => {
+      if(!Array.isArray(savedContent[cfg.key]) || !savedContent[cfg.key].length){
+        Object.assign(savedContent, seedFromDOM(cfg));
+      }
+      renderSchedule(cfg);
     });
+
+    // ---- Text editables (dynamic from data-editable-key) ----
+    wireEditables();
 
     // ---- Image upload buttons ----
     IMAGE_SLOTS.forEach(slot => {
@@ -4712,6 +4951,11 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     bar.classList.remove('visible');
     if(auth && authModule) authModule.signOut(auth).catch(()=>{});
     document.querySelectorAll('.img-upload-btn,.img-file-input').forEach(el=>el.remove());
+    // Day headings are edited outside the keyed map, so clear them explicitly
+    document.querySelectorAll('.sched-day[contenteditable]').forEach(el=>{
+      el.removeAttribute('contenteditable');
+      el.removeAttribute('spellcheck');
+    });
     buildEditableMap().forEach(({el}) => {
       el.removeAttribute('contenteditable');
       el.removeAttribute('data-editable');

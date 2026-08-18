@@ -23,6 +23,9 @@
                        Recommended: 800×800px JPG
    --img-story-3     : Our Story — third couple photo (optional, landscape)
                        Recommended: 1200×800px JPG
+   --img-story-4..10 : Our Story — further cards in the swipe deck. Uploaded in
+                       admin mode rather than set here; all are optional and the
+                       deck simply holds however many have photos.
    Gallery images are set inline on the .gallery-item elements below (search "GALLERY SLOT")
    ============================================================ */
 :root{
@@ -678,9 +681,9 @@ section{padding:120px 0;position:relative;z-index:2}
   box-shadow:0 24px 50px -24px rgba(40,35,31,.55);
   transform-origin:center bottom;
   /* stacked: each card behind sits slightly lower, smaller and rotated.
-     --d is the *visual* depth, capped at 3 by the script so a five-card
-     deck doesn't fan out into a mess — cards deeper than that sit hidden
-     behind the third and only appear as they rotate forward. */
+     --d is the *visual* depth, capped at 3 by the script so the deck doesn't
+     fan out into a mess however many cards there are — deeper cards sit
+     hidden behind the third and only appear as they rotate forward. */
   transform:
     translateY(calc(var(--d) * 10px))
     scale(calc(1 - var(--d) * .05))
@@ -690,7 +693,7 @@ section{padding:120px 0;position:relative;z-index:2}
   z-index:calc(10 - var(--d));
   transition:transform .42s cubic-bezier(.2,.7,.2,1);
   /* backface/perspective hints keep the card on its own compositor layer
-     without the permanent cost of will-change on all five */
+     without the permanent cost of will-change on every card */
   backface-visibility:hidden;
 }
 /* promote only while it's actually moving */
@@ -789,6 +792,9 @@ body.admin-mode .story-card .img-placeholder{
   height:calc(100% - 42px);
 }
 body.admin-mode .story-card::after{display:none}   /* drop the scrim */
+/* New cards ship with no caption. Guests see nothing; admin sees a prompt
+   so an empty field is still something you can find and tap. */
+body.admin-mode .story-photo-caption:empty::before{content:'Add a caption';opacity:.55}
 body.admin-mode .story-photo-caption{
   position:absolute;
   left:0;right:0;bottom:0;
@@ -939,23 +945,13 @@ body.admin-mode .story-card .img-upload-btn{
 /* ---- Per-photo crop ----
    Set the focal point by slot number. Any CSS background-position works:
    'center bottom' keeps the lower third, 'center 30%' favours the upper.
-   Slots correspond to Photo 1-16 in admin mode. */
+   Slots correspond to Photo 1-6 in admin mode. */
 .gallery-item[data-img-key="img-gallery-1"]{ --focus:center }
 .gallery-item[data-img-key="img-gallery-2"]{ --focus:center }
 .gallery-item[data-img-key="img-gallery-3"]{ --focus:center }
 .gallery-item[data-img-key="img-gallery-4"]{ --focus:center }
 .gallery-item[data-img-key="img-gallery-5"]{ --focus:center }
 .gallery-item[data-img-key="img-gallery-6"]{ --focus:center }
-.gallery-item[data-img-key="img-gallery-7"]{ --focus:center }
-.gallery-item[data-img-key="img-gallery-8"]{ --focus:center }
-.gallery-item[data-img-key="img-gallery-9"]{ --focus:center }
-.gallery-item[data-img-key="img-gallery-10"]{ --focus:center }
-.gallery-item[data-img-key="img-gallery-11"]{ --focus:center }
-.gallery-item[data-img-key="img-gallery-12"]{ --focus:center }
-.gallery-item[data-img-key="img-gallery-13"]{ --focus:center }
-.gallery-item[data-img-key="img-gallery-14"]{ --focus:center }
-.gallery-item[data-img-key="img-gallery-15"]{ --focus:center }
-.gallery-item[data-img-key="img-gallery-16"]{ --focus:center }
 
 .gallery-item .gph{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
@@ -1309,6 +1305,36 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
           <div class="img-placeholder" style="display:none"><span>Story Image 5</span></div>
           <span class="story-photo-caption" data-editable-key="story-cap-5">Atlanta, Georgia</span>
         </div>
+        <div class="story-card" data-img-key="img-story-6">
+          <img src="images/story-6.jpg" alt="Grayson and Ryan" loading="lazy"
+               onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
+          <div class="img-placeholder" style="display:none"><span>Story Image 6</span></div>
+          <span class="story-photo-caption" data-editable-key="story-cap-6"></span>
+        </div>
+        <div class="story-card" data-img-key="img-story-7">
+          <img src="images/story-7.jpg" alt="Grayson and Ryan" loading="lazy"
+               onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
+          <div class="img-placeholder" style="display:none"><span>Story Image 7</span></div>
+          <span class="story-photo-caption" data-editable-key="story-cap-7"></span>
+        </div>
+        <div class="story-card" data-img-key="img-story-8">
+          <img src="images/story-8.jpg" alt="Grayson and Ryan" loading="lazy"
+               onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
+          <div class="img-placeholder" style="display:none"><span>Story Image 8</span></div>
+          <span class="story-photo-caption" data-editable-key="story-cap-8"></span>
+        </div>
+        <div class="story-card" data-img-key="img-story-9">
+          <img src="images/story-9.jpg" alt="Grayson and Ryan" loading="lazy"
+               onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
+          <div class="img-placeholder" style="display:none"><span>Story Image 9</span></div>
+          <span class="story-photo-caption" data-editable-key="story-cap-9"></span>
+        </div>
+        <div class="story-card" data-img-key="img-story-10">
+          <img src="images/story-10.jpg" alt="Grayson and Ryan" loading="lazy"
+               onerror="this.style.display='none';this.parentElement.querySelector('.img-placeholder').style.display='flex'">
+          <div class="img-placeholder" style="display:none"><span>Story Image 10</span></div>
+          <span class="story-photo-caption" data-editable-key="story-cap-10"></span>
+        </div>
       </div>
       <p class="deck-hint" aria-hidden="true">Swipe</p>
     </div>
@@ -1413,16 +1439,6 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     <div class="gallery-item" role="img" aria-label="Gallery photo 4" data-img-key="img-gallery-4"><span class="gph">Photo 4</span></div>
     <div class="gallery-item" role="img" aria-label="Gallery photo 5" data-img-key="img-gallery-5"><span class="gph">Photo 5</span></div>
     <div class="gallery-item" role="img" aria-label="Gallery photo 6" data-img-key="img-gallery-6"><span class="gph">Photo 6</span></div>
-    <div class="gallery-item" role="img" aria-label="Gallery photo 7" data-img-key="img-gallery-7"><span class="gph">Photo 7</span></div>
-    <div class="gallery-item" role="img" aria-label="Gallery photo 8" data-img-key="img-gallery-8"><span class="gph">Photo 8</span></div>
-    <div class="gallery-item" role="img" aria-label="Gallery photo 9" data-img-key="img-gallery-9"><span class="gph">Photo 9</span></div>
-    <div class="gallery-item" role="img" aria-label="Gallery photo 10" data-img-key="img-gallery-10"><span class="gph">Photo 10</span></div>
-    <div class="gallery-item" role="img" aria-label="Gallery photo 11" data-img-key="img-gallery-11"><span class="gph">Photo 11</span></div>
-    <div class="gallery-item" role="img" aria-label="Gallery photo 12" data-img-key="img-gallery-12"><span class="gph">Photo 12</span></div>
-    <div class="gallery-item" role="img" aria-label="Gallery photo 13" data-img-key="img-gallery-13"><span class="gph">Photo 13</span></div>
-    <div class="gallery-item" role="img" aria-label="Gallery photo 14" data-img-key="img-gallery-14"><span class="gph">Photo 14</span></div>
-    <div class="gallery-item" role="img" aria-label="Gallery photo 15" data-img-key="img-gallery-15"><span class="gph">Photo 15</span></div>
-    <div class="gallery-item" role="img" aria-label="Gallery photo 16" data-img-key="img-gallery-16"><span class="gph">Photo 16</span></div>
   </div>
 </section>
 
@@ -1974,11 +1990,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   // print proportion and shape are assigned per tile so the wall stays varied
   // while every frame remains square to the grid.
   window._initGallery = (function(){
-    // Always show exactly this many — about one phone screen's worth.
-    // There are 16 upload slots but only SHOW appear per visit, picked at
-    // random, so the page looks different each time without getting longer.
-    // Raise this to show more at once (it keeps the 2-column grid either way).
-    // If fewer photos are uploaded, show all of them.
+    // The grid is 2 x 3, and there are six gallery slots, so every photo
+    // uploaded is shown. If fewer than six exist, only those appear.
     const SHOW = 6;
     let done = false;
 
@@ -3471,6 +3484,41 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         img.src = url; img.style.display='block';
         const ph = el.querySelector('.img-placeholder'); if(ph) ph.style.display='none';
       }},
+    { key:'img-story-6',   maxW:900,  maxH:1200, quality:.85,
+      apply: (el, url) => {
+        let img = el.querySelector('img');
+        if(!img){ img = document.createElement('img'); img.alt='Story photo 6'; el.prepend(img); }
+        img.src = url; img.style.display='block';
+        const ph = el.querySelector('.img-placeholder'); if(ph) ph.style.display='none';
+      }},
+    { key:'img-story-7',   maxW:900,  maxH:1200, quality:.85,
+      apply: (el, url) => {
+        let img = el.querySelector('img');
+        if(!img){ img = document.createElement('img'); img.alt='Story photo 7'; el.prepend(img); }
+        img.src = url; img.style.display='block';
+        const ph = el.querySelector('.img-placeholder'); if(ph) ph.style.display='none';
+      }},
+    { key:'img-story-8',   maxW:900,  maxH:1200, quality:.85,
+      apply: (el, url) => {
+        let img = el.querySelector('img');
+        if(!img){ img = document.createElement('img'); img.alt='Story photo 8'; el.prepend(img); }
+        img.src = url; img.style.display='block';
+        const ph = el.querySelector('.img-placeholder'); if(ph) ph.style.display='none';
+      }},
+    { key:'img-story-9',   maxW:900,  maxH:1200, quality:.85,
+      apply: (el, url) => {
+        let img = el.querySelector('img');
+        if(!img){ img = document.createElement('img'); img.alt='Story photo 9'; el.prepend(img); }
+        img.src = url; img.style.display='block';
+        const ph = el.querySelector('.img-placeholder'); if(ph) ph.style.display='none';
+      }},
+    { key:'img-story-10',   maxW:900,  maxH:1200, quality:.85,
+      apply: (el, url) => {
+        let img = el.querySelector('img');
+        if(!img){ img = document.createElement('img'); img.alt='Story photo 10'; el.prepend(img); }
+        img.src = url; img.style.display='block';
+        const ph = el.querySelector('.img-placeholder'); if(ph) ph.style.display='none';
+      }},
     { key:'img-gallery-1', maxW:1200, maxH:900,  quality:.82,
       apply: (el, url) => { const ph = el.querySelector('.gallery-photo') || el; ph.style.backgroundImage=`url('${url}')`; const g = el.querySelector('.gph'); if(g) g.style.display='none'; }},
     { key:'img-gallery-2', maxW:800,  maxH:1000, quality:.82,
@@ -3482,26 +3530,6 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     { key:'img-gallery-5', maxW:1600, maxH:900,  quality:.82,
       apply: (el, url) => { const ph = el.querySelector('.gallery-photo') || el; ph.style.backgroundImage=`url('${url}')`; const g = el.querySelector('.gph'); if(g) g.style.display='none'; }},
     { key:'img-gallery-6', maxW:800,  maxH:1000, quality:.82,
-      apply: (el, url) => { const ph = el.querySelector('.gallery-photo') || el; ph.style.backgroundImage=`url('${url}')`; const g = el.querySelector('.gph'); if(g) g.style.display='none'; }},
-    { key:'img-gallery-7', maxW:800,  maxH:1000, quality:.82,
-      apply: (el, url) => { const ph = el.querySelector('.gallery-photo') || el; ph.style.backgroundImage=`url('${url}')`; const g = el.querySelector('.gph'); if(g) g.style.display='none'; }},
-    { key:'img-gallery-8', maxW:800,  maxH:1000, quality:.82,
-      apply: (el, url) => { const ph = el.querySelector('.gallery-photo') || el; ph.style.backgroundImage=`url('${url}')`; const g = el.querySelector('.gph'); if(g) g.style.display='none'; }},
-    { key:'img-gallery-9', maxW:800,  maxH:1000, quality:.82,
-      apply: (el, url) => { const ph = el.querySelector('.gallery-photo') || el; ph.style.backgroundImage=`url('${url}')`; const g = el.querySelector('.gph'); if(g) g.style.display='none'; }},
-    { key:'img-gallery-10', maxW:800,  maxH:1000, quality:.82,
-      apply: (el, url) => { const ph = el.querySelector('.gallery-photo') || el; ph.style.backgroundImage=`url('${url}')`; const g = el.querySelector('.gph'); if(g) g.style.display='none'; }},
-    { key:'img-gallery-11', maxW:800,  maxH:1000, quality:.82,
-      apply: (el, url) => { const ph = el.querySelector('.gallery-photo') || el; ph.style.backgroundImage=`url('${url}')`; const g = el.querySelector('.gph'); if(g) g.style.display='none'; }},
-    { key:'img-gallery-12', maxW:800,  maxH:1000, quality:.82,
-      apply: (el, url) => { const ph = el.querySelector('.gallery-photo') || el; ph.style.backgroundImage=`url('${url}')`; const g = el.querySelector('.gph'); if(g) g.style.display='none'; }},
-    { key:'img-gallery-13', maxW:800,  maxH:1000, quality:.82,
-      apply: (el, url) => { const ph = el.querySelector('.gallery-photo') || el; ph.style.backgroundImage=`url('${url}')`; const g = el.querySelector('.gph'); if(g) g.style.display='none'; }},
-    { key:'img-gallery-14', maxW:800,  maxH:1000, quality:.82,
-      apply: (el, url) => { const ph = el.querySelector('.gallery-photo') || el; ph.style.backgroundImage=`url('${url}')`; const g = el.querySelector('.gph'); if(g) g.style.display='none'; }},
-    { key:'img-gallery-15', maxW:800,  maxH:1000, quality:.82,
-      apply: (el, url) => { const ph = el.querySelector('.gallery-photo') || el; ph.style.backgroundImage=`url('${url}')`; const g = el.querySelector('.gph'); if(g) g.style.display='none'; }},
-    { key:'img-gallery-16', maxW:800,  maxH:1000, quality:.82,
       apply: (el, url) => { const ph = el.querySelector('.gallery-photo') || el; ph.style.backgroundImage=`url('${url}')`; const g = el.querySelector('.gph'); if(g) g.style.display='none'; }},
   ];
 
@@ -4176,9 +4204,9 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       'img-background',
       'img-venue',
       'img-story-1','img-story-2','img-story-3','img-story-4','img-story-5',
+      'img-story-6','img-story-7','img-story-8','img-story-9','img-story-10',
       'img-gallery-1','img-gallery-2','img-gallery-3',
-      'img-gallery-4','img-gallery-5','img-gallery-6','img-gallery-7','img-gallery-8',
-      'img-gallery-9','img-gallery-10','img-gallery-11','img-gallery-12','img-gallery-13','img-gallery-14','img-gallery-15','img-gallery-16',
+      'img-gallery-4','img-gallery-5','img-gallery-6',
     ];
     await Promise.all(imageKeys.map(async key => {
       try {

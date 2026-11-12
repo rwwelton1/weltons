@@ -1657,9 +1657,9 @@ html.seal-on .seal-splash::after{
       </div>
     </div>
     <div class="sched-links reveal">
-      <button type="button" class="btn btn-rose save-itin" data-save-itinerary>Save the weekend as a picture</button>
       <a href="https://www.google.com/maps/dir/?api=1&amp;destination=Tate+House%2C+2973+GA-53%2C+Tate%2C+GA+30177" target="_blank" rel="noopener">Directions to Tate House</a>
       <a href="https://www.google.com/maps/dir/?api=1&amp;destination=Reformation+Brewery%2C+Canton%2C+GA" target="_blank" rel="noopener">Directions to Reformation Brewery</a>
+      <button type="button" class="save-itin" data-save-itinerary>Keep a copy of this itinerary</button>
     </div>
   </div>
 </section>
@@ -1763,7 +1763,7 @@ html.seal-on .seal-splash::after{
     </div>
     <p class="shuttle reveal"><strong>Shuttle service</strong> runs Friday evening to and from Reformation Brewery for the welcome party, and to and from Tate House throughout the day Saturday. Pickup locations and departure times will be shared closer to the date. We strongly encourage guests not to drive after the celebration — the mountain roads are beautiful but winding.</p>
 
-    <div class="shuttle-save reveal"><button type="button" class="btn save-itin" data-save-itinerary>Save the itinerary and shuttle info</button></div>
+    <div class="shuttle-save reveal"><button type="button" class="save-itin" data-save-itinerary>Keep a copy of the itinerary and shuttle notes</button></div>
 
     <!-- Canton recommendations. An accordion rather than a card row: this is
          optional depth, and collapsing it keeps the section scannable for the
@@ -6023,10 +6023,14 @@ html.seal-on .seal-splash::after{
       wrap(ctx, str, maxW).forEach(l => { text(l, x, size, Object.assign({ sans: !(opts && opts.sans === false) }, opts)); y += lh; });
     };
 
+    ctx.font = `italic 400 44px ${SERIF}`;
+    const longest = Math.max(0, ...d.days.flatMap(x => x.rows.map(r => ctx.measureText(r.time).width)));
+    const COL = Math.min(380, Math.max(262, Math.ceil(longest) + 44));
     y = 168; rule(y, 360);
     y += 150; text(d.names, W / 2, 112, { style: 'italic', align: 'center' });
     if(d.date){ y += 78; text(d.date, W / 2, 40, { style: 'italic', color: 'rgba(247,242,234,.86)', align: 'center' }); }
-    y += 72; text(`${d.venue}${d.addr ? ', ' + d.addr.replace(/^\d.*?,\s*/, '') : ''}`, W / 2, 32, { sans: true, weight: 300, color: ROSE, align: 'center' });
+    if(d.venue){ y += 74; text(d.venue, W / 2, 38, { style: 'italic', color: ROSE, align: 'center' }); }
+    if(d.addr){ y += 50; text(d.addr, W / 2, 30, { sans: true, weight: 300, color: 'rgba(247,242,234,.78)', align: 'center' }); }
     y += 86;
 
     d.days.forEach(day => {
@@ -6037,9 +6041,9 @@ html.seal-on .seal-splash::after{
       day.rows.forEach(r => {
         y += 86;
         text(r.time, PAD, 44, { style: 'italic' });
-        text(r.title, PAD + 262, 48, { weight: 500 });
-        const tx = PAD + 262, tw = W - PAD - tx;
-        if(r.place){ y += 46; text(r.place, tx, 34, { style: 'italic', color: ROSE }); }
+        text(r.title, PAD + COL, 48, { weight: 500 });
+        const tx = PAD + COL, tw = W - PAD - tx;
+        if(r.place){ y += 46; para(r.place, tx, tw, 34, 44, { style: 'italic', weight: 400, color: ROSE, sans: false }); y -= 44; }
         if(r.note){ y += 46; para(r.note, tx, tw, 30, 42, { color: 'rgba(247,242,234,.82)' }); y -= 42; }
       });
       y += 44;
@@ -6102,7 +6106,7 @@ html.seal-on .seal-splash::after{
 
   async function open(btn){
     opener = btn;
-    const label = btn.textContent; btn.disabled = true; btn.textContent = 'Preparing your picture';
+    const label = btn.textContent; btn.disabled = true; btn.textContent = 'One moment';
     let out;
     try{ out = await render(); }
     catch(e){ btn.disabled = false; btn.textContent = label; alert('Sorry, the picture could not be made. Please try again.'); return; }
@@ -6567,9 +6571,7 @@ html.seal-on .seal-splash::after{
 html{font-variant-ligatures:none;font-feature-settings:"liga" 0,"dlig" 0,"calt" 0}
 
 /* ---- Save the weekend as a picture ---- */
-.sched-links .save-itin{margin-right:6px}
-.shuttle-save{margin:26px 0 0}
-.itin-overlay{position:fixed;inset:0;z-index:20000;background:rgba(36,42,30,.88);display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
+.itin-overlay{position:fixed;inset:0;z-index:20000;background:rgba(34,40,29,.97);display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
 .itin-sheet{display:flex;flex-direction:column;align-items:center;gap:16px;max-height:100%;width:min(100%,460px)}
 .itin-img{max-height:calc(100vh - 190px);max-height:calc(100dvh - 190px);overflow:auto;border-radius:2px;box-shadow:0 30px 60px -30px rgba(0,0,0,.7);-webkit-overflow-scrolling:touch}
 .itin-img img{display:block;width:100%;height:auto}
@@ -6580,9 +6582,23 @@ html{font-variant-ligatures:none;font-feature-settings:"liga" 0,"dlig" 0,"calt" 
 .itin-actions .btn-rose{background:var(--ivory);border-color:var(--ivory);color:var(--garden-deep)}
 .itin-hint{font-family:var(--serif);font-style:italic;color:rgba(247,242,234,.78);font-size:.95rem;text-align:center}
 @media(max-width:640px){
-  .sched-links .save-itin{display:block;width:100%;margin:0;order:-1}
-  .shuttle-save .btn{display:block;width:100%;text-align:center}
 }
+
+/* Quiet link rather than a button */
+.save-itin{
+  background:none;border:0;border-bottom:1px solid rgba(86,98,74,.45);border-radius:0;padding:2px 0 3px;
+  font-family:var(--serif);font-style:italic;font-size:1.02rem;color:var(--garden-deep);cursor:pointer;
+  text-transform:none;letter-spacing:0;transition:color .2s,border-color .2s;
+}
+.save-itin:hover{color:var(--garden);border-color:var(--garden)}
+.save-itin:disabled{opacity:.6;cursor:default}
+.sched-links .save-itin{margin:0 0 0 auto;align-self:center}
+.shuttle-save{margin:18px 0 0}
+@media(max-width:640px){
+  .sched-links .save-itin{display:inline-block;width:auto;margin:12px 0 0;order:0;align-self:flex-start}
+  .shuttle-save .save-itin{display:inline-block;width:auto}
+}
+.sched-time:empty{visibility:hidden;height:0;margin:0;padding:0}
 </style>
 </body>
 </html>

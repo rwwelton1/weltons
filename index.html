@@ -1192,9 +1192,286 @@ footer{background:var(--ink);color:var(--ivory);text-align:center;padding:70px 3
 footer .fm{font-family:var(--serif);font-style:italic;font-size:2.2rem}
 footer .fd{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,242,234,.6);margin-top:16px}
 footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-style:italic;font-family:var(--serif)}
+
+/* ================================================================
+   UX ADDITIONS — navigation, readability, RSVP states, day-of mode
+   Kept together here so they're easy to find or roll back. Nothing
+   above was removed; these rules override by coming later.
+   ================================================================ */
+
+/* ---- NAV: RSVP as a pill, current section marked ---- */
+.navlinks a.nav-rsvp{padding:8px 18px;border:1px solid var(--rose-deep);border-radius:30px;color:var(--rose-ink)}
+.navlinks a.nav-rsvp::after{display:none}
+.navlinks a.nav-rsvp:hover,.navlinks a.nav-rsvp.active{background:var(--rose-deep);border-color:var(--rose-deep);color:var(--ivory)}
+.navlinks li:has(.nav-rsvp){display:flex;align-items:center}
+.navlinks a.active{color:var(--ink)}
+.navlinks a.active::after{width:100%}
+@media(min-width:881px){
+  .navlinks{align-items:center}
+  /* Over the hero photo the links were ink-on-dark; lift them to ivory until the bar turns opaque */
+  body.hero-has-images nav:not(.scrolled) .navlinks a{color:rgba(247,242,234,.92);text-shadow:0 1px 10px rgba(20,17,14,.6)}
+  body.hero-has-images nav:not(.scrolled) .navlinks a::after{background:var(--ivory)}
+  body.hero-has-images nav:not(.scrolled) .navlinks a.nav-rsvp{border-color:rgba(247,242,234,.75);text-shadow:none}
+  body.hero-has-images nav:not(.scrolled) .navlinks a.nav-rsvp:hover{background:var(--ivory);color:var(--ink)}
+}
+@media(max-width:880px){.navlinks a.nav-rsvp{padding:12px 34px}}
+
+/* Footer: the private side door now lives here */
+.fp{margin-top:28px}
+.fp a{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,242,234,.6);text-decoration:none;border-bottom:1px solid rgba(247,242,234,.25);padding-bottom:4px;transition:color .25s,border-color .25s}
+.fp a:hover{color:var(--ivory);border-color:var(--rose)}
+
+/* Hotel buttons stay hidden until a real booking link is saved in admin */
+.hotel .btn[href="#"]{display:none}
+
+/* Directions */
+.venue-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
+.venue-copy .venue-actions .btn{margin-top:0}
+.sched-links{max-width:760px;margin:30px auto 0;display:flex;flex-wrap:wrap;justify-content:center;gap:10px 22px}
+.sched-links a{font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--rose-ink);text-decoration:none;border-bottom:1px solid rgba(194,145,127,.45);padding-bottom:3px}
+.sched-links a:hover{color:var(--ink);border-color:var(--ink)}
+
+/* Hero: calendar button stands in for RSVP while RSVPs are closed */
+.hero-cal{display:none}
+body.rsvp-locked .hero-cal{display:inline-block}
+
+/* ---- READABILITY ----
+   Raises the smallest labels (several were ~9px) to a floor of roughly 11px,
+   and lifts a couple of low-contrast tints. Same typefaces, same tracking feel. */
+.count .lbl{font-size:.68rem}
+.scroll-cue{font-size:.68rem}
+.story-photo-caption{font-size:.7rem}
+.deck-hint{font-size:.7rem}
+.sched-time small{font-size:.68rem}
+.sched-day{font-size:.74rem}
+.sched-body .place{font-size:.74rem}
+.party-col .sub{font-size:.7rem}
+.party-list .role{font-size:.7rem}
+.hotel .tag{font-size:.68rem}
+.hotel .loc{font-size:.74rem}
+.field label{font-size:.72rem}
+.pg-status{font-size:.68rem}
+.reg-card .s{font-size:.74rem}
+.hero-place{font-size:.82rem}
+footer .fd{font-size:.76rem;color:rgba(247,242,234,.7)}
+footer .fn{color:rgba(247,242,234,.65)}
+.wp-back,.wp-bar .wp-tag,.wp-two .sub,.wp-kv .k{font-size:.7rem}
+@media(max-width:520px){
+  .tabstrip button{font-size:.66rem;white-space:normal;line-height:1.3}
+}
+
+/* ---- RSVP states ---- */
+.rsvp-err a{color:var(--rose-ink)}
+.rsvp-suggest{display:none;text-align:left;margin:-6px 0 20px;padding:18px 20px;background:rgba(247,242,234,.82);border:1px solid var(--rose-deep);border-radius:8px}
+.rsvp-suggest.on{display:block}
+.rsvp-suggest .rs-q{font-family:var(--serif);font-style:italic;font-size:1.1rem;margin-bottom:12px}
+.rsvp-suggest .rs-opts{display:flex;flex-direction:column;gap:8px}
+.rsvp-suggest .rs-opt{padding:13px 16px;border:1px solid var(--rose-deep);border-radius:6px;background:var(--ivory);font-family:var(--serif);font-size:1.05rem;color:var(--ink);cursor:pointer;text-align:left;transition:background .2s,color .2s}
+.rsvp-suggest .rs-opt:hover{background:var(--ink);color:var(--ivory);border-color:var(--ink)}
+.rsvp-suggest .rs-none{margin-top:12px}
+.party-guest.needs-answer{padding:12px 14px 16px;border-radius:8px;background:rgba(247,242,234,.6);box-shadow:inset 0 0 0 1.5px var(--rose-ink)}
+.party-guest.needs-answer .pg-name::after{content:"Please choose one";display:inline-block;margin-left:10px;font-family:var(--sans);font-style:normal;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--rose-ink);vertical-align:middle}
+#submitErr{margin:4px 0 14px}
+.rsvp-summary{max-width:420px;margin:26px auto 0;text-align:left;background:rgba(247,242,234,.82);border:1px solid var(--rose-deep);border-radius:10px;padding:20px 22px}
+.rsvp-summary .sum-row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:10px 0}
+.rsvp-summary .sum-row + .sum-row{border-top:1px solid var(--line)}
+.rsvp-summary:empty{display:none}
+#rsvp .rsvp-shell{scroll-margin-top:84px}
+.rsvp-summary .sum-name{font-family:var(--serif);font-size:1.08rem}
+.rsvp-summary .sum-val{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+.rsvp-summary .sum-val.yes{color:var(--sage-deep)}
+.rsvp-summary .sum-val.no{color:var(--rose-ink)}
+.rsvp-summary .sum-ev{font-size:.82rem;color:var(--ink-soft);margin-top:2px}
+.rsvp-summary .sum-note{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-family:var(--serif);font-style:italic;color:var(--ink-soft);font-size:.95rem}
+.sum-actions{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:14px 22px;margin-top:24px}
+
+/* ---- DAY-OF MODE ----
+   April 2–3 only: the hero's countdown and RSVP give way to what's on now. */
+.dayof{display:none;text-align:center;max-width:520px;position:relative;z-index:1}
+body.dayof-mode .dayof{display:block}
+body.dayof-mode #count,
+body.dayof-mode .hero-bottom > a.btn{display:none!important}
+.dayof .do-label{font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;color:var(--sage-deep)}
+.dayof .do-title{font-family:var(--serif);font-style:italic;font-size:clamp(1.9rem,6vw,2.8rem);line-height:1.1;margin-top:8px;color:var(--ink)}
+.dayof .do-place{font-size:.8rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);margin-top:8px}
+.dayof .do-note{font-family:var(--serif);font-style:italic;color:var(--ink-soft);margin-top:8px}
+.dayof .do-then{font-size:.8rem;letter-spacing:.08em;color:var(--ink-soft);margin-top:10px}
+.dayof .do-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:18px}
+.dayof .do-actions .btn{padding:12px 26px}
+#hero.has-images .dayof .do-label{color:rgba(247,242,234,.85)}
+#hero.has-images .dayof .do-title{color:var(--ivory);text-shadow:0 2px 18px rgba(20,17,14,.8)}
+#hero.has-images .dayof .do-place,
+#hero.has-images .dayof .do-note,
+#hero.has-images .dayof .do-then{color:rgba(247,242,234,.88);text-shadow:0 1px 12px rgba(20,17,14,.75)}
+.sched-row.is-now .sched-time::after,
+.sched-row.is-next .sched-time::after{display:block;width:max-content;margin-top:8px;padding:3px 10px;border-radius:20px;font-family:var(--sans);font-style:normal;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase}
+.sched-row.is-now .sched-time::after{content:"Happening now";background:var(--rose-deep);color:var(--ivory)}
+.sched-row.is-next .sched-time::after{content:"Up next";border:1px solid var(--rose-deep);color:var(--rose-ink)}
+
+/* ================================================================
+   WAX SEAL SPLASH
+   Shown once per browser session, before anything else. Tapping the
+   seal cracks it in two and the page is revealed underneath.
+   Hidden entirely unless the small script in <head> opts in, so it
+   never flashes for admin, the party portal, deep links or day-of.
+   ================================================================ */
+.seal-splash{display:none}
+html.seal-on,html.seal-on body{overflow:hidden}
+html.seal-on .seal-splash{
+  display:flex;position:fixed;inset:0;z-index:9700;
+  align-items:center;justify-content:center;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(247,242,234,0) 0%, rgba(214,196,176,.38) 100%),
+    var(--ivory);
+  transition:opacity .9s cubic-bezier(.4,0,.2,1), transform 1.1s cubic-bezier(.2,.7,.2,1);
+}
+/* fine paper tooth, one cheap layer */
+html.seal-on .seal-splash::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .3 0 0 0 0 .25 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
+}
+/* a fine double rule inset from the edge, like the border of a card */
+html.seal-on .seal-splash::after{
+  content:"";position:absolute;inset:clamp(14px,3vw,28px);pointer-events:none;
+  border:1px solid rgba(176,138,82,.45);
+  box-shadow:inset 0 0 0 5px var(--ivory), inset 0 0 0 6px rgba(176,138,82,.28);
+}
+.ss-card{position:relative;z-index:1;text-align:center;padding:24px;display:flex;flex-direction:column;align-items:center}
+.ss-eyebrow{font-size:.72rem;letter-spacing:.34em;text-transform:uppercase;color:var(--sage-deep);font-weight:500}
+.ss-seal{width:min(220px,56vw);aspect-ratio:1;margin:30px 0 26px;position:relative}
+.ss-seal svg{width:100%;height:100%;overflow:visible;
+  filter:drop-shadow(0 14px 18px rgba(80,40,30,.28)) drop-shadow(0 3px 4px rgba(80,40,30,.25));
+  transition:transform .14s ease-out}
+.ss-names{font-family:var(--serif);font-weight:300;font-size:clamp(2rem,7vw,3.1rem);line-height:1.05;letter-spacing:-.01em;color:var(--ink)}
+.ss-names .amp{font-style:italic;color:var(--rose-ink);font-size:.85em}
+.ss-date{margin-top:12px;font-family:var(--serif);font-style:italic;font-size:1.08rem;color:var(--ink-soft)}
+.ss-hint{margin-top:34px;font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;color:var(--rose-ink);animation:ssPulse 2.6s ease-in-out infinite}
+@keyframes ssPulse{0%,100%{opacity:.45}50%{opacity:1}}
+/* entrance */
+.ss-eyebrow,.ss-seal,.ss-names,.ss-date,.ss-hint{opacity:0;animation:ssIn 1.1s cubic-bezier(.2,.7,.2,1) forwards}
+.ss-eyebrow{animation-delay:.1s}
+.ss-seal{animation:ssDrop 1s cubic-bezier(.3,1.35,.5,1) .25s forwards}
+.ss-names{animation-delay:.55s}
+.ss-date{animation-delay:.7s}
+.ss-hint{animation:ssIn 1s cubic-bezier(.2,.7,.2,1) 1.2s forwards, ssPulse 2.6s ease-in-out 2.2s infinite}
+@keyframes ssIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes ssDrop{from{opacity:0;transform:scale(1.18)}to{opacity:1;transform:none}}
+.seal-splash:hover .ss-seal svg{transform:scale(1.02)}
+.seal-splash:focus-visible{outline:none}
+.seal-splash:focus-visible .ss-seal svg{transform:scale(1.03)}
+
+/* the break */
+.ss-half{transform-box:view-box;transition:transform 1s cubic-bezier(.32,.6,.2,1), opacity .75s ease .3s}
+.ss-left{transform-origin:118px 210px}
+.ss-right{transform-origin:122px 210px}
+.ss-crack{stroke-dasharray:320;stroke-dashoffset:320;transition:stroke-dashoffset .3s ease-out}
+.seal-splash.pressed .ss-seal svg{transform:scale(.95)}
+.seal-splash.cracking .ss-crack{stroke-dashoffset:0}
+.seal-splash.breaking .ss-left{transform:translate(-30px,26px) rotate(-17deg);opacity:0}
+.seal-splash.breaking .ss-right{transform:translate(30px,30px) rotate(15deg);opacity:0}
+.seal-splash.breaking .ss-crack{opacity:0;transition:opacity .2s}
+.seal-splash.breaking .ss-whole{opacity:0}
+.seal-splash.breaking .ss-hint{animation:none;opacity:0;transition:opacity .3s}
+.seal-splash.leaving{opacity:0;transform:scale(1.04);pointer-events:none}
+.seal-splash.leaving .ss-names,.seal-splash.leaving .ss-date,.seal-splash.leaving .ss-eyebrow{transform:translateY(-10px);transition:transform .9s cubic-bezier(.2,.7,.2,1)}
+@media(prefers-reduced-motion:reduce){
+  .ss-eyebrow,.ss-seal,.ss-names,.ss-date,.ss-hint{animation:none;opacity:1}
+  .seal-splash.leaving{transform:none;transition:opacity .4s}
+}
 </style>
+<script>
+/* Decides before first paint whether the wax-seal splash shows, so it never
+   flickers on and off. Add ?seal to the URL to preview it again. */
+(function(){
+  try{
+    var q = location.search, h = location.hash, now = Date.now();
+    var force = /[?&]seal(\b|=)/.test(q);
+    var skip = /admin|weddingparty|dayof|nosplash/.test(q) ||
+               (h && h.length > 1) ||
+               sessionStorage.getItem('gr-seal-opened') === '1' ||
+               /* the wedding weekend: guests want the schedule, not a ceremony */
+               (now >= Date.UTC(2027,3,2,4) && now < Date.UTC(2027,3,4,16));
+    if(force || !skip) document.documentElement.classList.add('seal-on');
+  }catch(e){}
+})();
+</script>
 </head>
 <body>
+
+<!-- WAX SEAL SPLASH — see the styles and <head> script marked WAX SEAL SPLASH -->
+<div class="seal-splash" id="sealSplash" role="button" tabindex="0" aria-label="Open the invitation from Grayson and Ryan">
+  <div class="ss-card">
+    <div class="ss-eyebrow">You&rsquo;re invited</div>
+    <div class="ss-seal" aria-hidden="true">
+      <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <path id="ssBlob" d="M217.5,120.0C217.0,122.8 216.2,125.6 215.6,128.4C215.0,131.1 214.5,133.8 214.0,136.6C213.5,139.3 213.1,142.1 212.6,144.8C212.0,147.5 211.4,150.3 210.7,153.0C209.9,155.7 209.1,158.4 208.2,161.1C207.4,163.9 206.8,166.8 205.7,169.5C204.7,172.2 203.5,174.9 201.9,177.3C200.2,179.7 198.0,181.7 196.0,183.8C194.1,185.9 192.0,187.9 190.0,190.0C188.0,192.1 186.2,194.4 184.1,196.4C182.0,198.4 179.8,200.4 177.4,202.0C175.0,203.6 172.3,204.8 169.7,206.1C167.1,207.3 164.4,208.4 161.7,209.4C159.0,210.5 156.4,211.6 153.7,212.5C150.9,213.3 148.2,214.2 145.4,214.8C142.6,215.3 139.7,215.6 136.9,215.9C134.1,216.1 131.2,216.0 128.4,216.2C125.6,216.5 122.8,216.7 120.0,217.1C117.2,217.6 114.3,218.3 111.3,218.9C108.4,219.5 105.3,220.3 102.3,220.5C99.2,220.7 96.1,220.8 93.2,220.2C90.2,219.6 87.4,218.3 84.7,216.9C82.1,215.5 79.6,213.5 77.2,211.8C74.8,210.0 72.6,208.0 70.2,206.2C67.9,204.4 65.6,202.7 63.3,200.9C61.1,199.1 58.8,197.4 56.6,195.5C54.4,193.7 52.4,191.7 50.2,189.8C48.0,188.0 45.3,186.4 43.4,184.3C41.5,182.1 39.8,179.6 38.7,176.9C37.6,174.2 37.7,170.8 37.0,167.9C36.3,165.1 35.4,162.5 34.5,159.9C33.7,157.2 32.6,154.7 31.9,152.1C31.2,149.4 30.8,146.7 30.3,144.0C29.8,141.4 29.6,138.7 29.0,136.0C28.4,133.4 27.7,130.8 26.7,128.2C25.7,125.5 24.2,122.8 23.0,120.0C21.9,117.2 20.4,114.2 19.6,111.2C18.9,108.2 18.3,105.1 18.4,102.1C18.5,99.1 19.2,96.1 20.1,93.2C21.0,90.4 22.4,87.6 23.7,85.0C25.0,82.3 26.5,79.7 28.0,77.1C29.5,74.5 31.0,72.0 32.7,69.6C34.3,67.2 36.1,64.8 38.1,62.6C40.0,60.5 42.3,58.6 44.3,56.5C46.3,54.3 48.3,52.5 49.9,49.9C51.5,47.4 52.4,44.1 53.9,41.2C55.4,38.4 56.6,34.8 58.9,32.7C61.2,30.7 64.4,29.7 67.4,28.9C70.5,28.2 74.0,28.4 77.2,28.2C80.3,28.0 83.4,27.9 86.4,27.7C89.4,27.5 92.3,27.4 95.1,27.1C97.9,26.8 100.6,26.4 103.4,25.8C106.1,25.3 108.8,24.5 111.6,23.9C114.4,23.4 117.2,22.7 120.0,22.6C122.8,22.4 125.7,22.6 128.5,23.0C131.3,23.4 134.0,24.2 136.7,25.0C139.5,25.8 142.1,26.8 144.7,27.8C147.4,28.7 150.0,29.5 152.6,30.5C155.1,31.5 157.7,32.5 160.2,33.7C162.7,34.9 165.0,36.5 167.5,37.7C170.0,38.9 172.7,39.9 175.3,41.0C177.9,42.2 180.9,43.0 183.3,44.5C185.7,46.1 187.3,48.6 189.6,50.4C192.0,52.1 194.7,53.5 197.2,55.2C199.8,56.8 202.9,58.3 205.2,60.3C207.5,62.4 209.6,64.8 211.1,67.4C212.7,70.0 213.7,73.0 214.6,75.9C215.4,78.8 215.9,81.9 216.5,84.9C217.1,87.9 217.6,90.8 218.0,93.7C218.4,96.7 218.9,99.6 219.1,102.5C219.2,105.5 219.2,108.4 219.0,111.3C218.7,114.3 218.1,117.2 217.5,120.0Z"/>
+          <clipPath id="ssBlobClip"><use href="#ssBlob"/></clipPath>
+          <radialGradient id="ssWax" cx="36%" cy="30%" r="80%">
+            <stop offset="0" stop-color="#E4B8A8"/>
+            <stop offset=".42" stop-color="#C98F7C"/>
+            <stop offset=".8" stop-color="#A86D5C"/>
+            <stop offset="1" stop-color="#8A5444"/>
+          </radialGradient>
+          <linearGradient id="ssEdge" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#F3D6CB" stop-opacity=".9"/>
+            <stop offset=".5" stop-color="#C98F7C" stop-opacity="0"/>
+            <stop offset="1" stop-color="#5E3328" stop-opacity=".55"/>
+          </linearGradient>
+          <linearGradient id="ssRim" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#EEC9BB"/>
+            <stop offset=".55" stop-color="#C08573"/>
+            <stop offset="1" stop-color="#8E5746"/>
+          </linearGradient>
+          <linearGradient id="ssWell" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#9E6150"/>
+            <stop offset=".55" stop-color="#BE8371"/>
+            <stop offset="1" stop-color="#D3A08F"/>
+          </linearGradient>
+          <filter id="ssNoise" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency=".032" numOctaves="3" seed="8"/>
+            <feColorMatrix values="0 0 0 0 .36  0 0 0 0 .17  0 0 0 0 .12  0 0 0 .9 -.32"/>
+          </filter>
+          <filter id="ssBlur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter>
+          <path id="ssRingPath" d="M56,120 a64,64 0 1,1 128,0 a64,64 0 1,1 -128,0"/>
+          <g id="ssMarks">
+            <circle cx="120" cy="120" r="56" fill="none" stroke-width="1.2"/>
+            <text font-family="Jost, system-ui, sans-serif" font-size="9" font-weight="500" letter-spacing="1.6" stroke="none">
+              <textPath href="#ssRingPath" textLength="396" lengthAdjust="spacing">GRAYSON &#x2726; RYAN &#x2726; THE THIRD OF APRIL &#x2726; MMXXVII &#x2726;</textPath>
+            </text>
+            <text x="120" y="135" text-anchor="middle" stroke="none" font-family="Fraunces, Georgia, serif" font-style="italic" font-weight="400" font-size="46" letter-spacing="-1">G<tspan font-size="32" dx="2" dy="-3">&amp;</tspan><tspan dx="2" dy="3">R</tspan></text>
+            <path d="M98,153 H113 M127,153 H142" fill="none" stroke-width="1.1" stroke-linecap="round"/>
+            <rect x="117" y="150" width="6" height="6" transform="rotate(45 120 153)" stroke="none"/>
+          </g>
+          <g id="ssSeal">
+            <use href="#ssBlob" fill="url(#ssWax)"/>
+            <rect width="240" height="240" filter="url(#ssNoise)" clip-path="url(#ssBlobClip)" opacity=".55"/>
+            <use href="#ssBlob" fill="none" stroke="url(#ssEdge)" stroke-width="2.4"/>
+            <circle cx="120" cy="120" r="78" fill="none" stroke="url(#ssRim)" stroke-width="7"/>
+            <circle cx="120" cy="120" r="74.5" fill="url(#ssWell)"/>
+            <circle cx="120" cy="120" r="74.5" fill="none" stroke="#6E3D30" stroke-opacity=".35" stroke-width="1"/>
+            <!-- raised lettering: shadow, highlight, face -->
+            <use href="#ssMarks" transform="translate(1.1 1.3)" fill="#6A392D" stroke="#6A392D" opacity=".55"/>
+            <use href="#ssMarks" transform="translate(-.7 -.8)" fill="#F2D3C7" stroke="#F2D3C7" opacity=".55"/>
+            <use href="#ssMarks" fill="#BB8170" stroke="#BB8170"/>
+            <ellipse cx="86" cy="58" rx="34" ry="15" transform="rotate(-32 86 58)" fill="#fff" opacity=".22" filter="url(#ssBlur)"/>
+            <ellipse cx="72" cy="66" rx="7" ry="3.5" transform="rotate(-38 72 66)" fill="#fff" opacity=".35" filter="url(#ssBlur)"/>
+          </g>
+          <clipPath id="ssClipL"><path d="M0,0 H121 L121,24 L115,40 L127,62 L116,90 L125,117 L112,146 L126,171 L116,199 L122,232 L122,240 H0 Z"/></clipPath>
+          <clipPath id="ssClipR"><path d="M240,0 H121 L121,24 L115,40 L127,62 L116,90 L125,117 L112,146 L126,171 L116,199 L122,232 L122,240 H240 Z"/></clipPath>
+        </defs>
+        <use class="ss-whole" href="#ssSeal"/>
+        <g class="ss-half ss-left" clip-path="url(#ssClipL)"><use href="#ssSeal"/></g>
+        <g class="ss-half ss-right" clip-path="url(#ssClipR)"><use href="#ssSeal"/></g>
+        <path class="ss-crack" d="M121,24 L115,40 L127,62 L116,90 L125,117 L112,146 L126,171 L116,199 L122,232" fill="none" stroke="#5A2E24" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" opacity=".85"/>
+      </svg>
+    </div>
+    <div class="ss-names">Grayson <span class="amp">&amp;</span> Ryan</div>
+    <div class="ss-date">Saturday, the third of April, 2027</div>
+    <div class="ss-hint">Tap the seal to open</div>
+  </div>
+</div>
 
 <!-- Skip nav for keyboard users -->
 <a href="#main-content" class="skip">Skip to content</a>
@@ -1211,8 +1488,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     <li><a href="#travel">Travel</a></li>
     <li><a href="#faq">FAQ</a></li>
     <li><a href="#registry">Registry</a></li>
-    <li><a href="#rsvp">RSVP</a></li>
-    <li><a href="?weddingparty" id="wpNavLink" class="wp-navlink">Party Portal</a></li>
+    <li><a href="#rsvp" class="nav-rsvp">RSVP</a></li>
   </ul>
   <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="navlinks">
     <span></span><span></span><span></span>
@@ -1242,12 +1518,15 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
     <!-- BOTTOM: countdown first, then date, then RSVP -->
     <div class="hero-bottom">
+      <!-- Day-of panel: filled in on April 2–3 from the schedule below -->
+      <div class="dayof" id="dayof" aria-live="polite"></div>
       <div class="count" id="count" aria-hidden="true"></div>
       <div class="hero-meta">
         <p class="hero-date">Saturday, the third of April, 2027</p>
         <p class="hero-place">Tate House · Tate, Georgia</p>
       </div>
       <a href="#rsvp" class="btn">RSVP</a>
+      <a href="#" class="btn hero-cal" data-add-calendar>Add to Calendar</a>
     </div>
     <span class="scroll-cue" aria-hidden="true" style="position:absolute;bottom:22px;left:50%;transform:translateX(-50%)">Scroll</span>
   </div>
@@ -1372,6 +1651,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         <div class="sched-body"><h3 data-editable-key="sched-4-title">Send-Off</h3><p class="place" data-editable-key="sched-4-place">The Front Drive</p><p class="note" data-editable-key="sched-4-note">A bright farewell to a long-awaited day.</p></div>
       </div>
     </div>
+    <div class="sched-links reveal">
+      <a href="https://www.google.com/maps/dir/?api=1&amp;destination=Tate+House%2C+2973+GA-53%2C+Tate%2C+GA+30177" target="_blank" rel="noopener">Directions to Tate House ↗</a>
+      <a href="https://www.google.com/maps/dir/?api=1&amp;destination=Reformation+Brewery%2C+Canton%2C+GA" target="_blank" rel="noopener">Directions to Reformation Brewery ↗</a>
+    </div>
   </div>
 </section>
 
@@ -1424,7 +1707,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         <p class="lead">A mansion that never felt imported or imposed — like it had simply risen out of the Georgia hills on its own.</p>
         <p>Colonel Sam Tate raised this house in 1926 from the pink marble of his own quarries — the same stone used in the Lincoln Memorial and the U.S. Supreme Court. Pink Georgia marble reads less as pink than as warm: nearly ivory in morning light, deepening to a burnished rose by afternoon.</p>
         <p>The grounds spread across 27 acres framed by the Appalachian foothills, with English gardens terracing down from the house and a vine-draped conservatory connecting the private quarters to the formal rooms.</p>
-        <a href="https://tatehouse.com" target="_blank" rel="noopener" class="btn">Visit Tate House</a>
+        <div class="venue-actions">
+          <a href="https://www.google.com/maps/dir/?api=1&amp;destination=Tate+House%2C+2973+GA-53%2C+Tate%2C+GA+30177" target="_blank" rel="noopener" class="btn btn-rose">Get Directions</a>
+          <a href="https://tatehouse.com" target="_blank" rel="noopener" class="btn">Visit Tate House</a>
+        </div>
       </div>
     </div>
   </div>
@@ -1600,6 +1886,8 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
             <input type="text" id="guestName" placeholder="First and last name" autocomplete="name">
           </div>
           <div class="rsvp-err" id="rsvpErr" aria-live="polite"></div>
+          <!-- "Did you mean…" — divs/buttons only, so admin text keys never shift -->
+          <div class="rsvp-suggest" id="rsvpSuggest" aria-live="polite"></div>
           <button class="btn btn-rose" id="findBtn" style="width:100%">Find My Invitation</button>
         </div>
         <!-- Step 2: Respond -->
@@ -1615,6 +1903,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
             <label for="note">Dietary needs or a note for us (optional)</label>
             <textarea id="note" placeholder="Anything we should know"></textarea>
           </div>
+          <div class="rsvp-err" id="submitErr" aria-live="assertive"></div>
           <div class="rsvp-row">
             <button class="link-btn" id="backBtn">← Back</button>
             <button class="btn" id="submitBtn">Submit RSVP</button>
@@ -1626,6 +1915,11 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
             <div class="mark" aria-hidden="true">✦</div>
             <h3 id="thanksTitle">Thank you!</h3>
             <p id="thanksMsg">We can't wait to celebrate with you. Need to make a change? Just enter your name again before the deadline.</p>
+            <div class="rsvp-summary" id="rsvpSummary"></div>
+            <div class="sum-actions">
+              <button type="button" class="link-btn" id="editRsvpBtn">Change my response</button>
+              <a href="#" class="btn btn-rose" id="sumCalBtn" data-add-calendar>Add to Calendar</a>
+            </div>
           </div>
         </div>
       </div>
@@ -1639,6 +1933,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   <div class="fm">G &amp; R</div>
   <div class="fd">April 3, 2027 · Tate House · Tate, Georgia</div>
   <div class="fn">Made with love, for the people we love.</div>
+  <div class="fp"><a href="?weddingparty" id="wpNavLink">Wedding Party Portal</a></div>
 </footer>
 
 <style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}</style>
@@ -1670,10 +1965,219 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   // Close on Escape
   addEventListener('keydown', e => { if(e.key === 'Escape' && nl.classList.contains('open')) openMenu(false); });
 
+  const escHtml = s => String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  // ---- Wax seal splash ----
+  // The <head> script has already decided whether it shows (html.seal-on).
+  // Tap, Enter/Space, a scroll gesture, or nine seconds of waiting all open it.
+  (function initSeal(){
+    const el = document.getElementById('sealSplash');
+    if(!el) return;
+    const root = document.documentElement;
+    if(!root.classList.contains('seal-on')){ el.remove(); return; }
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const behind = ['nav','#heroStage','#main-content','footer']
+      .map(q => document.querySelector(q)).filter(Boolean);
+    behind.forEach(b => { b.inert = true; });
+    el.focus({ preventScroll:true });
+    let opened = false;
+    function open(){
+      if(opened) return;
+      opened = true;
+      try { sessionStorage.setItem('gr-seal-opened','1'); } catch(e){}
+      const finish = () => {
+        root.classList.remove('seal-on');
+        behind.forEach(b => { b.inert = false; });
+        el.remove();
+      };
+      if(reduce){ el.classList.add('leaving'); setTimeout(finish, 450); return; }
+      el.classList.add('pressed');                                   // a press
+      setTimeout(() => { el.classList.remove('pressed'); el.classList.add('cracking'); }, 140); // the crack runs
+      setTimeout(() => el.classList.add('breaking'), 480);           // the halves fall away
+      setTimeout(() => el.classList.add('leaving'), 820);            // the card lifts
+      setTimeout(finish, 1800);
+    }
+    el.addEventListener('click', open);
+    el.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' ' || e.key === 'Escape'){ e.preventDefault(); open(); }
+    });
+    el.addEventListener('wheel', open, { passive:true });
+    el.addEventListener('touchmove', open, { passive:true });
+    setTimeout(open, 9000);
+  })();
+
+  // ---- Add to calendar ----
+  // Android and desktop open Google Calendar. Apple devices get an .ics file:
+  // a real wedding.ics next to this page (if you upload one) opens iOS's
+  // "Add to Calendar" sheet most reliably; otherwise one is generated here.
+  const CAL = {
+    title:    "Grayson & Ryan's Wedding",
+    start:    '20270403T200000Z',   // 4:00 PM EDT
+    end:      '20270404T023000Z',   // 10:30 PM EDT
+    location: 'Tate House, 2973 GA-53, Tate, GA 30177',
+    details:  'Ceremony at 4:00 PM in the Tate House Gardens. Please be seated by 3:45 PM.'
+  };
+  function icsText(){
+    const e = v => v.replace(/\\/g,'\\\\').replace(/([,;])/g,'\\$1').replace(/\n/g,'\\n');
+    const stamp = new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
+    return [
+      'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Grayson & Ryan//Wedding//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH',
+      'BEGIN:VEVENT','UID:grayson-ryan-wedding-20270403@theweltons','DTSTAMP:' + stamp,
+      'DTSTART:' + CAL.start,'DTEND:' + CAL.end,
+      'SUMMARY:' + e(CAL.title),'LOCATION:' + e(CAL.location),
+      'DESCRIPTION:' + e(CAL.details + ' ' + location.origin + location.pathname),
+      'BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY','DESCRIPTION:' + e(CAL.title + ' is tomorrow'),'END:VALARM',
+      'END:VEVENT','END:VCALENDAR'
+    ].join('\r\n');
+  }
+  function downloadIcs(){
+    const url = URL.createObjectURL(new Blob([icsText()], { type:'text/calendar;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = 'grayson-ryan-wedding.ics';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+  function addToCalendar(){
+    if(/iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)){
+      fetch('wedding.ics', { method:'HEAD', cache:'no-store' })
+        .then(r => { if(r.ok) location.href = 'wedding.ics'; else downloadIcs(); })
+        .catch(downloadIcs);
+      return;
+    }
+    const q = new URLSearchParams({
+      action:'TEMPLATE', text:CAL.title, dates:CAL.start + '/' + CAL.end,
+      location:CAL.location, details:CAL.details
+    });
+    window.open('https://calendar.google.com/calendar/render?' + q, '_blank', 'noopener');
+  }
+  document.querySelectorAll('[data-add-calendar]').forEach(a =>
+    a.addEventListener('click', e => { e.preventDefault(); addToCalendar(); }));
+
+  // ---- Nav: mark the section you're in ----
+  (function initNavSpy(){
+    const links = [...document.querySelectorAll('.navlinks a[href^="#"]')];
+    const order = [];
+    links.forEach(a => {
+      const sec = document.querySelector(a.getAttribute('href'));
+      if(sec) order.push({ sec, a });
+    });
+    if(!order.length || !('IntersectionObserver' in window)) return;
+    const visible = new Set();
+    const spy = new IntersectionObserver(entries => {
+      entries.forEach(e => e.isIntersecting ? visible.add(e.target) : visible.delete(e.target));
+      const cur = order.find(o => visible.has(o.sec));
+      links.forEach(a => {
+        const on = !!cur && cur.a === a;
+        a.classList.toggle('active', on);
+        if(on) a.setAttribute('aria-current','location'); else a.removeAttribute('aria-current');
+      });
+    }, { rootMargin:'-40% 0px -55% 0px' });
+    order.forEach(o => spy.observe(o.sec));
+  })();
+
+  // ---- Day-of mode ----
+  // From midnight on the first schedule day until a few hours after the last
+  // event, the hero shows what's happening now / next, read straight from the
+  // Weekend schedule — so editing the schedule in admin updates this too.
+  // Preview any moment with ?dayof=2027-04-03T15:30 (Eastern time).
+  const WEDDING_YEAR = 2027;
+  const ET_OFFSET_H  = 4;   // EDT, UTC-4, in force on April 2–3 2027
+  const MON3 = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  const TATE_ADDR = 'Tate House, 2973 GA-53, Tate, GA 30177';
+  // Places that aren't at Tate House. Anything not matched here gets Tate House directions.
+  const OTHER_PLACES = [ { match:/reformation/i, dest:'Reformation Brewery, Canton, GA' } ];
+  const directionsUrl = text => 'https://www.google.com/maps/dir/?api=1&destination=' +
+    encodeURIComponent((OTHER_PLACES.find(p => p.match.test(text)) || { dest:TATE_ADDR }).dest);
+
+  const previewNow = (() => {
+    const m = location.search.match(/[?&]dayof=([^&]+)/);
+    if(!m) return null;
+    const v = decodeURIComponent(m[1]).match(/(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ](\d{1,2}):(\d{2}))?/);
+    return v ? Date.UTC(+v[1], +v[2] - 1, +v[3], (v[4] ? +v[4] : 12) + ET_OFFSET_H, v[5] ? +v[5] : 0) : null;
+  })();
+  const nowMs = () => previewNow != null ? previewNow : Date.now();
+  const etDate = ms => new Date(ms - ET_OFFSET_H * 36e5).getUTCDate();
+
+  function readSchedule(){
+    const list = document.getElementById('schedList');
+    if(!list) return [];
+    let day = null;
+    const out = [];
+    list.querySelectorAll('.sched-day, .sched-row').forEach(n => {
+      if(n.classList.contains('sched-day')){
+        const m = n.textContent.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})/i);
+        day = m ? { mo: MON3.indexOf(m[1].toLowerCase()), d: +m[2] } : null;
+        return;
+      }
+      const tEl = n.querySelector('.sched-time');
+      if(!day || !tEl) return;
+      const t = tEl.textContent.replace(/\s+/g,' ').match(/(\d{1,2})(?::(\d{2}))?\s*([ap])\.?\s*m/i);
+      if(!t) return;
+      const h = (+t[1] % 12) + (t[3].toLowerCase() === 'p' ? 12 : 0);
+      const txt = q => ((n.querySelector(q) || {}).textContent || '').trim();
+      out.push({
+        row: n,
+        start: Date.UTC(WEDDING_YEAR, day.mo, day.d, h + ET_OFFSET_H, +(t[2] || 0)),
+        time: `${+t[1]}:${t[2] || '00'} ${t[3].toUpperCase()}M`,
+        title: txt('h3'), place: txt('.place'), note: txt('.note')
+      });
+    });
+    return out.sort((a, b) => a.start - b.start);
+  }
+
+  function updateDayOf(){
+    const panel = document.getElementById('dayof');
+    const evs = readSchedule();
+    evs.forEach(e => e.row.classList.remove('is-now','is-next'));
+    if(!panel || !evs.length){ document.body.classList.remove('dayof-mode'); return false; }
+    const now = nowMs();
+    const f = new Date(evs[0].start - ET_OFFSET_H * 36e5);
+    const opens  = Date.UTC(f.getUTCFullYear(), f.getUTCMonth(), f.getUTCDate(), ET_OFFSET_H); // midnight ET
+    const closes = evs[evs.length - 1].start + 6 * 36e5;
+    const active = now >= opens && now < closes;
+    document.body.classList.toggle('dayof-mode', active);
+    if(!active){ panel.innerHTML = ''; return false; }
+
+    const next = evs.find(e => e.start > now);
+    const cur  = [...evs].reverse().find(e => e.start <= now && now - e.start < 3 * 36e5);
+    let main = null, label = '', then = null;
+    if(cur && (!next || next.start - now > 20 * 6e4)){
+      main = cur; label = 'Happening now'; then = next;
+      cur.row.classList.add('is-now');
+      if(next) next.row.classList.add('is-next');
+    } else if(next){
+      main = next;
+      label = (etDate(next.start) !== etDate(now) ? 'Tomorrow' : 'Up next') + ' · ' + next.time;
+      next.row.classList.add('is-next');
+    }
+    if(!main){
+      panel.innerHTML =
+        '<div class="do-label">Thank you</div>' +
+        '<div class="do-title">What a night.</div>' +
+        '<div class="do-note">Thank you for celebrating with us. Safe travels home.</div>';
+      return true;
+    }
+    panel.innerHTML = `
+      <div class="do-label">${escHtml(label)}</div>
+      <div class="do-title">${escHtml(main.title)}</div>
+      ${main.place ? `<div class="do-place">${escHtml(main.place)}</div>` : ''}
+      ${main.note ? `<div class="do-note">${escHtml(main.note)}</div>` : ''}
+      ${then ? `<div class="do-then">Then: ${escHtml(then.title)} at ${escHtml(then.time)}</div>` : ''}
+      <div class="do-actions">
+        <a class="btn" href="${directionsUrl(main.place + ' ' + main.title)}" target="_blank" rel="noopener">Directions</a>
+        <a class="btn" href="#schedule">Full Schedule</a>
+      </div>`;
+    return true;
+  }
+  // Saved schedule edits arrive from Firestore after first paint — re-check then.
+  document.addEventListener('sitecontent:loaded', () => tick());
+
   // ---- Countdown ----
   const target = new Date('2027-04-03T16:00:00-04:00');
   const cEl = document.getElementById('count');
   function tick(){
+    if(updateDayOf()) return;
     const d = target - new Date();
     if(d <= 0){ cEl.innerHTML = '<div><span class="num">Today</span><span class="lbl">The Day</span></div>'; return; }
     const days = Math.floor(d / 864e5);
@@ -2176,9 +2680,79 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
   // ---- RSVP flow (party / group aware) ----
   const steps = document.querySelectorAll('.rsvp-step');
-  function go(n){ steps.forEach(s => s.classList.toggle('active', s.dataset.step == n)); }
+  function go(n, scroll){
+    steps.forEach(s => s.classList.toggle('active', s.dataset.step == n));
+    if(scroll){
+      const shell = document.querySelector('#rsvp .rsvp-shell');
+      if(shell) shell.scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+  }
 
-  function normName(s){ return (s||'').trim().toLowerCase().replace(/\s+/g,' '); }
+  // Accents, punctuation and hyphens no longer stop a match ("Zoë" = "Zoe", "O'Brien" = "OBrien")
+  function normName(s){
+    return (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'')
+      .toLowerCase().replace(/[.,'’"]/g,'').replace(/-/g,' ').replace(/\s+/g,' ').trim();
+  }
+  const nameTokens = s => normName(s).split(' ')
+    .filter(t => t && !/^(jr|sr|ii|iii|iv|mr|mrs|ms|miss|dr)$/.test(t));
+
+  const CONTACT = '<a href="mailto:WeltonWedding1@gmail.com">WeltonWedding1@gmail.com</a>';
+  const listNames = a => a.length < 2 ? (a[0] || '') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+
+  // ---- Close-match lookup ----
+  // Exact matches go straight through. Otherwise we only suggest a name when
+  // BOTH first and last are close (typo, nickname, or a middle name left out),
+  // never on a single word — so the guest list can't be browsed by guessing.
+  const NICKNAMES = [
+    ['william','will','bill','billy','liam'],['robert','rob','bob','bobby','robbie'],['richard','rick','rich','ricky'],
+    ['michael','mike','mikey'],['james','jim','jimmy','jamie'],['thomas','tom','tommy'],['christopher','chris'],
+    ['christina','christine','chris','tina'],['matthew','matt'],['nicholas','nick','nicky'],['joseph','joe','joey'],
+    ['daniel','dan','danny'],['david','dave'],['benjamin','ben','benji'],['jonathan','jon','john','johnny'],
+    ['john','jack','johnny'],['andrew','andy','drew'],['anthony','tony'],['edward','ed','eddie','ted'],
+    ['charles','charlie','chuck'],['samuel','sam','sammy'],['samantha','sam','sammy'],['alexander','alex'],
+    ['alexandra','alex','lexi'],['elizabeth','liz','lizzie','beth','betsy','eliza','libby'],
+    ['katherine','kathryn','catherine','kate','katie','kat','kathy','cathy'],['margaret','maggie','meg','peggy'],
+    ['megan','meg'],['jennifer','jen','jenny'],['jessica','jess','jessie'],['rebecca','becca','becky'],
+    ['patricia','pat','patty','trish'],['susan','sue','suzy'],['deborah','debra','deb','debbie'],
+    ['victoria','vicky','tori'],['abigail','abby'],['madison','maddie'],['allison','alison','ali','allie'],
+    ['stephanie','steph'],['gregory','greg'],['steven','stephen','steve'],['timothy','tim'],['kenneth','ken','kenny'],
+    ['ronald','ron'],['donald','don'],['gerald','jerry'],['lawrence','larry'],['zachary','zach','zack'],
+    ['joshua','josh'],['jacob','jake'],['nathaniel','nathan','nate'],['frederick','fred','freddie'],
+    ['henry','hank','harry'],['harold','harry'],['theodore','ted','teddy','theo'],['raymond','ray'],
+    ['walter','walt'],['douglas','doug'],['philip','phillip','phil'],['peter','pete'],['mackenzie','kenzie']
+  ];
+  const nickOf = {};
+  NICKNAMES.forEach(g => g.forEach(n => { (nickOf[n] = nickOf[n] || new Set()); g.forEach(m => nickOf[n].add(m)); }));
+  function lev(a, b){
+    const d = Array.from({ length:a.length + 1 }, (_, i) => [i]);
+    for(let j = 1; j <= b.length; j++) d[0][j] = j;
+    for(let i = 1; i <= a.length; i++) for(let j = 1; j <= b.length; j++)
+      d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+    return d[a.length][b.length];
+  }
+  const near = (a, b) => a === b || lev(a, b) <= (Math.max(a.length, b.length) >= 6 ? 2 : 1);
+
+  function findCandidates(input, parties){
+    const it = nameTokens(input);
+    if(it.length < 2) return null;                 // need a first and last name
+    const f = it[0], l = it[it.length - 1];
+    const out = [];
+    parties.forEach(p => (p.names || []).forEach(n => {
+      const nt = nameTokens(n);
+      if(nt.length < 2) return;
+      const nf = nt[0], nl = nt[nt.length - 1];
+      if(!near(nl, l)) return;
+      let score = nl === l ? 0 : 1;
+      if(nf === f) score += 0;
+      else if(nickOf[nf] && nickOf[nf].has(f)) score += .5;
+      else if(near(nf, f)) score += 1;
+      else return;
+      out.push({ party:p, name:n, score });
+    }));
+    out.sort((a, b) => a.score - b.score);
+    const seen = new Set();
+    return out.filter(c => !seen.has(c.name) && seen.add(c.name)).slice(0, 3);
+  }
 
   let currentParty = null;      // { id, names:[...], category, primary:[...], subgroups:[{members:[...]}] } — full party record
   let currentDisplayNames = []; // flat names actually shown/editable this session, in render order
@@ -2189,18 +2763,18 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
   let partiesCache = null;      // lazy-loaded list of all parties from Firestore
   let eventsCache = null;       // lazy-loaded list of custom RSVP events
 
+  // Throws if the guest list can't be reached, so the guest is told so rather
+  // than being told their name isn't on the list. Failures are not cached.
   async function getParties(){
     if(partiesCache) return partiesCache;
-    try {
-      partiesCache = await window._firestoreGetParties();
-    } catch(e) {
-      partiesCache = [];
-    }
+    if(window._fbReady) await window._fbReady;
+    partiesCache = await window._firestoreGetParties();
     return partiesCache;
   }
 
   async function getEvents(){
     if(eventsCache) return eventsCache;
+    if(window._fbReady) await window._fbReady;
     try {
       eventsCache = await window._firestoreGetEvents();
     } catch(e) {
@@ -2266,7 +2840,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     const wasResponded = !eventId && respondedNames.has(name);
     const attr = eventId ? `data-event="${eventId}" data-name="${i}"` : `data-name="${i}"`;
     return `
-      <div class="party-guest">
+      <div class="party-guest"${eventId ? '' : ` data-guest="${i}"`}>
         <div class="pg-name">${name}${wasResponded ? '<span class="pg-status">Already responded</span>' : ''}</div>
         <div class="choice" role="group" aria-label="${name} attending${eventId ? ' this event' : ''}?">
           <button type="button" ${attr} data-val="yes" role="radio" aria-checked="${existingVal==='yes'}" class="${existingVal==='yes'?'sel':''}">Joyfully accepts</button>
@@ -2344,47 +2918,76 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
         b.classList.add('sel');
         b.setAttribute('aria-checked','true');
         currentResponses[name] = b.dataset.val;
+        const row = b.closest('.party-guest');
+        if(row) row.classList.remove('needs-answer');
+        if(!wrap.querySelector('.needs-answer')) submitErr.textContent = '';
       });
     });
   }
 
-  // Allow Enter key on name field
-  document.getElementById('guestName').addEventListener('keydown', e => {
-    if(e.key === 'Enter') document.getElementById('findBtn').click();
-  });
-  document.getElementById('guestName').addEventListener('input', () => {
-    document.getElementById('rsvpErr').textContent = '';
-  });
+  const nameInput = document.getElementById('guestName');
+  const findErr   = document.getElementById('rsvpErr');
+  const sugEl     = document.getElementById('rsvpSuggest');
+  const findBtn   = document.getElementById('findBtn');
+  const submitErr = document.getElementById('submitErr');
 
-  document.getElementById('findBtn').addEventListener('click', async () => {
-    const v = document.getElementById('guestName').value.trim();
-    const errEl = document.getElementById('rsvpErr');
-    errEl.textContent = '';
-    if(!v){ document.getElementById('guestName').focus(); return; }
+  function clearFind(){ findErr.textContent = ''; sugEl.classList.remove('on'); sugEl.innerHTML = ''; }
+  function notFound(){
+    findErr.innerHTML = `We couldn't find that name on our guest list. Try it exactly as it's printed on your invitation, or email us at ${CONTACT}.`;
+    nameInput.focus();
+  }
+  nameInput.addEventListener('keydown', e => { if(e.key === 'Enter') findBtn.click(); });
+  nameInput.addEventListener('input', clearFind);
 
-    const findBtn = document.getElementById('findBtn');
+  findBtn.addEventListener('click', async () => {
+    const v = nameInput.value.trim();
+    clearFind();
+    if(!v){ nameInput.focus(); return; }
     findBtn.textContent = 'Searching…';
     findBtn.disabled = true;
-
-    const parties = await getParties();
-    await getEvents();
-    const norm = normName(v);
-    const match = parties.find(p => (p.names||[]).some(n => normName(n) === norm));
-
-    findBtn.textContent = 'Find My Invitation';
-    findBtn.disabled = false;
-
-    if(!match){
-      errEl.textContent = "We couldn't find that name on our guest list. Please check the spelling, or reach out to us directly.";
-      document.getElementById('guestName').focus();
-      return;
+    try {
+      let parties;
+      try {
+        parties = await getParties();
+        await getEvents();
+      } catch(e) {
+        console.error('Guest list unavailable:', e);
+        findErr.innerHTML = `We're having trouble reaching the guest list right now. Please try again in a moment, or email us at ${CONTACT}.`;
+        return;
+      }
+      const norm = normName(v);
+      for(const p of parties){
+        const hit = (p.names || []).find(n => normName(n) === norm);
+        if(hit){ await loadParty(p, hit); return; }
+      }
+      const cands = findCandidates(v, parties);
+      if(cands === null){ findErr.textContent = 'Please enter your first and last name.'; nameInput.focus(); return; }
+      if(!cands.length){ notFound(); return; }
+      sugEl.innerHTML =
+        `<div class="rs-q">Did you mean${cands.length > 1 ? ' one of these' : ''}?</div>` +
+        `<div class="rs-opts">${cands.map((c, i) => `<button type="button" class="rs-opt" data-i="${i}">${escHtml(c.name)}</button>`).join('')}</div>` +
+        `<button type="button" class="link-btn rs-none">None of these</button>`;
+      sugEl.classList.add('on');
+      sugEl.querySelectorAll('.rs-opt').forEach(b => b.addEventListener('click', async () => {
+        const c = cands[b.dataset.i];
+        nameInput.value = c.name;
+        clearFind();
+        await loadParty(c.party, c.name);
+      }));
+      sugEl.querySelector('.rs-none').addEventListener('click', () => { clearFind(); notFound(); });
+      sugEl.querySelector('.rs-opt').focus();
+    } finally {
+      findBtn.textContent = 'Find My Invitation';
+      findBtn.disabled = false;
     }
+  });
 
-    const matchedName = match.names.find(n => normName(n) === norm);
+  async function loadParty(match, matchedName){
     currentParty = { id: match.id, names: match.names, category: match.category || '', primary: match.primary || [], subgroups: match.subgroups || [] };
     currentResponses = {};
     currentEventResponses = {};
     respondedNames = new Set();
+    submitErr.textContent = '';
 
     // Hierarchy: if this party has designated primary contacts (e.g. parents) and the
     // person who just typed their name isn't one of them, they can only respond for
@@ -2424,7 +3027,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
           currentEventResponses[eventId][r.name] = r.events[eventId];
         });
       });
-      if(existing.note) document.getElementById('note').value = existing.note;
+      document.getElementById('note').value = existing.note || '';
     } else {
       document.getElementById('note').value = '';
     }
@@ -2438,13 +3041,34 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     renderEventBlocks();
 
     go(2);
-  });
+  }
 
   document.getElementById('backBtn').addEventListener('click', () => go(1));
 
+  function renderSummary(responses, note, anyYes){
+    const evs = eligibleEvents();
+    let html = responses.map(r => {
+      const extras = evs.filter(ev => r.events && r.events[ev.id] === 'yes').map(ev => escHtml(ev.name));
+      return `<div class="sum-row"><div><div class="sum-name">${escHtml(r.name)}</div>` +
+        (extras.length ? `<div class="sum-ev">Also joining: ${extras.join(', ')}</div>` : '') +
+        `</div><span class="sum-val ${r.attending}">${r.attending === 'yes' ? 'Attending' : 'Not attending'}</span></div>`;
+    }).join('');
+    if(note) html += `<div class="sum-note">“${escHtml(note)}”</div>`;
+    document.getElementById('rsvpSummary').innerHTML = html;
+    document.getElementById('sumCalBtn').style.display = anyYes ? '' : 'none';
+  }
+
   document.getElementById('submitBtn').addEventListener('click', async () => {
-    if(!currentParty || Object.keys(currentResponses).length < currentDisplayNames.length){
-      alert('Please respond for everyone in your party before submitting.');
+    submitErr.textContent = '';
+    if(!currentParty){ go(1); return; }
+
+    const missing = currentDisplayNames.filter(n => currentResponses[n] !== 'yes' && currentResponses[n] !== 'no');
+    if(missing.length){
+      document.querySelectorAll('#partyList .party-guest').forEach(row =>
+        row.classList.toggle('needs-answer', missing.includes(currentDisplayNames[row.dataset.guest])));
+      submitErr.textContent = `Please choose an answer for ${listNames(missing)}.`;
+      const first = document.querySelector('#partyList .needs-answer');
+      if(first) first.scrollIntoView({ behavior:'smooth', block:'center' });
       return;
     }
 
@@ -2462,38 +3086,56 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
       return { name, attending: currentResponses[name], events };
     });
     const anyYes = responses.some(r => r.attending === 'yes');
-    const allNo  = responses.every(r => r.attending === 'no');
 
     try {
+      if(window._fbReady) await window._fbReady;
       await window._firestoreAddRSVP(currentParty.id, currentParty.names, {
         responses,
         note,
         submittedAt: new Date().toISOString()
       });
     } catch(err) {
+      // Previously this still showed "Thank you" — a guest would believe they'd
+      // replied when nothing was saved. Now they're told, and can try again.
       console.error('Firestore write failed:', err);
-      // Still show thank-you — don't leave guest on a broken screen
+      submitErr.innerHTML = `We couldn't save your response just now. Please check your connection and tap Submit again, or email us at ${CONTACT}.`;
+      btn.textContent = 'Submit RSVP';
+      btn.disabled = false;
+      return;
     }
 
-    if(allNo){
-      document.getElementById('thanksTitle').textContent = 'We\u2019ll miss you.';
-      document.getElementById('thanksMsg').textContent   = 'Thank you for letting us know. We\u2019ll be thinking of you on the day.';
-    } else if(anyYes){
+    if(!anyYes){
+      document.getElementById('thanksTitle').textContent = 'We’ll miss you.';
+      document.getElementById('thanksMsg').textContent   = 'Thank you for letting us know. We’ll be thinking of you on the day. If plans change, come back here before the deadline.';
+    } else {
       document.getElementById('thanksTitle').textContent = 'Thank you!';
-      document.getElementById('thanksMsg').textContent   = 'We can\u2019t wait to celebrate with you. Need to make a change? Just enter your name again before the deadline.';
+      document.getElementById('thanksMsg').textContent   = 'We can’t wait to celebrate with you. Here’s what we have — you can change it any time before the deadline.';
     }
+    currentDisplayNames.forEach(n => respondedNames.add(n));
+    renderSummary(responses, note, anyYes);
     btn.textContent = 'Submit RSVP';
     btn.disabled = false;
-    go(3);
+    go(3, true);
+  });
+
+  document.getElementById('editRsvpBtn').addEventListener('click', () => {
+    renderPartyList();
+    renderEventBlocks();
+    go(2, true);
   });
 })();
 </script>
 
 <!-- Firebase -->
 <script>
-  // Fallback: if Firebase module fails to load (e.g. local file preview), RSVP still works visually
-  window._firestoreAddRSVP    = window._firestoreAddRSVP    || function(){ return Promise.resolve(); };
-  window._firestoreGetParties = window._firestoreGetParties || function(){ return Promise.resolve([]); };
+  // Resolves once the Firebase module below has finished setting up (or failed).
+  // The RSVP waits on it, so a guest who taps "Find" in the first second isn't
+  // told their name is missing just because the connection wasn't ready yet.
+  window._fbReady = new Promise(res => { window._fbReadyDone = res; setTimeout(res, 8000); });
+  // Fallbacks if the Firebase module can't load. Reads and writes the guest
+  // depends on now fail visibly instead of pretending to succeed.
+  window._firestoreAddRSVP    = window._firestoreAddRSVP    || function(){ return Promise.reject(new Error('Firebase unavailable')); };
+  window._firestoreGetParties = window._firestoreGetParties || function(){ return Promise.reject(new Error('Firebase unavailable')); };
   window._firestoreGetEvents  = window._firestoreGetEvents  || function(){ return Promise.resolve([]); };
   window._firestoreGetRSVP    = window._firestoreGetRSVP    || function(){ return Promise.resolve(null); };
   window._firestoreSaveParty  = window._firestoreSaveParty  || function(){ return Promise.reject(new Error('Firebase unavailable')); };
@@ -2571,8 +3213,10 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
 
       await setDoc(ref, { ...data, partyId: targetId, responses: merged }, { merge: true });
     };
+    if(window._fbReadyDone) window._fbReadyDone();
   } catch(e) {
     console.warn('Firebase unavailable (likely local preview):', e.message);
+    if(window._fbReadyDone) window._fbReadyDone();
   }
 </script>
 <!-- ============================================================
@@ -4229,6 +4873,7 @@ footer .fn{font-size:.92rem;color:rgba(247,242,234,.5);margin-top:30px;font-styl
     console.log('loadContent complete');
     // Gallery images are now applied — hang the wall from whatever actually loaded.
     if(window._initGallery) window._initGallery();
+    document.dispatchEvent(new Event('sitecontent:loaded'));
   }
 
   // ---- Activate admin ----

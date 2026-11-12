@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Only the weights actually used -->
-<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400;1,9..144,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    IMAGE SLOTS — swap these paths when your images are ready
@@ -53,8 +53,8 @@
   --gilt:#D4AF37;
   --gilt-deep:#8A6A14;
   --max:1180px;
-  --serif:'Libre Caslon Text',Georgia,serif;
-  --display:'Libre Caslon Display','Libre Caslon Text',Georgia,serif;
+  --serif:'Fraunces',Georgia,serif;
+  --display:'Fraunces',Georgia,serif;
   --sans:'Jost',system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -1443,7 +1443,7 @@ html.seal-on .seal-splash::after{
             <text font-family="Jost, system-ui, sans-serif" font-size="9" font-weight="500" letter-spacing="1.6" stroke="none">
               <textPath href="#ssRingPath" textLength="396" lengthAdjust="spacing">GRAYSON &#x2726; RYAN &#x2726; THE THIRD OF APRIL &#x2726; MMXXVII &#x2726;</textPath>
             </text>
-            <text x="120" y="135" text-anchor="middle" stroke="none" font-family="Libre Caslon Text, Georgia, serif" font-style="italic" font-weight="400" font-size="44" letter-spacing="-1">G<tspan font-size="32" dx="2" dy="-3">&amp;</tspan><tspan dx="2" dy="3">R</tspan></text>
+            <text x="120" y="135" text-anchor="middle" stroke="none" font-family="Fraunces, Georgia, serif" font-style="italic" font-weight="400" font-size="46" letter-spacing="-1">G<tspan font-size="32" dx="2" dy="-3">&amp;</tspan><tspan dx="2" dy="3">R</tspan></text>
             <path d="M98,153 H113 M127,153 H142" fill="none" stroke-width="1.1" stroke-linecap="round"/>
             <rect x="117" y="150" width="6" height="6" transform="rotate(45 120 153)" stroke="none"/>
           </g>
@@ -5945,15 +5945,8 @@ html.seal-on .seal-splash::after{
      ============================================================ -->
 <style id="house-style">
 /* ---- Type ---- */
-h1,h2,h3,h4{font-family:var(--display);font-weight:400;font-style:normal;letter-spacing:0}
-.monogram,footer .fm,.wp-mark{font-family:var(--display);font-style:normal}
-.hero-names h1{font-weight:400;letter-spacing:-.005em}
-.hero-names .amp,#hero.has-images .hero-names .amp,.ss-names .amp{font-family:var(--serif);font-style:italic;color:inherit}
-.ss-names{font-family:var(--display);font-weight:400}
-.sec-title{font-style:normal;font-size:clamp(2rem,5vw,2.9rem);line-height:1.12;margin-top:0}
-.sec-title em,.wp-head h1 em{font-style:inherit}
-.wp-head h1,.wp-card h2,.wp-two h3{font-style:normal}
-.venue-copy h3,.party-col h3,.canton h4,.thanks h3,.rsvp-closed h3,.rsvp-policies h4,.am-box h3{font-style:normal}
+h1,h2,h3,h4{font-family:var(--display)}
+.sec-title{font-size:clamp(2.1rem,5vw,3rem);line-height:1.12;margin-top:0}
 .sched-body h3{font-size:1.45rem}
 .hotel h3{font-size:1.35rem}
 
@@ -5967,21 +5960,16 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:400;font-style:normal;letter-
 .hero-place{font-size:1.02rem}
 .story-photo-caption{font-size:.95rem;padding:16px 18px}
 .party-list .role{font-size:.95rem;white-space:normal}
-.party-list li.lead .name{font-style:normal;color:var(--ink)}
 .pg-status{background:none;padding:0;font-size:.9rem}
 .rsvp-summary .sum-val{font-size:.95rem}
 .ss-eyebrow{font-size:1.1rem;color:var(--ink-soft)}
 .ss-hint{font-size:1rem;margin-top:28px}
 footer .fd{font-size:1rem}
-footer .fn{font-style:normal}
-.sched-day{font-family:var(--display);font-size:1.35rem;text-transform:none;letter-spacing:0;color:var(--ink)}
+.sched-day{font-family:var(--display);font-style:italic;font-size:1.4rem;text-transform:none;letter-spacing:0;color:var(--ink)}
 .sched-row{grid-template-columns:140px 1fr}
-.sched-time{font-style:normal;font-size:1.35rem;color:var(--ink)}
+.sched-time{font-size:1.45rem;color:var(--ink)}
 .sched-time small{display:inline;margin:0 0 0 5px;font-family:var(--serif);font-style:italic;font-size:.95rem;text-transform:none;letter-spacing:0;color:var(--ink-soft)}
-.found{font-style:normal}
-.party-guest .pg-name,.rsvp-event-name,.rsvp-suggest .rs-q{font-style:normal}
-.wp-block > h2{font-family:var(--display);font-size:1.5rem;text-transform:none;letter-spacing:0;color:var(--ink)}
-.wp-sign{font-style:normal}
+.wp-block > h2{font-family:var(--display);font-style:italic;font-size:1.5rem;text-transform:none;letter-spacing:0;color:var(--ink)}
 
 /* Interface text: Jost in sentence case */
 .navlinks a,.btn,.field label,.tabstrip button,.sched-links a,.fp a,.link-btn,.wp-close,.wp-back,
@@ -6003,18 +5991,17 @@ footer .fn{font-style:normal}
 .navlinks a.nav-rsvp{border-radius:2px;padding:7px 16px}
 @media(max-width:880px){.navlinks a.nav-rsvp{padding:10px 30px}}
 .field input,.field select,.field textarea,.choice button,.rsvp-suggest .rs-opt,.wp-field input{border-radius:2px}
-.choice button{font-style:normal;font-size:1rem}
+.choice button{font-size:1.02rem}
 .rsvp-closed,.rsvp-policies,.rsvp-summary,.rsvp-suggest,.rsvp-event,.party-guest.needs-answer,.wp-card{border-radius:2px}
 
 /* ---- Structure: drop decoration that carried no information ---- */
 main .sec-num{display:none}                       /* sections aren't a sequence */
-#story .sec-head::before,#story .sec-head::after,.brk{display:none}
+.brk{display:none}
 .rsvp-closed .mark,.thanks .mark,.rsvp-policy .pc-ic{display:none}
 .scroll-cue{display:none}
 .story-prose .s-date{display:none}
 body:not(.admin-mode) .hotel .tag,
 body:not(.admin-mode) .venue-copy .place{display:none}   /* labels that only repeated the heading */
-#story .sec-head{padding-top:0}
 #wedding-party{padding-bottom:96px}
 #venue{padding-top:96px}
 
@@ -6024,13 +6011,11 @@ body:not(.admin-mode) .venue-copy .place{display:none}   /* labels that only rep
 .hero-bottom > .count{order:2;display:block;margin-top:0;font-family:var(--serif);font-style:italic;font-size:1rem;color:var(--ink-soft)}
 .hero-bottom > .btn{order:3;margin-top:8px}
 #hero.has-images .count{color:rgba(247,242,234,.9);text-shadow:0 1px 12px rgba(20,17,14,.75)}
-.hero-date{font-style:normal;font-family:var(--display);font-size:clamp(1.25rem,2.6vw,1.6rem)}
+.hero-date{font-size:clamp(1.2rem,2.6vw,1.55rem)}
 
-/* Story: one paragraph of prose, not staged lines */
-.story-intro{margin:0;max-width:600px;text-align:left}
-.story-prose{font-style:normal;font-weight:400;text-align:left;font-size:1.14rem;line-height:1.75;color:var(--ink)}
-.story-prose .s-open,.story-prose .s-mid,.story-prose .s-pivot{display:inline;font-size:inherit;color:inherit;margin:0;letter-spacing:0;max-width:none}
-.story-prose .s-close{display:block;font-size:inherit;color:inherit;letter-spacing:0;margin-top:1.1em}
+/* Story: the staged italic prose, centred in its column */
+.story-intro{margin:0 auto;max-width:600px}
+#story .sec-head,#story .sec-head.center{text-align:center}
 
 /* Hotels, shuttle, registry, Canton: text on the page, not cards */
 .hotel{background:none;border:0;border-top:1px solid var(--line);border-radius:0;padding:24px 0 0}
@@ -6041,7 +6026,7 @@ body:not(.admin-mode) .venue-copy .place{display:none}   /* labels that only rep
 .hotels{gap:40px;margin-left:0;margin-right:0}
 .shuttle{background:none;border:0;border-radius:0;padding:0;margin:44px 0 0;max-width:640px}
 .reg-card{display:block;padding:0;border:0;background:none}
-.reg-card .t{font-family:var(--display);font-style:normal;font-size:1.4rem}
+.reg-card .t{font-family:var(--display);font-size:1.5rem}
 .tabstrip{display:flex;flex-wrap:wrap;gap:6px 28px}
 .tabstrip button{border:0;border-bottom:1px solid var(--line);border-radius:0;background:none;padding:6px 0;font-size:.98rem;white-space:normal;text-align:left}
 .tabstrip button:hover{border-color:var(--rose-deep)}
@@ -6056,15 +6041,6 @@ body:not(.admin-mode) .venue-copy .place{display:none}   /* labels that only rep
 
 /* Footer in garden green rather than a black slab */
 footer{background:var(--sage-deep)}
-
-/* ---- Motion: the seal is the one staged moment; the page itself holds still ---- */
-.reveal,.gallery-item.reveal,#venue .venue-photo.reveal,
-.sec-head.reveal .sec-num,.sec-head.reveal .sec-title,
-#story .sec-num,#story .sec-title,#story .story-intro{
-  opacity:1!important;transform:none!important;transition:none!important;
-}
-#wedding-party .sec-head.reveal .sec-title{letter-spacing:0}
-.rsvp-step.active{animation:none}
 
 /* ---- Layout: a printed programme. Section titles sit in the left margin,
    content runs beside them; nothing is centred by default. ---- */
@@ -6095,6 +6071,119 @@ footer{background:var(--sage-deep)}
 @media(max-width:979px){
   .story-intro{margin-bottom:52px}
 }
+
+/* ================================================================
+   GARDEN & MARBLE
+   Tate House is a pink marble house in a green garden, so the page
+   is too: garden green carries the type, buttons and the reply
+   section; marble pink is kept for the venue itself and the seal.
+   ================================================================ */
+:root{
+  --garden:#56624A;
+  --garden-deep:#3C4634;
+  --ink:#2A3026;
+  --ink-soft:#565B4E;
+  --line:rgba(42,48,38,.15);
+}
+.sec-title,.venue-copy h3,.sched-day,.sched-time,.party-col h3,.canton h4,.wp-block > h2{color:var(--garden)}
+.navlinks a::after{background:var(--garden)}
+.faq .ic::before,.faq .ic::after{background:var(--garden)}
+.sched-links a{color:var(--garden-deep);border-bottom-color:rgba(86,98,74,.45)}
+.sched-row.is-now .sched-time::after,.sched-row.is-next .sched-time::after{color:var(--rose-ink)}
+
+/* Buttons: outlined green, and one filled green for the main action */
+.btn{border-color:var(--garden);color:var(--garden-deep)}
+.btn:hover{background:var(--garden);border-color:var(--garden);color:var(--ivory)}
+.btn-rose{background:var(--garden);border-color:var(--garden);color:var(--ivory)}
+.btn-rose:hover{background:var(--garden-deep);border-color:var(--garden-deep);color:var(--ivory)}
+.navlinks a.nav-rsvp{border-color:var(--garden);color:var(--garden-deep)}
+.navlinks a.nav-rsvp:hover,.navlinks a.nav-rsvp.active{background:var(--garden);border-color:var(--garden);color:var(--ivory)}
+
+/* The venue stands on its own marble: the one pink section, with the
+   photograph under an arch like the house's conservatory windows. */
+#venue{background:var(--rose);padding:110px 0}
+#wedding-party{padding-bottom:110px}
+.venue-photo{border-radius:50% 50% 2px 2px / 40% 40% 2px 2px;box-shadow:0 30px 60px -34px rgba(60,40,32,.55)}
+.venue-copy .addr{border-bottom-color:rgba(60,40,32,.2)}
+.venue-copy p{color:#57493F}
+.venue-copy p.lead{color:var(--ink);font-size:1.25rem;line-height:1.55}
+@media(max-width:820px){
+  .venue-photo{aspect-ratio:4/5;max-height:none;width:min(100%,400px);margin:0 auto}
+}
+
+/* The reply: an ivory card on the garden green */
+#rsvp{background:var(--garden);padding:110px 0 120px}
+#rsvp .sec-title{color:var(--ivory)}
+#rsvp #rsvp-deadline-line{color:rgba(247,242,234,.88)}
+#rsvp .rsvp-form-wrap,
+#rsvp .rsvp-closed{
+  background:var(--ivory);border:0;border-radius:2px;padding:44px 34px 40px;
+  outline:1px solid rgba(176,138,82,.5);outline-offset:-9px;
+  box-shadow:0 30px 60px -36px rgba(20,26,16,.7);
+}
+#rsvp .rsvp-policies{background:rgba(247,242,234,.1);border:1px solid rgba(247,242,234,.28);border-radius:2px;margin-top:22px;margin-bottom:22px}
+#rsvp .rsvp-policy p{color:rgba(247,242,234,.88)}
+#rsvp .rsvp-policy a{color:var(--ivory)}
+#rsvp .rsvp-policy a:hover{color:var(--rose)}
+#rsvp .rsvp-policy a:focus-visible{outline-color:var(--ivory)}
+.field input,.field select,.field textarea,.choice button,.rsvp-suggest,.rsvp-suggest .rs-opt,.rsvp-summary{border-color:rgba(86,98,74,.45)}
+.field input,.field select,.field textarea{background:#fff}
+.rsvp-suggest,.rsvp-summary{background:rgba(238,228,215,.5)}
+.rsvp-err,.rsvp-err a{color:#9A4A3A}
+.party-guest.needs-answer{box-shadow:inset 0 0 0 1.5px #9A4A3A;background:rgba(228,199,190,.25)}
+.party-guest.needs-answer .pg-name::after{color:#9A4A3A}
+@media(max-width:520px){
+  #rsvp .rsvp-form-wrap,#rsvp .rsvp-closed{padding:38px 22px 32px}
+  #rsvp{padding:84px 0 90px}
+}
+
+/* Footer: the deeper green, so it closes the page under the reply section */
+footer{background:var(--garden-deep)}
+.ss-hint{color:var(--garden)}
+
+/* ---- More garden ----
+   Pale sage replaces the beige panels; the wedding party, the mobile menu
+   and the wax-seal screen go fully green. */
+:root{ --shell:#E7EADC; }
+#story{background:rgba(231,234,220,.995)}
+#travel{background:rgba(231,234,220,.995)}
+#registry{background:rgba(247,242,234,.99)}
+.sec-title em{color:var(--garden-deep)}
+.story-prose .s-pivot{color:var(--garden)}
+.rsvp-event{background:var(--shell)}
+
+#wedding-party{background:var(--garden)}
+#wedding-party .sec-title,#wedding-party .sec-title em,#wedding-party .party-col h3{color:var(--ivory)}
+#wedding-party .party-col .sub,#wedding-party .party-list .role{color:rgba(247,242,234,.78)}
+#wedding-party .party-list li{border-bottom-color:rgba(247,242,234,.22)}
+#wedding-party .party-list .name{color:var(--ivory)}
+#wedding-party .party-list li.lead .name{color:var(--rose)}
+#wedding-party a:focus-visible,#wedding-party [tabindex]:focus-visible{outline-color:var(--ivory)}
+#rsvp .sec-title em{color:var(--ivory)}
+
+@media(max-width:880px){
+  .navlinks{background:#56624A}
+  nav.menu-open{background:#56624A}
+  .navlinks a,.navlinks a.active{color:var(--ivory)}
+  .navlinks a::after{background:var(--ivory)}
+  .navlinks a.nav-rsvp{border-color:rgba(247,242,234,.7);color:var(--ivory)}
+  nav.menu-open .monogram{color:var(--ivory);text-shadow:none}
+  nav.menu-open .menu-btn span{background:var(--ivory);box-shadow:none}
+}
+
+html.seal-on .seal-splash{
+  background:radial-gradient(ellipse at 50% 40%, #66755A 0%, var(--garden) 55%, #47523D 100%);
+}
+html.seal-on .seal-splash::before{opacity:.35}
+html.seal-on .seal-splash::after{
+  border-color:rgba(212,175,55,.55);
+  box-shadow:none;outline:1px solid rgba(212,175,55,.32);outline-offset:-7px;
+}
+.ss-eyebrow,.ss-date{color:rgba(247,242,234,.88)}
+.ss-names{color:var(--ivory)}
+.ss-names .amp{color:var(--rose)}
+.ss-hint{color:var(--rose)}
+.ss-seal svg{filter:drop-shadow(0 16px 20px rgba(20,26,16,.45)) drop-shadow(0 3px 4px rgba(20,26,16,.4))}
 </style>
 </body>
 </html>

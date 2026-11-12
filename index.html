@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Only the weights actually used -->
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400;1,9..144,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,WONK@0,9..144,300,0;0,9..144,400,0;1,9..144,300,0;1,9..144,400,0;1,9..144,500,0&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    IMAGE SLOTS — swap these paths when your images are ready
@@ -1657,6 +1657,7 @@ html.seal-on .seal-splash::after{
       </div>
     </div>
     <div class="sched-links reveal">
+      <button type="button" class="btn btn-rose save-itin" data-save-itinerary>Save the weekend as a picture</button>
       <a href="https://www.google.com/maps/dir/?api=1&amp;destination=Tate+House%2C+2973+GA-53%2C+Tate%2C+GA+30177" target="_blank" rel="noopener">Directions to Tate House</a>
       <a href="https://www.google.com/maps/dir/?api=1&amp;destination=Reformation+Brewery%2C+Canton%2C+GA" target="_blank" rel="noopener">Directions to Reformation Brewery</a>
     </div>
@@ -1761,6 +1762,8 @@ html.seal-on .seal-splash::after{
       </div>
     </div>
     <p class="shuttle reveal"><strong>Shuttle service</strong> runs Friday evening to and from Reformation Brewery for the welcome party, and to and from Tate House throughout the day Saturday. Pickup locations and departure times will be shared closer to the date. We strongly encourage guests not to drive after the celebration — the mountain roads are beautiful but winding.</p>
+
+    <div class="shuttle-save reveal"><button type="button" class="btn save-itin" data-save-itinerary>Save the itinerary and shuttle info</button></div>
 
     <!-- Canton recommendations. An accordion rather than a card row: this is
          optional depth, and collapsing it keeps the section scannable for the
@@ -5945,6 +5948,204 @@ html.seal-on .seal-splash::after{
      section numerals, no entrance animations. Sits last so it
      wins over the rules above. Delete this block to go back.
      ============================================================ -->
+<script>
+/* ================================================================
+   SAVE THE WEEKEND AS A PICTURE
+   Draws the itinerary and shuttle notes onto a canvas from whatever
+   the page currently says (so edits made in admin carry through),
+   then offers it to the guest: the phone's share sheet where there is
+   one (Save Image / Photos), a download otherwise.
+   ================================================================ */
+(function(){
+  const W = 1080, PAD = 88;
+  const IVORY = '#F7F2EA', ROSE = '#E4C7BE', GILT = '#D4AF37', GREEN = '#56624A', DEEP = '#3C4634';
+  const clean = t => (t || '').replace(/\s+/g, ' ').trim();
+  const q = (sel, root) => (root || document).querySelector(sel);
+
+  function gather(){
+    const days = []; let cur = null;
+    document.querySelectorAll('#schedList > .sched-day, #schedList > .sched-row').forEach(n => {
+      if(n.classList.contains('sched-day')){ cur = { label: clean(n.textContent), rows: [] }; days.push(cur); return; }
+      if(!cur){ cur = { label: '', rows: [] }; days.push(cur); }
+      cur.rows.push({
+        time: clean(q('.sched-time', n) && q('.sched-time', n).textContent).replace(/(\d)\s*([AP]M)/i, '$1 $2'),
+        title: clean(q('h3', n) && q('h3', n).textContent),
+        place: clean(q('.place', n) && q('.place', n).textContent),
+        note: clean(q('.note', n) && q('.note', n).textContent)
+      });
+    });
+    const mail = q('a[href^="mailto:"]');
+    return {
+      names: clean((q('.hero-names h1') || {}).textContent).replace(/(\s*(?:&|\band\b)\s*)+/gi, ' & ') || 'Grayson & Ryan',
+      date: clean((q('.hero-date') || {}).textContent),
+      days,
+      shuttle: clean((q('.shuttle') || {}).textContent),
+      hotels: [...document.querySelectorAll('.hotel')].map(h => ({
+        name: clean((q('h3', h) || {}).textContent), loc: clean((q('.loc', h) || {}).textContent)
+      })).filter(h => h.name),
+      venue: clean((q('.venue-copy h3') || {}).textContent) || 'Tate House',
+      addr: clean((q('.venue-copy .addr') || {}).textContent),
+      email: mail ? clean(mail.textContent) : ''
+    };
+  }
+
+  function wrap(ctx, text, maxW){
+    const words = text.split(' '), lines = []; let line = '';
+    words.forEach(w => {
+      const t = line ? line + ' ' + w : w;
+      if(ctx.measureText(t).width > maxW && line){ lines.push(line); line = w; } else line = t;
+    });
+    if(line) lines.push(line);
+    return lines;
+  }
+
+  function layout(ctx, d, draw){
+    const SERIF = '"Fraunces", Georgia, "Times New Roman", serif';
+    const SANS = '"Jost", system-ui, -apple-system, "Segoe UI", sans-serif';
+    let y = 0;
+    const text = (str, x, size, opts) => {
+      opts = opts || {};
+      ctx.font = `${opts.style || 'normal'} ${opts.weight || 400} ${size}px ${opts.sans ? SANS : SERIF}`;
+      ctx.fillStyle = opts.color || IVORY; ctx.textAlign = opts.align || 'left'; ctx.textBaseline = 'alphabetic';
+      if(draw) ctx.fillText(str, x, y);
+    };
+    const rule = (yy, w) => {
+      if(!draw) return;
+      const x1 = W / 2 - w / 2, x2 = W / 2 + w / 2;
+      const g = ctx.createLinearGradient(x1, 0, x2, 0);
+      g.addColorStop(0, 'rgba(212,175,55,0)'); g.addColorStop(.2, GILT); g.addColorStop(.8, GILT); g.addColorStop(1, 'rgba(212,175,55,0)');
+      ctx.fillStyle = g; ctx.fillRect(x1, yy, w, 2);
+      ctx.save(); ctx.translate(W / 2, yy + 1); ctx.rotate(Math.PI / 4); ctx.fillStyle = GILT; ctx.fillRect(-9, -9, 18, 18); ctx.restore();
+    };
+    const hair = yy => { if(draw){ ctx.fillStyle = 'rgba(247,242,234,.22)'; ctx.fillRect(PAD, yy, W - PAD * 2, 1.5); } };
+    const para = (str, x, maxW, size, lh, opts) => {
+      ctx.font = `${(opts && opts.style) || 'normal'} ${(opts && opts.weight) || 300} ${size}px ${(opts && opts.sans === false) ? SERIF : SANS}`;
+      wrap(ctx, str, maxW).forEach(l => { text(l, x, size, Object.assign({ sans: !(opts && opts.sans === false) }, opts)); y += lh; });
+    };
+
+    y = 168; rule(y, 360);
+    y += 150; text(d.names, W / 2, 112, { style: 'italic', align: 'center' });
+    if(d.date){ y += 78; text(d.date, W / 2, 40, { style: 'italic', color: 'rgba(247,242,234,.86)', align: 'center' }); }
+    y += 72; text(`${d.venue}${d.addr ? ', ' + d.addr.replace(/^\d.*?,\s*/, '') : ''}`, W / 2, 32, { sans: true, weight: 300, color: ROSE, align: 'center' });
+    y += 86;
+
+    d.days.forEach(day => {
+      if(day.label){
+        y += 54; text(day.label, PAD, 60, { style: 'italic', color: ROSE });
+        y += 36; hair(y); y += 18;
+      }
+      day.rows.forEach(r => {
+        y += 86;
+        text(r.time, PAD, 44, { style: 'italic' });
+        text(r.title, PAD + 262, 48, { weight: 500 });
+        const tx = PAD + 262, tw = W - PAD - tx;
+        if(r.place){ y += 46; text(r.place, tx, 34, { style: 'italic', color: ROSE }); }
+        if(r.note){ y += 46; para(r.note, tx, tw, 30, 42, { color: 'rgba(247,242,234,.82)' }); y -= 42; }
+      });
+      y += 44;
+    });
+
+    // Getting around
+    y += 58; rule(y, 360);
+    y += 112; text('Getting around', W / 2, 62, { style: 'italic', align: 'center' });
+    y += 36;
+    if(d.shuttle){
+      y += 40; para(d.shuttle, PAD, W - PAD * 2, 31, 47, { color: 'rgba(247,242,234,.9)' });
+    }
+    if(d.hotels.length){
+      y += 34; text('Where to stay', PAD, 44, { style: 'italic', color: ROSE });
+      y += 18;
+      d.hotels.forEach(h => {
+        y += 52; text(h.name, PAD, 38, { weight: 500 });
+        if(h.loc){ y += 40; text(h.loc, PAD, 32, { style: 'italic', color: 'rgba(247,242,234,.78)' }); }
+      });
+    }
+    y += 76; rule(y, 360);
+    y += 84;
+    if(d.email){ text('Questions? ' + d.email, W / 2, 30, { sans: true, weight: 300, color: 'rgba(247,242,234,.8)', align: 'center' }); y += 50; }
+    text('See you in Tate.', W / 2, 40, { style: 'italic', align: 'center' });
+    y += 130;
+    return y;
+  }
+
+  async function render(){
+    const d = gather();
+    try{
+      await Promise.all(['italic 400 40px Fraunces','normal 400 40px Fraunces','normal 500 40px Fraunces','normal 300 30px Jost']
+        .map(f => document.fonts.load(f, 'Aa&1')));
+      await document.fonts.ready;
+    }catch(e){}
+    const probe = document.createElement('canvas').getContext('2d');
+    const H = Math.ceil(layout(probe, d, false));
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    const bg = ctx.createRadialGradient(W / 2, H * .22, 60, W / 2, H * .3, H);
+    bg.addColorStop(0, '#66755A'); bg.addColorStop(.55, GREEN); bg.addColorStop(1, '#47523D');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(212,175,55,.6)'; ctx.lineWidth = 2; ctx.strokeRect(36, 36, W - 72, H - 72);
+    ctx.strokeStyle = 'rgba(212,175,55,.3)'; ctx.lineWidth = 1; ctx.strokeRect(50, 50, W - 100, H - 100);
+    layout(ctx, d, true);
+    const blob = await new Promise(res => c.toBlob(res, 'image/png'));
+    return { blob, url: URL.createObjectURL(blob) };
+  }
+
+  let overlay = null, lastUrl = null;
+  function close(){
+    if(!overlay) return;
+    overlay.remove(); overlay = null; document.body.style.overflow = '';
+    if(lastUrl){ URL.revokeObjectURL(lastUrl); lastUrl = null; }
+    document.removeEventListener('keydown', onKey);
+    if(opener && opener.focus) opener.focus();
+  }
+  function onKey(e){ if(e.key === 'Escape') close(); }
+  let opener = null;
+
+  async function open(btn){
+    opener = btn;
+    const label = btn.textContent; btn.disabled = true; btn.textContent = 'Preparing your picture';
+    let out;
+    try{ out = await render(); }
+    catch(e){ btn.disabled = false; btn.textContent = label; alert('Sorry, the picture could not be made. Please try again.'); return; }
+    btn.disabled = false; btn.textContent = label;
+    lastUrl = out.url;
+    const file = new File([out.blob], 'Grayson-and-Ryan-wedding-weekend.png', { type: 'image/png' });
+    const canShare = !!(navigator.canShare && navigator.canShare({ files: [file] }));
+
+    overlay = document.createElement('div');
+    overlay.className = 'itin-overlay';
+    overlay.setAttribute('role', 'dialog'); overlay.setAttribute('aria-modal', 'true'); overlay.setAttribute('aria-label', 'Weekend itinerary picture');
+    overlay.innerHTML = `
+      <div class="itin-sheet">
+        <div class="itin-img"><img alt="The wedding weekend itinerary and shuttle information" src="${out.url}"></div>
+        <div class="itin-actions">
+          <button type="button" class="btn btn-rose" id="itinSave">${canShare ? 'Save or share' : 'Download picture'}</button>
+          <button type="button" class="btn" id="itinClose">Close</button>
+        </div>
+        <p class="itin-hint">${canShare ? 'Choose Save Image to keep it in your photos.' : 'On a phone you can also press and hold the picture to save it.'}</p>
+      </div>`;
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onKey);
+    overlay.addEventListener('click', e => { if(e.target === overlay) close(); });
+    overlay.querySelector('#itinClose').addEventListener('click', close);
+    const save = overlay.querySelector('#itinSave');
+    save.addEventListener('click', async () => {
+      if(canShare){
+        try{ await navigator.share({ files: [file], title: 'Grayson & Ryan: wedding weekend' }); return; }
+        catch(e){ if(e && e.name === 'AbortError') return; }
+      }
+      const a = document.createElement('a'); a.href = out.url; a.download = file.name;
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+    save.focus();
+  }
+
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-save-itinerary]');
+    if(b){ e.preventDefault(); open(b); }
+  });
+})();
+</script>
 <style id="house-style">
 /* ---- Type ---- */
 h1,h2,h3,h4{font-family:var(--display)}
@@ -6354,6 +6555,33 @@ html.seal-on .seal-splash::after{
   body:not(.dayof-mode) #hero.no-images .hero-bottom::before{
     content:"";display:block;width:6px;height:6px;margin:0 auto 6px;background:var(--gilt);transform:rotate(45deg);
   }
+}
+
+/* One continuous italic: no upright words among the cursive */
+.sec-title em,.hero-names .amp{font-style:italic}
+.party-list .name{font-style:italic}
+.sched-body h3,.hotel h3,.reg-card .t,.faq button,.canton h4,.venue-copy h3{font-style:italic}
+
+/* Fraunces' "wonky" forms (the leaning d, h, n, m) are switched off in the font
+   request above; ligatures off so letter pairs like "dd" stay plain. */
+html{font-variant-ligatures:none;font-feature-settings:"liga" 0,"dlig" 0,"calt" 0}
+
+/* ---- Save the weekend as a picture ---- */
+.sched-links .save-itin{margin-right:6px}
+.shuttle-save{margin:26px 0 0}
+.itin-overlay{position:fixed;inset:0;z-index:20000;background:rgba(36,42,30,.88);display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
+.itin-sheet{display:flex;flex-direction:column;align-items:center;gap:16px;max-height:100%;width:min(100%,460px)}
+.itin-img{max-height:calc(100vh - 190px);max-height:calc(100dvh - 190px);overflow:auto;border-radius:2px;box-shadow:0 30px 60px -30px rgba(0,0,0,.7);-webkit-overflow-scrolling:touch}
+.itin-img img{display:block;width:100%;height:auto}
+.itin-actions{display:flex;gap:10px;width:100%}
+.itin-actions .btn{flex:1;text-align:center;padding:13px 10px;min-height:48px}
+.itin-actions .btn:not(.btn-rose){border-color:rgba(247,242,234,.7);color:var(--ivory)}
+.itin-actions .btn:not(.btn-rose):hover{background:var(--ivory);color:var(--garden-deep)}
+.itin-actions .btn-rose{background:var(--ivory);border-color:var(--ivory);color:var(--garden-deep)}
+.itin-hint{font-family:var(--serif);font-style:italic;color:rgba(247,242,234,.78);font-size:.95rem;text-align:center}
+@media(max-width:640px){
+  .sched-links .save-itin{display:block;width:100%;margin:0;order:-1}
+  .shuttle-save .btn{display:block;width:100%;text-align:center}
 }
 </style>
 </body>

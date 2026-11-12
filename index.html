@@ -1391,8 +1391,10 @@ html.seal-on .seal-splash::after{
     var skip = /admin|weddingparty|dayof|nosplash/.test(q) ||
                (h && h.length > 1) ||
                sessionStorage.getItem('gr-seal-opened') === '1' ||
+               localStorage.getItem('gr-dayof') === 'on' ||
                /* the wedding weekend: guests want the schedule, not a ceremony */
-               (now >= Date.UTC(2027,3,2,4) && now < Date.UTC(2027,3,4,16));
+               (localStorage.getItem('gr-dayof') !== 'off' &&
+                now >= Date.UTC(2027,3,2,4) && now < Date.UTC(2027,3,4,16));
     if(force || !skip) document.documentElement.classList.add('seal-on');
   }catch(e){}
 })();
@@ -2108,7 +2110,7 @@ html.seal-on .seal-splash::after{
     list.querySelectorAll('.sched-day, .sched-row').forEach(n => {
       if(n.classList.contains('sched-day')){
         const m = n.textContent.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})/i);
-        day = m ? { mo: MON3.indexOf(m[1].toLowerCase()), d: +m[2] } : null;
+        day = m ? { mo: MON3.indexOf(m[1].toLowerCase()), d: +m[2], label: n.textContent.trim() } : null;
         return;
       }
       const tEl = n.querySelector('.sched-time');
@@ -2121,11 +2123,18 @@ html.seal-on .seal-splash::after{
         row: n,
         start: Date.UTC(WEDDING_YEAR, day.mo, day.d, h + ET_OFFSET_H, +(t[2] || 0)),
         time: `${+t[1]}:${t[2] || '00'} ${t[3].toUpperCase()}M`,
-        title: txt('h3'), place: txt('.place'), note: txt('.note')
+        title: txt('h3'), place: txt('.place'), note: txt('.note'), dayLabel: day.label
       });
     });
     return out.sort((a, b) => a.start - b.start);
   }
+
+  // Set from Admin → "Day-of" (stored in siteSettings). 'auto' = by date.
+  let dayOfSetting = 'auto';
+  window.setDayOfMode = mode => {
+    dayOfSetting = (mode === 'on' || mode === 'off') ? mode : 'auto';
+    tick();
+  };
 
   function updateDayOf(){
     const panel = document.getElementById('dayof');
@@ -2136,7 +2145,9 @@ html.seal-on .seal-splash::after{
     const f = new Date(evs[0].start - ET_OFFSET_H * 36e5);
     const opens  = Date.UTC(f.getUTCFullYear(), f.getUTCMonth(), f.getUTCDate(), ET_OFFSET_H); // midnight ET
     const closes = evs[evs.length - 1].start + 6 * 36e5;
-    const active = now >= opens && now < closes;
+    const active = dayOfSetting === 'on'  ? true
+                 : dayOfSetting === 'off' ? false
+                 : (now >= opens && now < closes);
     document.body.classList.toggle('dayof-mode', active);
     if(!active){ panel.innerHTML = ''; return false; }
 
@@ -2149,7 +2160,9 @@ html.seal-on .seal-splash::after{
       if(next) next.row.classList.add('is-next');
     } else if(next){
       main = next;
-      label = (etDate(next.start) !== etDate(now) ? 'Tomorrow at ' : 'Next, at ') + next.time;
+      label = etDate(next.start) === etDate(now) && next.start - now < 864e5 ? 'Next, at ' + next.time
+            : next.start - now < 2 * 864e5 && etDate(next.start) === etDate(now + 864e5) ? 'Tomorrow at ' + next.time
+            : `${next.dayLabel}, at ${next.time}`;
       next.row.classList.add('is-next');
     }
     if(!main){
@@ -3732,6 +3745,11 @@ html.seal-on .seal-splash::after{
   #ab-rsvp-toggle.is-open{background:rgba(122,143,110,.35);border-color:rgba(122,143,110,.6)}
   #ab-rsvp-toggle.is-open:hover{background:rgba(122,143,110,.5)}
   #ab-rsvp-toggle:disabled{opacity:.5;cursor:default}
+  #ab-dayof{grid-column:1 / -1;background:rgba(247,242,234,.12);color:var(--ivory);border:1px solid rgba(247,242,234,.25)}
+  #ab-dayof:hover{background:rgba(247,242,234,.2)}
+  #ab-dayof.is-on{background:rgba(122,143,110,.35);border-color:rgba(122,143,110,.6)}
+  #ab-dayof.is-off{background:rgba(200,90,90,.25);border-color:rgba(200,90,90,.45)}
+  #ab-dayof:disabled{opacity:.5;cursor:default}
 
   /* Editable elements in admin mode */
   body.admin-mode [data-editable]{
@@ -4070,6 +4088,7 @@ html.seal-on .seal-splash::after{
   <div class="ab-btns">
     <button class="ab-btn" id="ab-dashboard">RSVP List</button>
     <button class="ab-btn" id="ab-rsvp-toggle">RSVPs Closed</button>
+    <button class="ab-btn" id="ab-dayof">Day-of: Automatic</button>
     <button class="ab-btn" id="ab-links">Links &amp; Password</button>
     <button class="ab-btn" id="ab-bg">Background Photo</button>
   </div>
@@ -5664,7 +5683,48 @@ html.seal-on .seal-splash::after{
   // Default is CLOSED so that if the settings doc is missing or Firestore is
   // unreachable, guests never see a live RSVP form before invitations go out.
   let savedSettings = { rsvpOpen: false };
-  function applySettings(data){
+  const DAYOF_LABEL = { auto:'Day-of: Automatic', on:'Day-of: On', off:'Day-of: Off' };
+  function applyDayOf(placeholder){
+    const mode = ['on','off'].includes(savedSettings.dayOfMode) ? savedSettings.dayOfMode : 'auto';
+    if(window.setDayOfMode) window.setDayOfMode(mode);
+    // Remembered so the next visit can skip the wax seal before Firebase answers
+    if(!placeholder){
+      try { mode === 'auto' ? localStorage.removeItem('gr-dayof') : localStorage.setItem('gr-dayof', mode); } catch(e){}
+    }
+    const b = document.getElementById('ab-dayof');
+    if(b){
+      b.textContent = DAYOF_LABEL[mode];
+      b.classList.toggle('is-on',  mode === 'on');
+      b.classList.toggle('is-off', mode === 'off');
+    }
+  }
+  document.getElementById('ab-dayof').addEventListener('click', async () => {
+    const btn  = document.getElementById('ab-dayof');
+    const cur  = ['on','off'].includes(savedSettings.dayOfMode) ? savedSettings.dayOfMode : 'auto';
+    const next = { auto:'on', on:'off', off:'auto' }[cur];
+    const msg  = {
+      on:   'Turn day-of mode ON now?\n\nEvery guest will see "what\u2019s happening now / next" at the top of the site instead of the countdown, until you switch it back.',
+      off:  'Turn day-of mode OFF?\n\nIt will stay off even on April 2\u20133, until you switch it back.',
+      auto: 'Set day-of mode back to AUTOMATIC?\n\nIt will switch itself on at midnight on April 2 and off after the send-off.'
+    }[next];
+    if(!confirm(msg)) return;
+    btn.textContent = 'Saving…'; btn.disabled = true;
+    try {
+      await initFirestore();
+      await fm.setDoc(fm.doc(db,'siteSettings','main'),
+        { dayOfMode: next, updatedAt: new Date().toISOString() }, { merge: true });
+      savedSettings.dayOfMode = next;
+      setStatus(DAYOF_LABEL[next] + ' ✓');
+      setTimeout(() => setStatus(''), 3000);
+    } catch(e){
+      console.error('Day-of setting failed:', e);
+      setStatus('Could not update day-of setting');
+    }
+    btn.disabled = false;
+    applyDayOf();
+  });
+
+  function applySettings(data, placeholder){
     savedSettings = Object.assign({ rsvpOpen: false }, data || {});
     const open = savedSettings.rsvpOpen === true;
     document.body.classList.toggle('rsvp-locked', !open);
@@ -5674,6 +5734,7 @@ html.seal-on .seal-splash::after{
       (li || a).style.display = open ? '' : 'none';
     });
     updateRsvpToggleBtn();
+    applyDayOf(placeholder);
   }
   function updateRsvpToggleBtn(){
     const b = document.getElementById('ab-rsvp-toggle');
@@ -5789,7 +5850,7 @@ html.seal-on .seal-splash::after{
   // ---- Load published content for all visitors ----
   // Start locked; loadContent() will unlock if siteSettings says RSVPs are open.
   // This prevents a flash of the live form on slow connections.
-  applySettings({ rsvpOpen: false });
+  applySettings({ rsvpOpen: false }, true);
 
   // Hero loads immediately from GitHub — no waiting for Firestore
   initHeroSlideshow();

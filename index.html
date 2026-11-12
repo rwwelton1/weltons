@@ -3710,46 +3710,66 @@ html.seal-on .seal-splash::after{
     body.admin-mode .sched-tools{top:10px;right:auto;left:0}
   }
 
-  /* Admin bar */
+  /* ---- Admin bar ----
+     Collapsed: one slim line (status + "Controls"). Tapping Controls slides a
+     panel up with every setting, each with a plain-English line saying what
+     it does right now. */
   #admin-bar{
     position:fixed;bottom:0;left:0;right:0;z-index:9000;
-    background:var(--ink);color:var(--ivory);
-    display:none;flex-direction:column;
-    padding:10px 14px 14px;gap:8px;font-family:var(--sans);
-    box-shadow:0 -2px 20px rgba(0,0,0,.35);
+    display:none;font-family:var(--sans);color:var(--ivory);
+    padding-bottom:env(safe-area-inset-bottom);
+    background:var(--ink);box-shadow:0 -2px 20px rgba(0,0,0,.3);
   }
-  #admin-bar.visible{display:flex}
-  #admin-bar .ab-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-  #admin-bar .ab-left{display:flex;align-items:center;gap:6px}
-  #admin-bar .ab-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0}
-  #admin-bar .ab-label{letter-spacing:.08em;text-transform:uppercase;font-size:.6rem;opacity:.7;white-space:nowrap}
-  #ab-status{font-size:.65rem;opacity:.65;white-space:nowrap}
-  #ab-exit{background:transparent;color:rgba(247,242,234,.45);border:none;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:4px 6px;white-space:nowrap}
+  #admin-bar.visible{display:block}
+  body.admin-mode{padding-bottom:72px}
+  .ab-line{display:flex;align-items:center;gap:12px;padding:10px 14px 10px 18px;min-height:58px}
+  .ab-dot{width:8px;height:8px;border-radius:50%;background:#7FBF7F;flex-shrink:0}
+  .ab-state{flex:1;min-width:0;font-size:.92rem;line-height:1.3}
+  .ab-state b{font-weight:500}
+  #ab-status{display:block;font-size:.82rem;color:rgba(247,242,234,.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #ab-status:empty::before{content:"Tap any outlined text to edit it"}
+  #ab-status.is-error{color:#F2B8A8}
+  #ab-open{flex-shrink:0;min-height:42px;padding:0 18px;border-radius:21px;border:1px solid rgba(247,242,234,.35);background:rgba(247,242,234,.08);color:var(--ivory);font-family:var(--sans);font-size:.92rem;cursor:pointer}
+  #ab-open:hover,#ab-open[aria-expanded="true"]{background:var(--ivory);color:var(--ink)}
+  #ab-save{display:none;flex-shrink:0;min-height:42px;padding:0 16px;border-radius:21px;border:0;background:var(--gold);color:var(--ink);font-family:var(--sans);font-size:.92rem;cursor:pointer}
+  #admin-bar.needs-retry #ab-save{display:block}
+  /* While a field has focus the keyboard takes half the screen — keep the bar to one line */
+  body.admin-editing #admin-bar .ab-panel{display:none}
+
+  .ab-panel{
+    display:none;max-height:min(70vh,560px);overflow-y:auto;overscroll-behavior:contain;
+    border-bottom:1px solid rgba(247,242,234,.12);
+  }
+  #admin-bar.open .ab-panel{display:block;animation:abUp .22s ease-out}
+  @keyframes abUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .ab-inner{max-width:560px;margin:0 auto;padding:6px 18px 8px}
+  .ab-row{padding:16px 0;border-bottom:1px solid rgba(247,242,234,.1)}
+  .ab-row:last-child{border-bottom:0}
+  .ab-row-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .ab-row-title{font-size:1rem;font-weight:500}
+  .ab-help{margin-top:6px;font-size:.86rem;line-height:1.45;color:rgba(247,242,234,.68)}
+
+  /* On/off switch (RSVPs) */
+  .ab-switch{position:relative;flex-shrink:0;width:58px;height:34px;border-radius:17px;border:0;cursor:pointer;background:rgba(247,242,234,.22);transition:background .2s}
+  .ab-switch::after{content:"";position:absolute;top:4px;left:4px;width:26px;height:26px;border-radius:50%;background:var(--ivory);box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
+  .ab-switch[aria-checked="true"]{background:#6E9A62}
+  .ab-switch[aria-checked="true"]::after{transform:translateX(24px)}
+  .ab-switch:disabled,.ab-seg button:disabled{opacity:.5;cursor:default}
+
+  /* Three-way choice (day-of) */
+  .ab-seg{display:grid;grid-template-columns:repeat(3,1fr);margin-top:12px;border:1px solid rgba(247,242,234,.3);border-radius:10px;overflow:hidden}
+  .ab-seg button{min-height:44px;border:0;background:none;color:rgba(247,242,234,.8);font-family:var(--sans);font-size:.92rem;cursor:pointer}
+  .ab-seg button + button{border-left:1px solid rgba(247,242,234,.3)}
+  .ab-seg button[aria-checked="true"]{background:var(--ivory);color:var(--ink);font-weight:500}
+
+  /* Plain action rows */
+  .ab-actions{display:grid;gap:8px;padding:16px 0 4px}
+  .ab-action{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;width:100%;min-height:52px;padding:10px 16px;border-radius:10px;border:1px solid rgba(247,242,234,.18);background:rgba(247,242,234,.06);color:var(--ivory);font-family:var(--sans);font-size:.98rem;text-align:left;cursor:pointer}
+  .ab-action:hover{background:rgba(247,242,234,.14)}
+  .ab-action small{font-size:.8rem;color:rgba(247,242,234,.55)}
+  .ab-action:disabled{opacity:.5;cursor:default}
+  #ab-exit{display:block;margin:12px auto 6px;padding:10px 14px;border:0;background:none;color:rgba(247,242,234,.6);font-family:var(--sans);font-size:.9rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
   #ab-exit:hover{color:var(--ivory)}
-  #admin-bar .ab-btns{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%}
-  #admin-bar .ab-btns2{display:none;grid-template-columns:1fr;gap:6px;width:100%}
-  #admin-bar .ab-btns2.show{display:grid}
-  .ab-btn{padding:13px 10px;border-radius:30px;border:none;cursor:pointer;font-family:var(--sans);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;transition:.25s;white-space:nowrap;text-align:center;min-height:46px}
-  /* While a field has focus the keyboard takes half the screen — the bar drops
-     to a single status line so it isn't stacked on top of what's being typed. */
-  body.admin-editing #admin-bar .ab-btns{display:none}
-  body.admin-editing #admin-bar{padding:8px 14px}
-  #ab-save{background:var(--gold);color:var(--ink)}
-  #ab-save:hover{background:#C9A063}
-  #ab-bg,#ab-links{background:rgba(247,242,234,.12);color:var(--ivory);border:1px solid rgba(247,242,234,.25)}
-  #ab-bg:hover,#ab-links:hover{background:rgba(247,242,234,.2)}
-  #ab-dashboard{background:rgba(185,144,90,.25);color:var(--ivory);border:1px solid rgba(185,144,90,.4)}
-  #ab-dashboard:hover{background:rgba(185,144,90,.4)}
-  #ab-rsvp-toggle{background:rgba(200,90,90,.25);color:var(--ivory);border:1px solid rgba(200,90,90,.45)}
-  #ab-rsvp-toggle:hover{background:rgba(200,90,90,.4)}
-  #ab-rsvp-toggle.is-open{background:rgba(122,143,110,.35);border-color:rgba(122,143,110,.6)}
-  #ab-rsvp-toggle.is-open:hover{background:rgba(122,143,110,.5)}
-  #ab-rsvp-toggle:disabled{opacity:.5;cursor:default}
-  #ab-dayof{grid-column:1 / -1;background:rgba(247,242,234,.12);color:var(--ivory);border:1px solid rgba(247,242,234,.25)}
-  #ab-dayof:hover{background:rgba(247,242,234,.2)}
-  #ab-dayof.is-on{background:rgba(122,143,110,.35);border-color:rgba(122,143,110,.6)}
-  #ab-dayof.is-off{background:rgba(200,90,90,.25);border-color:rgba(200,90,90,.45)}
-  #ab-dayof:disabled{opacity:.5;cursor:default}
 
   /* Editable elements in admin mode */
   body.admin-mode [data-editable]{
@@ -4076,24 +4096,42 @@ html.seal-on .seal-splash::after{
 </div>
 
 <!-- Admin bar -->
-<div id="admin-bar" role="toolbar" aria-label="Admin controls">
-  <div class="ab-top">
-    <div class="ab-left">
-      <span class="ab-dot"></span>
-      <span class="ab-label">Admin Mode</span>
+<div id="admin-bar" role="region" aria-label="Admin controls">
+  <div class="ab-panel" id="ab-panel">
+    <div class="ab-inner">
+
+      <div class="ab-row">
+        <div class="ab-row-head">
+          <span class="ab-row-title" id="ab-rsvp-title">RSVPs</span>
+          <button type="button" class="ab-switch" id="ab-rsvp-toggle" role="switch" aria-checked="false" aria-labelledby="ab-rsvp-title"></button>
+        </div>
+        <div class="ab-help" id="ab-rsvp-help"></div>
+      </div>
+
+      <div class="ab-row">
+        <span class="ab-row-title" id="ab-dayof-title">Day-of mode</span>
+        <div class="ab-seg" id="ab-dayof" role="radiogroup" aria-labelledby="ab-dayof-title">
+          <button type="button" role="radio" data-mode="auto" aria-checked="true">Automatic</button>
+          <button type="button" role="radio" data-mode="on" aria-checked="false">On</button>
+          <button type="button" role="radio" data-mode="off" aria-checked="false">Off</button>
+        </div>
+        <div class="ab-help" id="ab-dayof-help"></div>
+      </div>
+
+      <div class="ab-actions">
+        <button type="button" class="ab-action" id="ab-dashboard">Guest list &amp; responses <small>Who's replied, add guests, extra events</small></button>
+        <button type="button" class="ab-action" id="ab-links">Links &amp; party password <small>Hotels, registry, group chat</small></button>
+        <button type="button" class="ab-action" id="ab-bg">Background photo</button>
+      </div>
+      <button type="button" id="ab-exit">Sign out of admin</button>
     </div>
-    <span id="ab-status"></span>
-    <button id="ab-exit">Exit</button>
   </div>
-  <div class="ab-btns">
-    <button class="ab-btn" id="ab-dashboard">RSVP List</button>
-    <button class="ab-btn" id="ab-rsvp-toggle">RSVPs Closed</button>
-    <button class="ab-btn" id="ab-dayof">Day-of: Automatic</button>
-    <button class="ab-btn" id="ab-links">Links &amp; Password</button>
-    <button class="ab-btn" id="ab-bg">Background Photo</button>
-  </div>
-  <div class="ab-btns2">
-    <button class="ab-btn" id="ab-save">Retry Save</button>
+
+  <div class="ab-line">
+    <span class="ab-dot" aria-hidden="true"></span>
+    <div class="ab-state"><b>Editing</b><span id="ab-status" aria-live="polite"></span></div>
+    <button type="button" id="ab-save">Retry save</button>
+    <button type="button" id="ab-open" aria-expanded="false" aria-controls="ab-panel">Controls</button>
   </div>
 </div>
 
@@ -4263,7 +4301,23 @@ html.seal-on .seal-splash::after{
   const saveBtn    = document.getElementById('ab-save');
   const exitBtn    = document.getElementById('ab-exit');
   const statusEl   = document.getElementById('ab-status');
-  const retryRow   = document.querySelector('#admin-bar .ab-btns2');
+  const retryRow   = { classList: {   // the retry button now lives in the bar's single line
+    add:    () => bar.classList.add('needs-retry'),
+    remove: () => bar.classList.remove('needs-retry')
+  }};
+
+  // Controls panel
+  const openBtn = document.getElementById('ab-open');
+  function setPanel(open){
+    bar.classList.toggle('open', open);
+    openBtn.setAttribute('aria-expanded', open);
+    openBtn.textContent = open ? 'Done' : 'Controls';
+  }
+  openBtn.addEventListener('click', () => setPanel(!bar.classList.contains('open')));
+  addEventListener('keydown', e => { if(e.key === 'Escape' && bar.classList.contains('open')) setPanel(false); });
+  // Opening a full-screen tool closes the panel behind it
+  ['ab-dashboard','ab-links'].forEach(id =>
+    document.getElementById(id).addEventListener('click', () => setPanel(false)));
 
   // Opens admin: resumes the existing session if there is one, otherwise asks.
   // Firebase already remembers the signed-in admin in this browser, so most
@@ -4841,6 +4895,7 @@ html.seal-on .seal-splash::after{
       const textSnap = await fm.getDoc(fm.doc(db,'siteContent','main'));
       if(textSnap.exists()){
         savedContent = textSnap.data();
+        dayOfLoaded = true;
         // Rebuild any schedule the couple has restructured, then apply text.
         SCHEDULES.forEach(renderSchedule);
         buildEditableMap().forEach(({el,key}) => {
@@ -4891,6 +4946,7 @@ html.seal-on .seal-splash::after{
     console.log('loadContent complete');
     // Gallery images are now applied — hang the wall from whatever actually loaded.
     if(window._initGallery) window._initGallery();
+    applyDayOf();
     document.dispatchEvent(new Event('sitecontent:loaded'));
   }
 
@@ -4991,7 +5047,7 @@ html.seal-on .seal-splash::after{
       console.error('BG upload failed:', e);
       setStatus('Failed: ' + e.message.slice(0,50));
     }
-    bgBtn.textContent = 'Background Photo'; bgBtn.disabled = false;
+    bgBtn.textContent = 'Background photo'; bgBtn.disabled = false;
     bgInput.value = '';
   });
 
@@ -5659,21 +5715,20 @@ html.seal-on .seal-splash::after{
 
   document.getElementById('ab-rsvp-toggle').addEventListener('click', async () => {
     const btn  = document.getElementById('ab-rsvp-toggle');
-    const open = savedSettings.rsvpOpen === true;
-    const next = !open;
+    const next = savedSettings.rsvpOpen !== true;
     const msg  = next
-      ? 'Open RSVPs? Guests will be able to submit their responses right away.'
-      : 'Close RSVPs? The form will be hidden and guests will see the "RSVPs Open Soon" message. Responses already submitted are kept.';
+      ? 'Open RSVPs?\n\nGuests will be able to find their invitation and reply right away.'
+      : 'Close RSVPs?\n\nThe form will be hidden and guests will see "RSVPs open soon". Replies already sent are kept.';
     if(!confirm(msg)) return;
-    const prev = btn.textContent;
-    btn.textContent = 'Saving…'; btn.disabled = true;
+    btn.disabled = true;
+    setStatus('Saving…');
     try {
       await setRsvpOpen(next);
-      setStatus(next ? 'RSVPs are now OPEN ✓' : 'RSVPs are now CLOSED ✓');
-      setTimeout(()=>setStatus(''),3000);
+      setStatus(next ? 'RSVPs are open' : 'RSVPs are closed');
+      setTimeout(() => setStatus(''), 3000);
     } catch(e){
-      setStatus('Could not update RSVP setting');
-      btn.textContent = prev;
+      console.error('RSVP setting failed:', e);
+      setStatus('Could not change RSVPs' + (e && e.code ? ` (${e.code})` : ''));
     }
     btn.disabled = false;
     updateRsvpToggleBtn();
@@ -5683,46 +5738,54 @@ html.seal-on .seal-splash::after{
   // Default is CLOSED so that if the settings doc is missing or Firestore is
   // unreachable, guests never see a live RSVP form before invitations go out.
   let savedSettings = { rsvpOpen: false };
-  const DAYOF_LABEL = { auto:'Day-of: Automatic', on:'Day-of: On', off:'Day-of: Off' };
+  // Day-of mode is stored in siteContent/main under "setting-dayof". It lives
+  // there (not siteSettings) because siteContent is already writable by admin
+  // for any key, whereas the siteSettings rules only accept the RSVP field.
+  const DAYOF_KEY = 'setting-dayof';
+  const DAYOF_HELP = {
+    auto: 'Automatic. Turns on at midnight on April 2 and off a few hours after the send-off.',
+    on:   'On. Every guest sees what\u2019s happening now or next at the top of the site.',
+    off:  'Off. Guests see the countdown, even on April 2\u20133.'
+  };
+  let dayOfLoaded = false;
+  function currentDayOf(){
+    const v = savedContent[DAYOF_KEY] || savedSettings.dayOfMode;
+    return v === 'on' || v === 'off' ? v : 'auto';
+  }
   function applyDayOf(placeholder){
-    const mode = ['on','off'].includes(savedSettings.dayOfMode) ? savedSettings.dayOfMode : 'auto';
+    const mode = currentDayOf();
     if(window.setDayOfMode) window.setDayOfMode(mode);
     // Remembered so the next visit can skip the wax seal before Firebase answers
-    if(!placeholder){
+    if(!placeholder && dayOfLoaded){
       try { mode === 'auto' ? localStorage.removeItem('gr-dayof') : localStorage.setItem('gr-dayof', mode); } catch(e){}
     }
-    const b = document.getElementById('ab-dayof');
-    if(b){
-      b.textContent = DAYOF_LABEL[mode];
-      b.classList.toggle('is-on',  mode === 'on');
-      b.classList.toggle('is-off', mode === 'off');
-    }
+    document.querySelectorAll('#ab-dayof button').forEach(b =>
+      b.setAttribute('aria-checked', b.dataset.mode === mode));
+    const help = document.getElementById('ab-dayof-help');
+    if(help) help.textContent = DAYOF_HELP[mode];
   }
-  document.getElementById('ab-dayof').addEventListener('click', async () => {
-    const btn  = document.getElementById('ab-dayof');
-    const cur  = ['on','off'].includes(savedSettings.dayOfMode) ? savedSettings.dayOfMode : 'auto';
-    const next = { auto:'on', on:'off', off:'auto' }[cur];
-    const msg  = {
-      on:   'Turn day-of mode ON now?\n\nEvery guest will see "what\u2019s happening now / next" at the top of the site instead of the countdown, until you switch it back.',
-      off:  'Turn day-of mode OFF?\n\nIt will stay off even on April 2\u20133, until you switch it back.',
-      auto: 'Set day-of mode back to AUTOMATIC?\n\nIt will switch itself on at midnight on April 2 and off after the send-off.'
-    }[next];
-    if(!confirm(msg)) return;
-    btn.textContent = 'Saving…'; btn.disabled = true;
+  document.querySelectorAll('#ab-dayof button').forEach(btn => btn.addEventListener('click', async () => {
+    const next = btn.dataset.mode;
+    if(next === currentDayOf()) return;
+    if(next === 'on'  && !confirm('Turn day-of mode on now?\n\nEvery guest will see what\u2019s happening now or next instead of the countdown, until you change it.')) return;
+    if(next === 'off' && !confirm('Turn day-of mode off?\n\nIt will stay off even on April 2\u20133, until you change it.')) return;
+    const all = document.querySelectorAll('#ab-dayof button');
+    all.forEach(b => b.disabled = true);
+    setStatus('Saving…');
     try {
       await initFirestore();
-      await fm.setDoc(fm.doc(db,'siteSettings','main'),
-        { dayOfMode: next, updatedAt: new Date().toISOString() }, { merge: true });
-      savedSettings.dayOfMode = next;
-      setStatus(DAYOF_LABEL[next] + ' ✓');
+      await fm.setDoc(fm.doc(db,'siteContent','main'), { [DAYOF_KEY]: next }, { merge: true });
+      savedContent[DAYOF_KEY] = next;       // so later autosaves keep it
+      dayOfLoaded = true;
+      setStatus('Day-of mode: ' + { auto:'automatic', on:'on', off:'off' }[next]);
       setTimeout(() => setStatus(''), 3000);
     } catch(e){
       console.error('Day-of setting failed:', e);
-      setStatus('Could not update day-of setting');
+      setStatus('Could not change day-of mode' + (e && e.code ? ` (${e.code})` : ''));
     }
-    btn.disabled = false;
+    all.forEach(b => b.disabled = false);
     applyDayOf();
-  });
+  }));
 
   function applySettings(data, placeholder){
     savedSettings = Object.assign({ rsvpOpen: false }, data || {});
@@ -5740,8 +5803,10 @@ html.seal-on .seal-splash::after{
     const b = document.getElementById('ab-rsvp-toggle');
     if(!b) return;
     const open = savedSettings.rsvpOpen === true;
-    b.textContent = open ? 'RSVPs Open' : 'RSVPs Closed';
-    b.classList.toggle('is-open', open);
+    b.setAttribute('aria-checked', open);
+    document.getElementById('ab-rsvp-help').textContent = open
+      ? 'Open. Guests can find their invitation and reply.'
+      : 'Closed. Guests see "RSVPs open soon" and the RSVP links are hidden.';
   }
   async function setRsvpOpen(open){
     await initFirestore();
@@ -5845,7 +5910,10 @@ html.seal-on .seal-splash::after{
     history.replaceState({},'',(url.pathname));
   });
 
-  function setStatus(msg){ statusEl.textContent = msg; }
+  function setStatus(msg){
+    statusEl.textContent = msg;
+    statusEl.classList.toggle('is-error', /fail|could not|not saved|offline/i.test(msg));
+  }
 
   // ---- Load published content for all visitors ----
   // Start locked; loadContent() will unlock if siteSettings says RSVPs are open.

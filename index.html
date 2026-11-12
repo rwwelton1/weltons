@@ -560,6 +560,7 @@ section{padding:120px 0;position:relative;z-index:2}
    covered. Mirrors the section's subject without being literal. */
 #travel .sec-head.reveal .sec-num{transform:translateX(-16px)}
 #travel .sec-head.reveal .sec-title{transform:translateX(-22px);transition-delay:.12s}
+#travel .sec-head.reveal.in .sec-num,#travel .sec-head.reveal.in .sec-title{transform:none}
 
 /* VI · GOOD TO KNOW — the plainest arrival on the page. A simple
    clean fade, no travel: this is the reference section, and it
@@ -1493,6 +1494,7 @@ html.seal-on .seal-splash::after{
     <li><a href="#registry">Registry</a></li>
     <li><a href="#rsvp" class="nav-rsvp">RSVP</a></li>
   </ul>
+  <a href="#rsvp" class="nav-rsvp-m">RSVP</a>
   <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="navlinks">
     <span></span><span></span><span></span>
   </button>
@@ -6184,6 +6186,175 @@ html.seal-on .seal-splash::after{
 .ss-names .amp{color:var(--rose)}
 .ss-hint{color:var(--rose)}
 .ss-seal svg{filter:drop-shadow(0 16px 20px rgba(20,26,16,.45)) drop-shadow(0 3px 4px rgba(20,26,16,.4))}
+
+/* ================================================================
+   ON A PHONE
+   The page was drawn for a wide screen and then squeezed. These rules
+   give the phone its own rhythm: shorter section breaks, titles centred
+   like a printed invitation with a small gilt keystone beneath, the
+   weekend as a single timeline, full-width buttons, and fingertip-sized
+   targets throughout.
+   ================================================================ */
+.nav-rsvp-m{display:none}
+.monogram{position:relative;z-index:201}
+
+@media(max-width:880px){
+  /* RSVP stays one tap away in the bar, beside the menu */
+  .nav-rsvp-m{
+    display:inline-flex;align-items:center;margin-left:auto;margin-right:6px;
+    font-family:var(--sans);font-size:.9rem;letter-spacing:.04em;text-decoration:none;
+    color:var(--garden-deep);border:1px solid rgba(86,98,74,.55);border-radius:2px;
+    padding:0 14px;min-height:36px;position:relative;z-index:99;transition:background .2s,color .2s;
+  }
+  .nav-rsvp-m:hover,.nav-rsvp-m:active{background:var(--garden);border-color:var(--garden);color:var(--ivory)}
+  body.hero-has-images nav:not(.scrolled):not(.menu-open) .nav-rsvp-m{color:var(--ivory);border-color:rgba(247,242,234,.75);text-shadow:0 1px 8px rgba(20,17,14,.5)}
+  nav.menu-open .nav-rsvp-m{visibility:hidden}
+  /* on the hero the RSVP button is already on screen; the bar's copy arrives once you scroll */
+  nav:not(.scrolled) .nav-rsvp-m{opacity:0;pointer-events:none}
+  .nav-rsvp-m{transition:opacity .3s,background .2s,color .2s}
+  body.dayof-mode .nav-rsvp-m,body.rsvp-locked .nav-rsvp-m{display:none}
+  /* a 44px target for the menu button without moving the icon */
+  .menu-btn{padding:14px 12px;margin-right:-12px}
+
+  /* The open menu: the section names set as an engraved list */
+  .navlinks{gap:6px}
+  .navlinks li{list-style:none}
+  .navlinks a,.navlinks a.active{
+    display:block;padding:9px 24px;font-family:var(--display);font-style:italic;
+    font-size:1.85rem;letter-spacing:0;line-height:1.15;
+  }
+  .navlinks a::after{display:none}
+  .navlinks a.nav-rsvp{
+    font-family:var(--sans);font-style:normal;font-size:1rem;letter-spacing:.06em;
+    margin-top:22px;padding:13px 44px;
+  }
+  .navlinks::before{
+    content:"";display:block;width:120px;height:1px;margin:0 auto 26px;
+    background:linear-gradient(90deg,transparent,rgba(212,175,55,.8) 20%,rgba(212,175,55,.8) 80%,transparent);
+  }
+  .navlinks::after{
+    content:"Saturday, the third of April, 2027";position:absolute;left:0;right:0;bottom:calc(34px + env(safe-area-inset-bottom));
+    text-align:center;font-family:var(--serif);font-style:italic;font-size:1rem;color:rgba(247,242,234,.7);
+  }
+}
+
+@media(max-width:640px){
+  .wrap{padding:0 24px}
+  nav,nav.scrolled{padding-left:24px;padding-right:24px}
+  section{padding:84px 0}
+  #venue{padding:84px 0 88px}
+  #wedding-party{padding:84px 0 88px}
+  #rsvp{padding:80px 0 88px}
+
+  /* Section titles centred, with a small gilt keystone beneath */
+  .sec-head,.sec-head.center{text-align:center;margin-bottom:40px}
+  .sec-title{font-size:2.35rem}
+  main section:not(#story) > .wrap > .sec-head::after{
+    content:"";display:block;width:96px;height:9px;margin:18px auto 0;
+    background:linear-gradient(90deg,transparent,rgba(212,175,55,.85) 28%,rgba(212,175,55,.85) 44%,transparent 44%,transparent 56%,rgba(212,175,55,.85) 56%,rgba(212,175,55,.85) 72%,transparent) center/100% 1px no-repeat;
+  }
+  main section:not(#story) > .wrap > .sec-head{position:relative}
+  main section:not(#story) > .wrap > .sec-head::before{
+    content:"";position:absolute;left:50%;bottom:0;width:6px;height:6px;
+    background:var(--gilt);transform:translate(-50%,-1.5px) rotate(45deg);
+  }
+  #story .sec-head{padding-top:40px}
+
+  /* Story: a touch less air between the lines */
+  .story-intro{margin-bottom:44px}
+  .deck-hint{margin-top:46px}
+  .story-card{box-shadow:0 18px 36px -22px rgba(40,35,31,.5)}
+
+  /* The weekend as one timeline: a hairline down the left, a gilt
+     diamond at each event, the time above its name */
+  .sched-day{padding:30px 0 6px;border-top:0;font-size:1.35rem}
+  .sched-day:first-child{padding-top:0}
+  .sched-row{
+    grid-template-columns:1fr;gap:2px;position:relative;
+    margin-left:4px;padding:18px 0 22px 26px;border-top:0;border-left:1px solid rgba(86,98,74,.28);
+  }
+  .sched-row::before{
+    content:"";position:absolute;left:-4px;top:27px;width:7px;height:7px;
+    background:var(--gilt);transform:rotate(45deg);
+  }
+  .sched-day + .sched-row{padding-top:12px}
+  .sched-day + .sched-row::before{top:21px}
+  .sched-time{font-size:1.2rem;line-height:1.3}
+  .sched-row.is-now .sched-time::after,.sched-row.is-next .sched-time::after{display:inline;margin:0 0 0 10px}
+  .sched-row.is-now::before{background:var(--rose-deep);box-shadow:0 0 0 4px rgba(228,199,190,.6)}
+  .sched-body h3{font-size:1.4rem;line-height:1.2}
+  .sched-body .place{margin:4px 0 6px}
+  .sched-links{flex-direction:column;align-items:stretch;gap:10px;margin-top:30px}
+  .sched-links a{display:flex;align-items:center;justify-content:center;min-height:48px;border:1px solid rgba(86,98,74,.45);border-radius:2px;text-decoration:none}
+
+  /* Wedding party: names and roles keep to one line each where they can */
+  .party-grid{gap:44px}
+  .party-col h3{text-align:center}
+  .party-col .sub{text-align:center}
+  .party-list li{padding:14px 0;gap:12px}
+
+  /* Venue: the arch a little smaller, buttons full width */
+  .venue-photo{width:min(86%,340px)}
+  .venue-copy{text-align:left}
+  .venue-copy h3{text-align:center}
+  .venue-copy .addr{text-align:center;padding-bottom:20px}
+  .venue-copy p.lead{font-size:1.18rem;text-align:center}
+  .venue-actions{flex-direction:column;gap:10px;margin-top:24px}
+  .venue-actions .btn{display:block;width:100%;text-align:center;padding:14px 20px}
+
+  /* Travel */
+  .travel-intro{margin-bottom:8px}
+  .hotels{gap:0;margin-top:28px}
+  .hotel{padding:22px 0 26px}
+  .hotel p:last-of-type{margin-bottom:0}
+  .hotel .btn{display:block;width:100%;text-align:center;margin-top:16px}
+  .shuttle{margin-top:20px;padding-top:24px;border-top:1px solid var(--line)}
+  .canton{margin-top:48px}
+  .canton h4{text-align:center}
+  .canton-intro{text-align:center}
+  .tabstrip{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tabstrip button{
+    border:1px solid rgba(86,98,74,.35);border-radius:2px;padding:12px 8px;text-align:center;
+    min-height:48px;font-size:.95rem;
+  }
+  .tabstrip button[aria-expanded="true"]{background:var(--garden);border-color:var(--garden);color:var(--ivory)}
+
+  /* FAQ: comfortable rows */
+  .faq button{padding-top:20px;padding-bottom:20px;gap:18px}
+
+  /* Registry */
+  .registry-shell,.reg-card{text-align:center}
+  #regLinks{align-items:stretch!important}
+  #regLinks .btn{display:block;width:100%;text-align:center}
+
+  /* Gallery: tighter gutter, softer shadows */
+  .gallery-track{gap:10px;padding:0 14px}
+  .gallery-item{box-shadow:0 10px 22px -16px rgba(40,35,31,.45)}
+
+  /* RSVP */
+  #rsvp .rsvp-policies{margin-top:18px}
+  #rsvp .rsvp-form-wrap,#rsvp .rsvp-closed{padding:36px 22px 30px}
+  .party-branches{margin-left:4px;padding-left:14px}
+  .choice{gap:8px}
+  .choice button{min-height:52px}
+  #rsvp .btn,#rsvp button.btn{width:100%}
+
+  /* Footer */
+  .fp a{display:inline-block;padding:10px 4px}
+}
+
+.choice button.sel{background:var(--garden);border-color:var(--garden);color:var(--ivory)}
+
+/* Before any photographs are uploaded, the hero has nothing in its
+   middle; on a phone draw the names and date together instead of
+   leaving an empty screen between them. */
+@media(max-width:640px){
+  body:not(.dayof-mode) #hero.no-images .hero-top{top:auto;bottom:52%;padding-bottom:10px}
+  body:not(.dayof-mode) #hero.no-images .hero-bottom{bottom:auto;top:52%;padding-top:24px}
+  body:not(.dayof-mode) #hero.no-images .hero-bottom::before{
+    content:"";display:block;width:6px;height:6px;margin:0 auto 6px;background:var(--gilt);transform:rotate(45deg);
+  }
+}
 </style>
 </body>
 </html>
